@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+    <extension engine="1.0">
+    <id>pun_user_timezone</id>
+    <title>Timezone difference in posts' user info</title>
+    <version>0.5a</version>
+    <description>In posts you can see the difference between you and post's author</description>
+    <author>PunBB Development Team</author>
+
+    <minversion>1.3 SVN</minversion>
+    <maxtestedon>1.3 SVN</maxtestedon>
+
+    <hooks>
+        <hook id="vt_qr_get_posts"><![CDATA[  
+	
+		$query['SELECT'] .= ', u.timezone';
+		
+        ]]></hook>  
+        <hook id="vt_row_pre_display"><![CDATA[
+		if ($cur_post['poster_id'] > 1)
+		{
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			if ($forum_config['o_show_user_info'] == '1')
+			{
+				// Output time difference 
+				$time_dif = $forum_user['timezone'] - $cur_post['timezone'];
+				if ($time_dif != 0)
+					$forum_page['user_info'][] = '<li><span><strong>'.$lang_user_timezone['Timezone'].': </strong>'.$time_dif.' '.$lang_user_timezone['from yours'].'</span></li>';
+     		}
+		}
+      	]]></hook>
+    </hooks>
+</extension>

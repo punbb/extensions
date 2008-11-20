@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+	<id>pun_admin_hook_navigator</id>
+	<title>Hook navigator</title>
+	<version>1.0b4</version>
+	<description>Useful for extension developers: provides live information about hooks and actually evaluated extension codes.</description>
+	<author>PunBB Development Team</author>
+
+	<minversion>1.3 SVN</minversion>
+	<maxtestedon>1.3 SVN</maxtestedon>
+
+	<note type="install" timing="pre">Warning: all the forum files will be scanned for hooks while installation. This may take a while.</note>
+	<note type="install" timing="pre">If you have pun_hooks_navigator vX.X installed, it will be turned off. It is advisable to remove the old version.</note>
+	<install><![CDATA[
+		if(in_array('pun_hook_navigator', $installed_ext))
+		{
+			$query = array(
+				'UPDATE'	=> 'extensions',
+				'SET'		=> 'disabled=\'1\'',
+				'WHERE'		=> 'id=\'pun_hook_navigator\''
+			);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		}
+if (empty($ext_info['path']))
+	$ext_info['path'] = FORUM_ROOT.'/extensions/pun_admin_hook_navigator';
+
+require_once $ext_info['path'].'/functions.php';
+pun_admin_hook_navigator_cache_all_hooks(FORUM_ROOT);
+
+//Insert options in the DB
+$query_log = array(
+	'INSERT'	=> 'conf_name, conf_value',
+	'INTO'		=> 'config',
+	'VALUES'	=> '"o_hn_list_visible", "0"',
+);
+
+$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
+	]]></install>
+
+	<uninstall><![CDATA[
+if (empty($ext_info['path']))
+	$ext_info['path'] = FORUM_ROOT.'/extensions/pun_admin_hook_navigator';
+$query_log = array(
+	'DELETE'	=> 'config',
+	'WHERE'		=> 'conf_name="o_hn_list_visible"'
+);
+$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
+
+require_once $ext_info['path'].'/functions.php';
+pun_admin_hook_navigator_drop_cache_tables();
+	]]></uninstall>
+
+	<hooks>
+
+		<hook id="hd_head"><![CDATA[
+if ($forum_user['g_id'] == FORUM_ADMIN)
+{
+	$forum_head['style_pun_admin_hook_navigator'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
+	$forum_head['js_pun_admin_hook_navigator'] = '<script type="text/javascript" src="'.$ext_info['url'].'/switch.js"></script>';
+}
+		]]></hook>
+
+		<hook id="ca_admin_menu_new_sublink"><![CDATA[
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+if ((FORUM_PAGE_SECTION == 'extensions') && ($forum_user['g_id'] == FORUM_ADMIN))
+	$adnav_sublinks[] = '<li'.((FORUM_PAGE == 'admin-extensions-hook-navigator') ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['admin_extensions_hook_search']).'">'.$lang_pun_admin_hook_navigator['Hook navigator'].'</a></li>';
+		]]></hook>
+
+		<hook id="aex_new_action"><![CDATA[
+if ($section == 'hook_navigator')
+{
+	// Setup breadcrumbs
+	$forum_page['crumbs'] = array(
+		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+		array($lang_admin['Forum administration'], forum_link($forum_url['admin_index'])),
+		'Hook navigator'
+	);
+
+	define('FORUM_PAGE_SECTION', 'extensions');
+	define('FORUM_PAGE', 'admin-extensions-hook-navigator');
+	require FORUM_ROOT.'header.php';
+
+	// START SUBST - <!-- forum_main -->
+	ob_start();
+
+	pun_admin_hook_navigator_show_hook_navigator_section();
+
+	$tpl_temp = trim(ob_get_contents());
+	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+
+	ob_end_clean();
+
+	// END SUBST - <!-- forum_main -->
+
+	require FORUM_ROOT.'footer.php';
+}
+		]]></hook>
+
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+
+require_once $ext_info['path'].'/functions.php';
+$forum_url['admin_extensions_hook_search'] = 'admin/extensions.php?section=hook_navigator';
+
+pun_admin_hook_navigator_add_register_function();
+		]]></hook>
+
+		<hook id="ft_about_end" priority="9"><![CDATA[
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+if ($forum_user['g_id'] == FORUM_ADMIN)
+{
+
+	?>
+
+	<div class="main sectioned">
+		<div class="main-content frm">
+			<div class="main-head">
+				<h2 id="hook_navigator_header"><span><?php echo $lang_pun_admin_hook_navigator['Hook navigator']?></span></h2>
+			</div>
+
+	<?php
+
+	pun_admin_hook_navigator_show_cur_page_hooks_tree();
+
+	?>
+
+		</div>
+	</div>
+
+	<?php
+
+}
+
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+
+	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+}
+		]]></hook>
+
+	</hooks>
+
+</extension>
+<li><pre class="codebox"><?php echo highlight_string('<?php'."\n".$code."\n".'?>', true); ?></pre></li>

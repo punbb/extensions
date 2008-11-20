@@ -1,0 +1,56 @@
+/***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	Based on Easy BBCode extension by Rickard Andersson.
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************/
+
+div#pun_bbcode_bar
+{
+	margin: 0;
+	padding: 0 1em 0 18em;
+	position:relative;
+}
+
+div#pun_bbcode_bar div#pun_bbcode_wrapper
+{
+	width: 95%;
+	position:relative;
+}
+
+div#pun_bbcode_bar .graphical div#pun_bbcode_buttons
+{
+	float: left;
+}
+
+div#pun_bbcode_bar .graphical div#pun_bbcode_buttons img
+{
+	margin: 0px 3px;
+}
+
+
+div#pun_bbcode_bar .graphical div#pun_bbcode_smilies
+{
+	float: right;
+}
+
+div#pun_bbcode_bar .graphical div#pun_bbcode_smilies img
+{
+	margin: 0px 1px;
+}

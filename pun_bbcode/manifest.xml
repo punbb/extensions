@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	Based on Easy BBCode extension by Rickard Andersson.
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+    <id>pun_bbcode</id>
+    <title>BBCode buttons</title>
+    <version>1.2.1</version>
+    <description>Pretty buttons for easy BBCode formatting.</description>
+    <author>PunBB Development Team</author>
+
+    <minversion>1.3dev</minversion>
+    <maxtestedon>1.3</maxtestedon>
+	<install><![CDATA[
+if (defined('EXT_CUR_VERSION') && EXT_CUR_VERSION == '1.1')
+{
+	// Rename old DB fields
+	$forum_db->query('ALTER TABLE '.$forum_db->prefix.'users
+		CHANGE use_bbcode_bar pun_bbcode_enabled TINYINT(1) DEFAULT 1,
+		CHANGE bbcode_style pun_bbcode_use_buttons TINYINT(1) DEFAULT 1') or error(__FILE__, __LINE__);
+}
+else
+{
+	$forum_db->add_field('users', 'pun_bbcode_enabled', 'TINYINT(1)', false, 1);
+	$forum_db->add_field('users', 'pun_bbcode_use_buttons', 'TINYINT(1)', false, 1);
+}
+	]]></install>
+
+	<uninstall><![CDATA[
+	$forum_db->drop_field('users', 'pun_bbcode_enabled');
+	$forum_db->drop_field('users', 'pun_bbcode_use_buttons');
+	]]></uninstall>
+
+    <hooks>
+		<hook id="hd_head"><![CDATA[
+			if (FORUM_PAGE == 'viewtopic' || FORUM_PAGE == 'postedit' || FORUM_PAGE == 'post' && $forum_user['pun_bbcode_enabled'] == '1')
+			{
+				require_once FORUM_ROOT.'include/parser.php';
+
+				$forum_head['style_pun_bbcode'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
+				$forum_head['js_pun_bbcode'] = '<script type="text/javascript" src="'.$ext_info['url'].'/scripts.js"></script>';
+			}
+		]]></hook>
+		<hook id="po_pre_post_contents, vt_quickpost_pre_message_box, ed_pre_message_box"><![CDATA[
+if ($forum_user['pun_bbcode_enabled'] == '1')
+	include $ext_info['path'].'/bar.php';
+		]]></hook>
+		<hook id="pf_change_details_settings_validation"><![CDATA[
+if (!isset($_POST['form']['pun_bbcode_enabled']) || $_POST['form']['pun_bbcode_enabled'] != '1')
+	$form['pun_bbcode_enabled'] = '0';
+else
+	$form['pun_bbcode_enabled'] = '1';
+
+if (!isset($_POST['form']['pun_bbcode_use_buttons']) || $_POST['form']['pun_bbcode_use_buttons'] != '1')
+	$form['pun_bbcode_use_buttons'] = '0';
+else
+	$form['pun_bbcode_use_buttons'] = '1';
+		]]></hook>
+		<hook id="pf_change_details_settings_email_fieldset_end"><![CDATA[
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	include $ext_info['path'].'/lang/English/pun_bbcode.php';
+
+$forum_page['item_count'] = 0;
+
+?>
+			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_bbcode_enabled]" value="1"<?php if ($user['pun_bbcode_enabled'] == '1') echo ' checked="checked"' ?> /></span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_pun_bbcode['Pun BBCode Bar'] ?></span> <?php echo $lang_pun_bbcode['Notice BBCode Bar'] ?></label>
+					</div>
+				</div>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_bbcode_use_buttons]" value="1"<?php if ($user['pun_bbcode_use_buttons'] == '1') echo ' checked="checked"' ?> /></span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_pun_bbcode['BBCode Graphical'] ?></span> <?php echo $lang_pun_bbcode['BBCode Graphical buttons'] ?></label>
+					</div>
+				</div>
+			</fieldset>
+<?php
+
+		]]></hook>
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		]]></hook>
+		<hook id="ft_about_end" priority="10"><![CDATA[
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+}
+		]]></hook>
+    </hooks>
+</extension>

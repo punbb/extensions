@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+	<id>pun_admin_events</id>
+	<title>Events registration</title>
+	<version>0.7</version>
+	<description>Adds gear to logging events and GUI to browse this log.</description>
+	<author>PunBB Development Team</author>
+
+	<minversion>1.3 SVN</minversion>
+	<maxtestedon>1.3 SVN</maxtestedon>
+
+	<install><![CDATA[
+		$results = $forum_db->query('show columns from '.$forum_db->prefix.'users like \'username\'');
+		$username = $forum_db->fetch_assoc($results);
+
+		$results = $forum_db->query('show columns from '.$forum_db->prefix.'users like \'id\'');
+		$userid = $forum_db->fetch_assoc($results);
+
+		$schema = array(
+		'FIELDS'	=> array(
+			'ip'		=> array(
+				'datatype'		=> 'VARCHAR(15)',
+				'allow_null'	=> false
+			),
+			'type'	=> array(
+				'datatype'		=> 'VARCHAR(64)',
+				'allow_null'	=> false
+			),
+			'comment'	=> array(
+				'datatype'		=> 'VARCHAR(255)',
+				'allow_null'	=> false
+			),
+			'user_id'	=> array(
+				'datatype'		=> $userid['Type'],
+				'allow_null'	=> true
+			),
+			'user_name'	=> array(
+				'datatype'		=> $username['Type'],
+				'allow_null'	=> true
+			),
+			'date'			=> array(
+				'datatype'		=> 'TIMESTAMP',
+				'allow_null'	=> false
+			)
+		));
+
+		$forum_db->create_table('pun_admin_events', $schema);
+	]]></install>
+
+	<uninstall><![CDATA[
+		$forum_db->drop_table('pun_admin_events');
+	]]></uninstall>
+
+	<hooks>
+		<hook id="co_common"><![CDATA[
+			$forum_url['admin_management_events'] = 'admin/extensions.php?section=events';
+		]]></hook>
+
+		<hook id="hd_head"><![CDATA[
+			if ($forum_user['g_id'] == FORUM_ADMIN)
+			{
+				$forum_head['js_pun_admin_events'] = '<script type="text/javascript" src="'.$ext_info['url'].'/script.js"></script>';
+			}
+		]]></hook>
+
+		<hook id="ca_admin_menu_new_sublink"><![CDATA[
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+			if ((FORUM_PAGE_SECTION == 'management') && ($forum_user['g_id'] == FORUM_ADMIN))
+				$adnav_sublinks['events'] = '<li'.((FORUM_PAGE == 'admin-management-events') ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['admin_management_events']).'">'.$lang_pun_admin_events['Events'].'</a></li>';
+		]]></hook>
+
+		<hook id="aex_new_action"><![CDATA[
+		if ($section == 'events')
+		{
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+			require $ext_info['path'].'/functions.php';
+
+			$forum_page['crumbs'] = array(
+				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+				array($lang_admin['Forum administration'], forum_link($forum_url['admin_index'])),
+				'Events'
+			);
+
+			define('FORUM_PAGE_SECTION', 'management');
+			define('FORUM_PAGE', 'admin-management-events');
+			require FORUM_ROOT.'header.php';
+
+			ob_start();
+			?>
+			<div id="pun-main" class="main sectioned admin">
+				<?php echo generate_admin_menu(); ?>
+				<div class="main-head">
+					<h1><span>{ <?php echo end($forum_page['crumbs']); ?> }</span></h1>
+				</div>
+
+				<div class="main-content frm">
+					<div class="frm-head">
+						<h2><span><?php echo $lang_pun_admin_events['Filter selection']; ?></span></h2>
+					</div>
+				<form class="frm-form" name="mainform" method="post" accept-charset="utf-8" action="<?php echo $base_url; ?>/admin/extensions.php?section=events">
+					<div class="hidden">
+						<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($base_url.'/admin/extensions.php?section=events'); ?>" />
+					</div>
+					<div class="hidden">
+						<input type="hidden" name="page" value="1" />
+					</div>
+					<fieldset class="frm-set set1">
+					<div class="frm-fld text">
+						<span class="fld-label">By Date:</span>
+						<span class="fld-input">
+							<?php generate_dropdown_list('fld-day-from', 'day_from', 1, 31, $lang_pun_admin_events['Day']); ?>
+						</span>
+						<span class="fld-input">
+							<?php generate_dropdown_list('fld-month-from', 'month_from', 1, 12, $lang_pun_admin_events['Month']); ?>
+						</span>
+						<span class="fld-input">
+							<?php generate_dropdown_list('fld-year-from', 'year_from', 1990, 2020, $lang_pun_admin_events['Year']); ?>
+						</span>
+					</div>
+					<div class="frm-fld text">
+						<span class="fld-input">
+							<?php generate_dropdown_list('fld-day-to', 'day_to', 1, 31, $lang_pun_admin_events['Day']); ?>
+						</span>
+						<span class="fld-input">
+							<?php generate_dropdown_list('fld-month-to', 'month_to', 1, 12, $lang_pun_admin_events['Month']); ?>
+						</span>
+						<span class="fld-to">
+							<?php generate_dropdown_list('fld-year-from', 'year_to', 1990, 2020, $lang_pun_admin_events['Year']); ?>
+						</span>
+					</div>
+					</fieldset>
+					<fieldset class="frm-set set2">
+					<div class="frm-fld text">
+						<span class="fld-label">By Event:</span>
+						<span class="fld-input">
+							<select id="fld-event-id" name="event_id">
+							<?php
+								$query = array(
+									'SELECT'	=> 'distinct type',
+									'FROM'		=> 'pun_admin_events',
+								);
+
+								$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+								if(isset($_POST['event_id']) && $_POST['event_id'] != '')
+									echo '<option value="">'.$lang_pun_admin_events['Any'].'</option>';
+								else
+									echo '<option selected="selected" value="">'.$lang_pun_admin_events['Any'].'</option>';
+
+								while($_tmp = $forum_db->fetch_assoc($result))
+								{
+									if(isset($_POST['event_id']) && $_POST['event_id'] == $_tmp['type'])
+										echo '<option selected="selected" value="'.$_tmp.'">'.$_tmp['type'].'</option>'; 
+									else
+										echo '<option value="'.$_tmp['type'].'">'.$_tmp['type'].'</option>'; 
+								}
+							?>
+							</select>
+						</span>
+					</div>
+					</fieldset>
+					<fieldset class="frm-set set3">
+					<div class="frm-fld text">
+						<span class="fld-label"><?php echo $lang_pun_admin_events['By IP']; ?></span>
+						<span class="fld-input">
+							<input id="fld-ip" name="ip" value="<?php echo isset($_POST['ip']) ? $_POST['ip'] : '*'; ?>" />
+						</span>
+					</div>
+					</fieldset>
+					<fieldset class="frm-set set4">
+					<div class="frm-fld text">
+						<span class="fld-label"><?php echo $lang_pun_admin_events['By UserName']; ?></span>
+						<span class="fld-input">
+							<input id="fld-name" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '*'; ?>" />
+						</span>
+					</div>
+					</fieldset>
+					<fieldset class="frm-set set5">
+					<div class="frm-fld text">
+						<span class="fld-label"><?php echo $lang_pun_admin_events['By Comment']; ?></span>
+						<span class="fld-input">
+							<input id="fld-comment" name="comment" value="<?php echo isset($_POST['comment']) ? $_POST['comment'] : '*'; ?>" />
+						</span>
+					</div>
+					</fieldset>
+					<fieldset class="frm-set set6">
+					<div class="frm-fld text">
+						<span class="fld-label">Sort by:</span>
+						<span class="fld-input">
+							<select id="fld-sort-by" name="sort_by">
+								<?php
+								if(isset($_POST['sort_by']))
+								{
+									$schema[] = 'Date';
+									$schema[] = 'Type';
+									$schema[] = 'IP';
+									$schema[] = 'User_Name';
+
+									for($i = 0; $i < count($schema); $i++)
+									{
+										if($_POST['sort_by'] == $schema[$i])
+											echo '<option selected="selected" value="'.$schema[$i].'">'.$lang_pun_admin_events[$schema[$i]].'</option>';
+										else
+											echo '<option value="'.$schema[$i].'">'.$lang_pun_admin_events[$schema[$i]].'</option>';
+									}
+								}
+								else
+								{
+									echo '<option selected="selected" value="Date">'.$lang_pun_admin_events['Date'].'</option>';
+									echo '<option value="Type">'.$lang_pun_admin_events['Event'].'</option>'; 
+									echo '<option value="IP">'.$lang_pun_admin_events['IP'].'</option>'; 
+									echo '<option value="user_name">'.$lang_pun_admin_events['User_Name'].'</option>'; 
+								}
+								?>
+							</select>
+							<select id="fld-sort-rule" name="sort_rule">
+								<?php
+								if(isset($_POST['sort_rule']) && $_POST['sort_rule'] == 'DESC')
+								{
+									echo '<option value="ASC">'.$lang_pun_admin_events['ASC'].'</option>';
+									echo '<option selected="selected" value="DESC">'.$lang_pun_admin_events['DESC'].'</option>'; 
+								}
+								else
+								{
+									echo '<option selected="selected" value="ASC">'. $lang_pun_admin_events['ASC'].'</option>';
+									echo '<option value="DESC">'.$lang_pun_admin_events['DESC'].'</option>'; 
+								}
+								?>
+							</select>
+						</span>
+
+					</div>
+					</fieldset>
+					<div class="frm-buttons">
+						<input type="button" onclick="javascript:PageSubmit(mainform, 0)" id="btn-submit" value="<?php echo $lang_pun_admin_events['Search'] ?>" />
+					</div>
+				</form>
+			</div>
+			<div class="main-content frm">
+<?php
+	$results_onpage = 20;
+
+	$order_by = '';
+	if(isset($_POST['sort_by']))
+		$order_by = $_POST['sort_by'].' '.$_POST['sort_rule'];
+	else
+		$order_by = 'date';
+
+	$sql_where = implode(' && ', pun_events_generate_where());
+
+	$query = array(
+		'SELECT'	=> 'count(*)',
+		'FROM'		=> 'pun_admin_events',
+		'WHERE'		=> $sql_where,
+	);
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	$num_rows = $forum_db->result($result);
+	$data = array();
+
+	if($num_rows != 0)
+	{
+		$query = array(
+			'SELECT'	=> 'ip, type, comment, date, user_name',
+			'FROM'		=> 'pun_admin_events',
+			'WHERE'		=> $sql_where,
+			'ORDER BY'	=> $order_by,
+			'LIMIT'		=> isset($_POST['page'])?$_POST['page']*$results_onpage.','.$results_onpage : '0,'.$results_onpage
+		);
+
+		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		while($_tmp = $forum_db->fetch_assoc($result))
+			$data[] = $_tmp;
+	}
+
+	$schema = array(
+		'ip'			=> $lang_pun_admin_events['IP'],
+		'type'			=> $lang_pun_admin_events['Type'],
+		'comment'		=> $lang_pun_admin_events['Comment'],
+		'date'			=> $lang_pun_admin_events['Date'],
+		'user_name'		=> $lang_pun_admin_events['User_Name'],
+	);
+
+	$lang = array(
+		'Pages'			=> $lang_pun_admin_events['Pages'],
+		'Results'		=> $lang_pun_admin_events['Results'],
+		'Nothing found' => $lang_pun_admin_events['Nothing found']
+	);
+
+	pagination($schema, $data, isset($_POST['page']) ? $_POST['page'] : 0, ceil($num_rows/$results_onpage), 'mainform', $lang);
+
+	?>
+			</div>
+			<?php
+
+			$tpl_temp = trim(ob_get_contents());
+			$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+
+			ob_end_clean();
+
+			require FORUM_ROOT.'footer.php';
+		}
+		]]></hook>
+	</hooks>
+</extension>

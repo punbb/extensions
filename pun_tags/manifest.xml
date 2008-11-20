@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+	<id>pun_tags</id>
+	<title>Pun tags</title>
+	<version>1.1b</version>
+	<description>Topics are taggable now.</description>
+	<author>PunBB Development Team</author>
+	<minversion>1.3 SVN</minversion>
+	<maxtestedon>1.3 SVN</maxtestedon>
+
+	<install>
+	<![CDATA[
+		// Create table 'topic_tags'
+		$schema = array(
+			'FIELDS'			=> array(
+				'id'			=> array(
+					'datatype'		=> 'SERIAL',
+					'allow_null'	=> false
+				),
+				'topic_id'			=> array(
+					'datatype'		=> 'INT(10) UNSIGNED',
+					'allow_null'	=> false
+					
+				),
+				'tag_id'		=> array(
+					'datatype'		=> 'INT(10) UNSIGNED',
+					'allow_null'	=> false
+				)
+			),
+			'PRIMARY KEY'	=> array('id')
+		);
+		$forum_db->create_table('topic_tags', $schema);
+
+		// Create table 'tags'
+		$schema = array(
+			'FIELDS'			=> array(
+				'id'			=> array(
+					'datatype'		=> 'SERIAL',
+					'allow_null'	=> false
+				),
+				'tag'			=> array(
+					'datatype'		=> 'VARCHAR(50)',
+					'allow_null'	=> false
+				)
+
+			),
+			'PRIMARY KEY'	=> array('id')
+		);
+		$forum_db->create_table('tags', $schema);
+
+		// Add extension options to config
+		$query = array(
+			'INSERT'	=> 'conf_name, conf_value',
+			'INTO'		=> 'config',
+			'VALUES'	=> '\'o_pun_tags_show\', \'1\''
+		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	]]></install>
+
+	<uninstall>
+	<![CDATA[
+
+		// Delete extension options from config
+		$query = array(
+			'DELETE'	=> 'config',
+			'WHERE'		=> 'conf_name = \'o_pun_tags_show\''
+		);
+		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		// Drop extension tables
+		$forum_db->drop_table('topic_tags');
+		$forum_db->drop_table('tags');
+
+		// Remove pun_tags cache file
+		@unlink(FORUM_CACHE_DIR.'cache_pun_tags.php');
+
+	]]>
+	</uninstall>
+
+	<hooks>
+	<hook id="hd_gen_elements"><![CDATA[
+		//Output of search results
+		if ($forum_config['o_pun_tags_show'] == 1 && (FORUM_PAGE == 'index' || FORUM_PAGE == 'viewforum' || FORUM_PAGE == 'viewtopic' || FORUM_PAGE == 'searchtopics' || FORUM_PAGE == 'searchposts'))
+		{
+			$output_results = array();
+			$minfontsize = 100;
+			$maxfontsize = 200;
+			$minpopular = $pun_tags['min_pop'];
+			@$step = ($maxfontsize - $minfontsize) / ($pun_tags['max_pop'] - $minpopular);
+			switch (FORUM_PAGE)
+			{
+				case 'index':
+					if (isset($pun_tags['index']))
+					{
+						foreach ($pun_tags['index'] as $tag_ind)
+							$output_results[ $tag_ind['tag'] ] = $tag_ind;
+					}
+					break;
+				case 'viewforum':
+					$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+					if (($id >= 1) && isset($pun_tags['forums'][$id]) && isset($pun_tags['index']))
+					{
+						foreach ($pun_tags['forums'][$id] as $tags_id)
+							foreach ($pun_tags['index'] as $tag_ind)
+								if ($tag_ind['tag_id'] == $tags_id)
+									$output_results[ $tag_ind['tag'] ] = $tag_ind;
+					}
+					break;
+				case 'viewtopic':
+					$pid = isset($_GET['pid']) ? intval($_GET['pid']) : 0;
+					if ($pid)
+					{
+						$query = array(
+							'SELECT'	=>	'topic_id',
+							'FROM'		=>	'posts',
+							'WHERE'		=>	'id = '.$pid
+						);
+						$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+						if (!$forum_db->num_rows($result))
+							$id = 0;
+						else
+							list($id) = $forum_db->fetch_row($result);
+					}
+					else
+						$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+					if (($id >= 1) && isset($pun_tags['topics'][$id]) && isset($pun_tags['index']))
+					{				
+						foreach ($pun_tags['topics'][$id] as $tags_id)
+							foreach ($pun_tags['index'] as $tag_ind)
+								if ($tag_ind['tag_id'] == $tags_id)
+									$output_results[ $tag_ind['tag'] ] = $tag_ind;
+					}
+					break;
+				case 'searchtopics':
+				case 'searchposts':
+					//This string will be replaced after getting search results
+					$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content"></div>';
+					break;
+			}
+			if (!empty($output_results))
+			{
+				$minfontsize = 100;
+				$maxfontsize = 200;
+				$minpopular = $pun_tags['min_pop'];
+				@$step = ($maxfontsize - $minfontsize) / ( $pun_tags['max_pop'] - $minpopular);
+
+				ksort($output_results);
+				$results = array();
+				foreach ($output_results as $res)
+					$results[] = pun_tags_get_link( round(($res['weight'] - $minpopular) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
+				$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content">'.implode('&nbsp;', $results).'</div>';
+			}
+		}
+	]]></hook>
+	<hook id="co_modify_url_scheme"><![CDATA[
+		if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
+			require $ext_info['path'].'/url/'.$forum_config['o_sef'].'.php';
+		else
+			require $ext_info['path'].'/url/Default.php';
+	]]></hook>
+	<hook id="re_rewrite_rules"><![CDATA[
+		$forum_rewrite_rules['/^tag[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'search.php?action=tag&tag_id=$1';
+	]]></hook>
+	<hook id="se_results_pre_header_load"><![CDATA[
+		if ($action == 'tag')
+		{
+			// Regenerate paging links
+			$tag_id = isset($_GET['tag_id']) ? intval($_GET['tag_id']) : 0;
+			if ($tag_id >= 1)
+				$forum_page['page_post']['paging'] = '<p class="paging"><span class="pages">'.$lang_common['Pages'].'</span> '.paginate($forum_page['num_pages'], $forum_page['page'], $forum_url['search_tag'], $lang_common['Paging separator'], $tag_id).'</p>';
+		}
+	]]></hook>
+	<hook id="aop_features_validation"><![CDATA[
+		if (!isset($form['pun_tags_show']) || $form['pun_tags_show'] != '1')
+			$form['pun_tags_show'] = '0';
+	]]></hook>
+	<hook id="aop_features_avatars_fieldset_end"><![CDATA[
+
+			?>
+		<div class="content-head">
+			<h2 class="hn">
+				<span><?php echo $lang_pun_tags['Pun Tags']; ?></span>
+			</h2>
+		</div>
+		<fieldset class="frm-group group1">
+			<legend class="group-legend">
+				<span><?php echo $lang_pun_tags['Settings']; ?></span>
+			</legend>
+			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="sf-box checkbox">
+					<span class="fld-input">
+						<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="checkbox" <?php if ($forum_config['o_pun_tags_show'] == '1') echo ' checked="checked"' ?> value="1" name="form[pun_tags_show]"/>
+					</span>
+					<label for="fld<?php echo $forum_page['fld_count'] ?>">
+						<span><?php echo $lang_pun_tags['Show Pun Tags']; ?></span>
+						<?php echo $lang_pun_tags['Pun Tags notice']; ?>
+					</label>
+				</div>
+			</div>
+		</fieldset>
+		<?php
+
+	]]></hook>
+
+	<hook id="co_common"><![CDATA[
+		$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+		define('PUN_TAGS_CACHE_UPDATE', 12);
+		require_once $ext_info['path'].'/functions.php';
+		@include FORUM_CACHE_DIR.'cache_pun_tags.php';
+
+		// Regenerate cache if the it is more than $pun_cache_period hours old
+		if ((!defined('PUN_TAGS_LOADED') || $pun_tags['cached'] < (time() - 60 * 60 * PUN_TAGS_CACHE_UPDATE)))
+		{
+			pun_tags_generate_cache();
+			require FORUM_CACHE_DIR.'cache_pun_tags.php';
+		}
+	]]></hook>
+
+	<hook id="hd_head"><![CDATA[
+		// Aattach pun_tags CSS file
+		if ($forum_config['o_pun_tags_show'] == 1 && (FORUM_PAGE == 'index' || FORUM_PAGE == 'viewforum' || FORUM_PAGE == 'viewtopic' || FORUM_PAGE == 'searchtopics' || FORUM_PAGE == 'searchposts'))
+		{
+			$forum_head['style_pun_tag'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/'.$forum_user['style'].'.css" />';
+			$forum_head['style_cs_pun_tag'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/'.$forum_user['style'].'_cs.css" />';
+		}
+	]]></hook>
+
+	<hook id="po_pre_post_contents" priority = "1"><![CDATA[
+		if ($fid && $forum_config['o_pun_tags_show'] == 1)
+		{
+
+			?>
+			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="sf-box text required longtext">
+					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_tags['Topic tags']; ?></span><small><?php echo $lang_pun_tags['Enter tags']; ?></small></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_tags" value="<?php echo empty($_POST['pun_tags']) ? '' : forum_htmlencode($_POST['pun_tags']) ?>" size="80" maxlength="70"/></span>
+				</div>	
+			</div>			
+		<?php
+
+		}
+	]]></hook>
+	<hook id="po_end_validation, mr_confirm_split_posts_form_submitted"><![CDATA[
+		if ($forum_config['o_pun_tags_show'] == 1 && isset($_POST['pun_tags']))
+		{
+			if (count(trim($_POST['pun_tags'])) > 70)
+				message($lang_pun_tags['Count error']);
+			$new_tags = pun_tags_parse_string( censor_words(trim($_POST['pun_tags'])) );
+		}
+	]]></hook>	
+	<hook id="fn_add_topic_end"><![CDATA[
+		global $new_tags;
+		// Add tags to DB
+		if (isset($new_tags) && !empty($new_tags))
+		{
+			foreach ($new_tags as $pun_tag)
+				pun_tags_add_new($pun_tag, $new_tid);
+			pun_tags_generate_cache();
+		}
+	]]></hook>
+	<hook id="mr_confirm_split_posts_pre_redirect"><![CDATA[
+		if ($forum_config['o_pun_tags_show'] == 1 && !empty($new_tags))
+		{
+			foreach ($new_tags as $pun_tag)
+				pun_tags_add_new($pun_tag,  $new_tid);
+			pun_tags_generate_cache();
+		}
+	]]></hook>
+	<hook id="fn_delete_topic_end"><![CDATA[
+		// Remove topic tags
+		pun_tags_remove_topic_tags($topic_id);
+		pun_tags_remove_orphans();
+		pun_tags_generate_cache();
+	]]></hook>
+	<hook id="ed_pre_message_box" priority = "1"><![CDATA[
+		if ($forum_config['o_pun_tags_show'] == 1 && $can_edit_subject)
+		{
+			$res_tags = array();
+			if (isset($pun_tags['topics'][$cur_post['tid']]))
+			{
+
+				foreach ($pun_tags['topics'][$cur_post['tid']] as $tag_id)
+					foreach ($pun_tags['index'] as $tag)
+						if ($tag['tag_id'] == $tag_id)
+							$res_tags[] = $tag['tag'];
+			}
+		?>
+			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="sf-box text required longtext">
+					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_tags['Topic tags']; ?></span><small><?php echo $lang_pun_tags['Enter tags']; ?></small></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_tags" value="<?php if (!empty($res_tags)) echo implode(', ', $res_tags); else echo '';  ?>" size="80" maxlength="70"/></span>
+				</div>
+			</div>
+		<?php
+		}
+	]]></hook>
+	<hook id="ed_pre_post_edited"><![CDATA[
+		if ($can_edit_subject && $forum_config['o_pun_tags_show'] == 1)
+		{
+			if ( count(trim($_POST['pun_tags'])) > 70 )
+				message($lang_pun_tags['Count error']);
+
+			//Parse the string
+			$new_tags = pun_tags_parse_string( censor_words(trim($_POST['pun_tags'])) );
+			$new_words = array();
+			$old_ids = array();
+			if (!empty($new_tags))
+			{
+				if (!isset($pun_tags['topics'][$cur_post['tid']]))
+					$new_words = $new_tags;
+				else if (isset($pun_tags['index']))
+				{
+					foreach ($new_tags as $tag)
+					{
+						//Determine id of the tag or that it is new
+						$is_old = false;
+						foreach ($pun_tags['index'] as $old_tag)
+							if ($old_tag['tag'] == $tag &&  in_array($old_tag['tag_id'], $pun_tags['topics'][$cur_post['tid']]))
+							{
+								$old_ids[] = $old_tag['tag_id'];
+								$is_old = true;
+								break;
+							}
+						if (!$is_old)
+							$new_words[] = $tag;
+					}
+				}
+				else
+					$new_words = $new_tags;
+			}
+			$update_cache = false;
+			if (!empty($new_words))
+			{
+				foreach ($new_words as $new_tag)
+					pun_tags_add_new($new_tag, $cur_post['tid']);
+				$update_cache = true;
+			}
+
+			//Determine tags id, which need to remove
+			$old_tags_id = isset($pun_tags['topics'][$cur_post['tid']]) ? ($pun_tags['topics'][$cur_post['tid']]) : (array());
+			$remove_ids = array_diff($old_tags_id, $old_ids);
+			if (!empty($remove_ids))
+			{
+				$query = array(
+					'DELETE'	=>	'tags',
+					'WHERE'		=>	'id IN('.implode(',', $remove_ids).')'
+				);
+				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+				$query = array(
+					'DELETE'	=>	'topic_tags',
+					'WHERE'		=>	'tag_id IN('.implode(',', $remove_ids).') AND topic_id = '.$cur_post['tid']
+				);
+				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$update_cache = true;
+			}
+
+			if ($update_cache)
+				pun_tags_generate_cache();
+		}
+	]]></hook>
+	<hook id="ca_fn_prune_qr_prune_subscriptions"><![CDATA[
+		$query_tags = array(
+			'DELETE'	=>	'topic_tags',
+			'WHERE'		=>	'topic_id IN('.$topic_ids.')'
+		);
+		$forum_db->query_build($query_tags) or error(__FILE__, __LINE__);
+	]]></hook>	
+	<hook id="acg_del_cat_pre_redirect, afo_del_forum_pre_redirect, mr_confirm_delete_topics_pre_redirect"><![CDATA[
+		pun_tags_remove_orphans();
+		pun_tags_generate_cache();
+	]]></hook>
+	<hook id="mr_confirm_move_topics_pre_redirect"><![CDATA[
+		pun_tags_generate_cache();
+	]]></hook>
+	<hook id="mr_confirm_delete_topics_qr_delete_topics"><![CDATA[
+		$query_tags = array(
+			'DELETE'	=>	'topic_tags',
+			'WHERE'		=>	'topic_id IN('.implode(',', $topics).')'
+		);
+		$forum_db->query_build($query_tags) or error(__FILE__, __LINE__);
+	]]></hook>
+	<hook id="mr_confirm_merge_topics_pre_redirect"><![CDATA[
+		$query = array(
+			'UPDATE'	=>	'topic_tags',
+			'SET'		=>	'topic_id = '.$merge_to_tid,
+			'WHERE'		=>	'topic_id IN('.implode(',', $topics).') AND topic_id != '.$merge_to_tid
+		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		pun_tags_generate_cache();
+	]]></hook>
+	<hook id="mr_confirm_split_posts_pre_confirm_checkbox"><![CDATA[
+		if ($fid && $forum_config['o_pun_tags_show'] == 1)
+		{
+			$res_tags = array();
+			if (isset($pun_tags['topics'][$tid]))
+			{
+
+				foreach ($pun_tags['topics'][$tid] as $tag_id)
+					foreach ($pun_tags['index'] as $tag)
+						if ($tag['tag_id'] == $tag_id)
+							$res_tags[] = $tag['tag'];
+			}
+
+			?>
+			<div class="sf-box text">
+					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_tags['Topic tags']; ?></span><small><?php echo $lang_pun_tags['Enter tags']; ?></small></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_tags" value="<?php if (!empty($res_tags)) echo implode(', ', $res_tags); else echo '';  ?>" size="80" maxlength="70"/></span>
+			</div>
+		<?php
+
+		}
+	]]></hook>
+	<hook id="se_post_results_fetched"><![CDATA[
+		if ($forum_config['o_pun_tags_show'] == 1)
+		{
+			$tags_results = array();
+			foreach ($search_set as $res)
+			{
+				if (!isset($pun_tags['topics'][ $res['tid'] ]))
+					continue;
+				foreach ($pun_tags['topics'][ $res['tid'] ] as $tag_id)
+					foreach ($pun_tags['index'] as $tag)
+						if ($tag['tag_id'] == $tag_id)
+						{
+							$tags_results[ $tag['tag'] ] = $tag;
+							break;
+						}
+			}
+			if (!empty($tags_results))
+			{
+				$minfontsize = 100;
+				$maxfontsize = 200;
+				$minpopular = $pun_tags['min_pop'];
+				@$step = ($maxfontsize - $minfontsize) / ( $pun_tags['max_pop'] - $minpopular);
+
+				ksort($tags_results);
+				$ouput_results = array();
+				foreach ($tags_results as $res)
+					$ouput_results[] = pun_tags_get_link( round(($res['weight'] - $minpopular) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);			
+			}
+		}
+	]]></hook>
+	<hook id="sf_fn_generate_action_search_query_end"><![CDATA[
+		if ($action == 'tag')
+		{
+			$tag_id = isset($_GET['tag_id']) ? intval($_GET['tag_id']) : 0;
+			if ($tag_id < 1)
+				message($lang_common['Bad request']);
+			global $pun_tags;
+			if (isset($pun_tags['topics']))
+			{
+				foreach ($pun_tags['topics'] as $topic_id => $tags)
+					if (in_array($tag_id, $tags))
+						$search_ids[] = $topic_id;
+				if (empty($search_ids))
+					message($lang_common['Bad request']);
+			}
+
+			$query = array(
+				'SELECT'	=> 't.id AS tid, t.poster, t.subject, t.first_post_id, t.posted, t.last_post, t.last_post_id, t.last_poster, t.num_replies, t.closed, t.sticky, t.forum_id, f.forum_name',
+				'FROM'		=> 'topics AS t',
+				'JOINS'		=> array(
+					array(
+						'INNER JOIN'	=> 'forums AS f',
+						'ON'			=> 'f.id=t.forum_id'
+					)
+				),
+				'WHERE'		=> 't.id IN('.implode(',', $search_ids).')'
+			);
+		}
+	]]></hook>
+	<hook id="ft_end"><![CDATA[
+		if (isset($tags_results) && !empty($tags_results))
+			$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '<div id="brd-pun_tags" class="gen-content">'.implode(' ', $ouput_results).'</div>', $tpl_main);
+		else
+			$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '', $tpl_main);
+	]]></hook>
+	<hook id="sf_fn_validate_actions_start"><![CDATA[
+		$valid_actions[] = 'tag';
+	]]></hook>
+	<hook id="ft_about_end" priority="10"><![CDATA[
+		if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+		{
+			define('PUN_EXTENSIONS_USED', 1);
+			echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+		}
+	]]></hook>
+	</hooks>
+
+</extension>

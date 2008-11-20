@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+	<id>pun_draft</id>
+	<title>Post draft</title>
+	<version>0.9</version>
+	<description>Option to save post draft (without publication).</description>
+	<author>PunBB Development Team</author>
+
+	<minversion>1.3 SVN</minversion>
+	<maxtestedon>1.3 SVN</maxtestedon>
+
+	<install>
+	<![CDATA[
+
+	$forum_db->query('CREATE TABLE IF NOT EXISTS '.$forum_db->prefix.'drafts (
+	id int(10) unsigned NOT NULL auto_increment,
+	poster_id int(10) unsigned NOT NULL default \'1\',
+	topic_id int(10) unsigned NOT NULL default \'0\',
+	draft text NOT NULL,
+	UNIQUE KEY id (id)) TYPE=myisam') or error('Unable to add table "drafts" to database', __FILE__, __LINE__, $forum_db->error());
+
+	]]>
+
+	</install>
+
+	<uninstall>
+	<![CDATA[
+
+		$forum_db->query('DROP TABLE '.$forum_db->prefix.'drafts');
+
+	]]>
+	</uninstall>
+
+	<hooks>
+
+		<hook id="po_start">
+		<![CDATA[
+
+			// Including Post Draft Lang File
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+
+		]]>
+		</hook>
+
+		<hook id="vt_start">
+		<![CDATA[
+
+			// Including Post Draft lang file
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+		]]>
+		</hook>
+
+		<hook id="po_end_validation">
+		<![CDATA[
+
+			// Save message to drafts
+			if ((empty($errors)) && (!$forum_user['is_guest']))
+			{
+				if (isset($_POST['draft_delete']))
+				{
+					$query = array(
+					'DELETE'	=> 'drafts',
+					'WHERE'	=> 'poster_id='.$forum_user['id'].' AND topic_id='.$tid
+					);
+
+					$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+					redirect(forum_link($forum_url['new_reply'], $tid), $lang_draft['Post Draft Delete Message']);
+				}
+				else if (isset($_POST['draft_save']))
+				{
+					$query = array(
+					'INSERT'	=> 'poster_id, topic_id, draft',
+					'INTO'	=> 'drafts',
+					'VALUES'	=> '\''.$forum_user['id'].'\', '.$tid.', \''.$forum_db->escape($message).'\''
+					);
+
+					$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+					redirect(forum_link($forum_url['new_reply'], $tid), $lang_draft['Post Draft Save Message']);
+				}
+				else if (isset($_POST['draft_update']))
+				{
+					$query = array(
+					'UPDATE'	=> 'drafts',
+					'SET'	=> 'draft=\''.$forum_db->escape($message).'\'',
+					'WHERE'	=> 'poster_id='.$forum_user['id'].' AND topic_id='.$tid
+					);
+
+					$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+					redirect(forum_link($forum_url['new_reply'], $tid), $lang_draft['Post Draft Update Message']);
+				}
+			}
+
+		]]>
+		</hook>
+
+		<hook id="po_req_info_fieldset_start">
+		<![CDATA[
+
+			// Read Draft
+			if (!isset($_POST['preview']))
+			{
+				$query = array(
+				'SELECT'	=> 'd.*',
+				'FROM'	=> 'drafts as d',
+				'WHERE'	=> 'poster_id='.$forum_user['id'].' AND topic_id='.$tid
+				);
+
+				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$result_draft = $forum_db->fetch_assoc($result);
+				$_POST['req_message'] = '1';
+
+				$message = $result_draft['draft'];
+			}
+
+		]]>
+		</hook>
+
+		<hook id="po_end">
+		<![CDATA[
+			
+			// Add draft control buttons
+			if ((!$forum_user['is_guest']) && ($fid == '0'))
+			{
+				$query = array(
+				'SELECT'	=> 'd.*',
+				'FROM'	=> 'drafts as d',
+				'WHERE'	=> 'poster_id='.$forum_user['id'].' AND topic_id='.$tid
+				);
+
+				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+				if (!$forum_db->num_rows($result))
+				{	
+					$patch_tmp = trim(ob_get_contents());
+					$patch_main = str_replace('<div class="frm-buttons">','<div class="frm-buttons"><span class="submit"><input type="submit" name="draft_save" value="'.$lang_draft['Post Draft Save'].'" accesskey="d" title="'.$lang_draft['Post Draft Save Title'].'" /></span>',$patch_tmp);
+					ob_end_clean();
+					echo $patch_main;
+				}
+				else
+				{
+					$patch_tmp = trim(ob_get_contents());
+					$patch_main = str_replace('<div class="frm-buttons">','<div class="frm-buttons"><span class="submit"><input type="submit" name="draft_update" value="'.$lang_draft['Post Draft Update'].'" accesskey="u" title="'.$lang_draft['Post Draft Update Title'].'" /></span>',$patch_tmp);
+					$patch_main = str_replace('<div class="frm-buttons">','<div class="frm-buttons"><span class="submit"><input type="submit" name="draft_delete" value="'.$lang_draft['Post Draft Delete'].'" accesskey="e" title="'.$lang_draft['Post Draft Delete Title'].'" /></span>',$patch_main);
+					ob_end_clean();
+					echo $patch_main;
+				}
+			}
+
+		]]>
+		</hook>
+
+		<hook id="vt_quickpost_fieldset_start">
+		<![CDATA[
+
+			$query = array(
+			'SELECT'	=> 'd.*',
+			'FROM'	=> 'drafts as d',
+			'WHERE'	=> 'poster_id='.$forum_user['id'].' AND topic_id='.$id
+			);
+
+			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+			if ($forum_db->num_rows($result))
+			{
+				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$result_draft = $forum_db->fetch_assoc($result);
+
+				$quick_post_message = $result_draft['draft'];
+			}
+			else
+			{
+				$quick_post_message = '';
+			}
+
+		]]>
+		</hook>
+
+		<hook id="vt_quickpost_end">
+		<![CDATA[
+			
+			$patch_tmp = trim(ob_get_contents());
+			$tmp_res = isset($quick_post_message) ? $quick_post_message : '';
+			$patch_main = str_replace('<span class="fld-input"><textarea id="fld1" name="req_message" rows="7" cols="95"></textarea></span>','<span class="fld-input"><textarea id="fld1" name="req_message" rows="7" cols="95">'.$tmp_res.'</textarea></span>',$patch_tmp);
+			//ob_end_clean();
+			//echo $patch_main;
+			
+			// Add draft control buttons
+			if ((!$forum_user['is_guest']) && ($id != '0'))
+			{
+				if (!$forum_db->num_rows($result))
+				{
+					//$patch_tmp = trim(ob_get_contents());
+					$patch_main = str_replace('<div class="frm-buttons">','<div class="frm-buttons"><span class="submit"><input type="submit" name="draft_save" value="'.$lang_draft['Post Draft Save'].'" accesskey="d" title="'.$lang_draft['Post Draft Save Title'].'" /></span>',$patch_main);
+					ob_end_clean();
+					echo $patch_main;
+				}
+				else
+				{
+					//$patch_tmp = trim(ob_get_contents());
+					$patch_main = str_replace('<div class="frm-buttons">','<div class="frm-buttons"><span class="submit"><input type="submit" name="draft_update" value="'.$lang_draft['Post Draft Update'].'" accesskey="u" title="'.$lang_draft['Post Draft Update Title'].'" /></span>',$patch_main);
+					$patch_main = str_replace('<div class="frm-buttons">','<div class="frm-buttons"><span class="submit"><input type="submit" name="draft_delete" value="'.$lang_draft['Post Draft Delete'].'" accesskey="e" title="'.$lang_draft['Post Draft Delete Title'].'" /></span>',$patch_main);
+					ob_end_clean();
+					echo $patch_main;
+				}
+			}
+
+		]]>
+		</hook>
+
+		<hook id="dl_form_submitted">
+		<![CDATA[
+
+			// Delete all drafts for this topic
+			if (isset($_POST['req_confirm']))
+			{
+				if ($cur_post['is_topic'])
+				{
+					$query = array(
+					'SELECT'	 => 'd.*',
+					'FROM'	=> 'drafts as d',
+					'WHERE'	=> 'topic_id='.$cur_post['tid']
+					);
+
+					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+					if ($forum_db->num_rows($result))
+					{
+						$query = array(
+						'DELETE'	=> 'drafts',
+						'WHERE'	=> 'topic_id='.$cur_post['tid']
+						);
+						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+					}
+				}
+			}
+
+		]]>
+		</hook>
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		]]></hook>
+		<hook id="ft_about_end" priority="10"><![CDATA[
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+}
+		]]></hook>
+	</hooks>
+</extension>

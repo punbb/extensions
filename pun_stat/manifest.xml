@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+    <id>pun_stat</id>
+    <title>Statistics</title>
+    <version>0.9a</version>
+    <description>Gather and report forum statistics.</description>
+    <author>PunBB Development Team</author>
+    <minversion>1.0 SVN</minversion>
+    <maxtestedon>1.0 SVN</maxtestedon>
+
+    <install>
+    <![CDATA[
+    $forum_db->query("CREATE TABLE IF NOT EXISTS ".$forum_db->prefix."statistics_vars (
+    name varchar(20) NOT NULL,
+    value varchar(200) NULL default '',
+    UNIQUE KEY name (name))") or error('Unable to add table "statistics_vars" to database', __FILE__, __LINE__, $forum_db->error());
+
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'update'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'max_visitors'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'max_visitors_date'.'\', \''.date('Y-M-d  h:m:s').'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'flag_reg_user'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'flag_inout_user'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'flag_creat_post'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'flag_creat_topic'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'flag_creat_forum'.'\', \''.'0'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $query = array(
+        'INSERT'    => 'name, value',
+        'INTO'    => 'statistics_vars',
+        'VALUES'    => '\''.'flag_timestamp_over'.'\', \''.'1000'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+//insert to Config table
+    $query = array(
+        'INSERT'    => 'conf_name, conf_value',
+        'INTO'    => 'config',
+        'VALUES'    => '\''.'o_stat_users'.'\', \''.'1'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+    $query = array(
+        'INSERT'    => 'conf_name, conf_value',
+        'INTO'    => 'config',
+        'VALUES'    => '\''.'o_stat_forums'.'\', \''.'1'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+    $query = array(
+        'INSERT'    => 'conf_name, conf_value',
+        'INTO'    => 'config',
+        'VALUES'    => '\''.'o_stat_topics'.'\', \''.'1'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+    $query = array(
+        'INSERT'    => 'conf_name, conf_value',
+        'INTO'    => 'config',
+        'VALUES'    => '\''.'o_stat_posts'.'\', \''.'1'.'\''
+    );
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+    $forum_db->query("CREATE TABLE IF NOT EXISTS ".$forum_db->prefix."statistics_idregistered (
+    id int(10) unsigned NOT NULL default '0',
+    UNIQUE KEY id (id))") or error('Unable to add table "statistics_idregistered" to database', __FILE__, __LINE__, $forum_db->error());
+
+    $forum_db->query("CREATE TABLE IF NOT EXISTS ".$forum_db->prefix."statistics_idforums (
+    id int(10) unsigned NOT NULL default '0',
+    UNIQUE KEY id (id))") or error('Unable to add table "statistics_idforums" to database', __FILE__, __LINE__, $forum_db->error());
+
+    $forum_db->query("CREATE TABLE IF NOT EXISTS ".$forum_db->prefix."statistics_idtopics (
+    id int(10) unsigned NOT NULL default '0',
+    UNIQUE KEY id (id))") or error('Unable to add table "statistics_idtopics" to database', __FILE__, __LINE__, $forum_db->error());
+
+    $forum_db->query("CREATE TABLE IF NOT EXISTS ".$forum_db->prefix."statistics_idposts (
+    id int(10) unsigned NOT NULL default '0',
+    UNIQUE KEY id (id))") or error('Unable to add table "statistics_idposts" to database', __FILE__, __LINE__, $forum_db->error());
+
+    ]]>
+    </install>
+
+    <uninstall>
+    <![CDATA[
+        $forum_db->query('DROP TABLE '.$forum_db->prefix.'statistics_vars');
+        $forum_db->query('DROP TABLE '.$forum_db->prefix.'statistics_idregistered');
+        $forum_db->query('DROP TABLE '.$forum_db->prefix.'statistics_idforums');
+        $forum_db->query('DROP TABLE '.$forum_db->prefix.'statistics_idtopics');
+        $forum_db->query('DROP TABLE '.$forum_db->prefix.'statistics_idposts');
+
+        $query = array(
+            'DELETE'    => 'config',
+            'WHERE'    => 'conf_name=\'o_stat_users\''
+        );
+        $forum_db->query_build($query) or error(__FILE__, __LINE__);
+        $query = array(
+            'DELETE'    => 'config',
+            'WHERE'    => 'conf_name=\'o_stat_forums\''
+        );
+        $forum_db->query_build($query) or error(__FILE__, __LINE__);
+        $query = array(
+            'DELETE'    => 'config',
+            'WHERE'    => 'conf_name=\'o_stat_topics\''
+        );
+        $forum_db->query_build($query) or error(__FILE__, __LINE__);
+        $query = array(
+            'DELETE'    => 'config',
+            'WHERE'    => 'conf_name=\'o_stat_posts\''
+        );
+        $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    ]]>
+    </uninstall>
+
+    <hooks>
+     <hook id="aop_features_validation"><![CDATA[
+        if (!isset($form['stat_users']) || $form['stat_users'] != '1') $form['stat_users'] = '0';
+        if (!isset($form['stat_forums']) || $form['stat_forums'] != '1') $form['stat_forums'] = '0';
+        if (!isset($form['stat_topics']) || $form['stat_topics'] != '1') $form['stat_topics'] = '0';
+        if (!isset($form['stat_posts']) || $form['stat_posts'] != '1') $form['stat_posts'] = '0';
+     ]]></hook>
+     <hook id="aop_features_gzip_end"><![CDATA[
+     ?>
+     <div class="frm-part part<?php echo ++ $forum_page['part_count'] ?>">
+        <h3><span><?php echo  $forum_page['part_count'].'. Statistics'; ?></span></h3>
+            <div class="frm-info">
+                    <p><?php echo 'You can choose what statistics you will see on main page' ?></p>
+            </div>
+            <fieldset class="frm-set set<?php echo ++$forum_page['set_count'] ?>">
+                <legend class="frm-legend"><strong><?php echo $lang_admin['Compression legend'] ?></strong></legend>
+                <div class="radbox checkbox">
+                    <div class="radbox checkbox"><label for="fld<?php echo ++$pun_page['fld_count'] ?>"><span class="fld-label"><?php echo 'Enable statistics about users' ?></span><br /><input type="checkbox" id="fld<?php echo $pun_page['fld_count'] ?>" name="form[stat_users]" value="1"<?php if ($forum_config['o_stat_users'] == '1') echo ' checked="checked"' ?> /> </label></div>
+                    <div class="radbox checkbox"><label for="fld<?php echo ++$pun_page['fld_count'] ?>"><span class="fld-label"><?php echo 'Enable statistics about forums' ?></span><br /><input type="checkbox" id="fld<?php echo $pun_page['fld_count'] ?>" name="form[stat_forums]" value="1"<?php if ($forum_config['o_stat_forums'] == '1') echo ' checked="checked"' ?> /> </label></div>
+                    <div class="radbox checkbox"><label for="fld<?php echo ++$pun_page['fld_count'] ?>"><span class="fld-label"><?php echo 'Enable statistics about topics' ?></span><br /><input type="checkbox" id="fld<?php echo $pun_page['fld_count'] ?>" name="form[stat_topics]" value="1"<?php if ($forum_config['o_stat_topics'] == '1') echo ' checked="checked"' ?> /> </label></div>
+                    <div class="radbox checkbox"><label for="fld<?php echo ++$pun_page['fld_count'] ?>"><span class="fld-label"><?php echo 'Enable statistics about posts' ?></span><br /><input type="checkbox" id="fld<?php echo $pun_page['fld_count'] ?>" name="form[stat_posts]" value="1"<?php if ($forum_config['o_stat_posts'] == '1') echo ' checked="checked"' ?> /> </label></div>
+                </div>
+            </fieldset>
+     </div>
+     <?php
+     ]]></hook>
+     <hook id="rg_register_pre_add_user"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_reg_user\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="li_logout_selected"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_inout_user\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="li_login_form_submitted"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_inout_user\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="po_pre_add_topic"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_creat_topic\''.'or name=\'flag_creat_post\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+
+     <hook id="po_pre_add_post"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_creat_post\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="dl_form_submitted "><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_creat_post\''.'or name=\'flag_creat_topic\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="afo_del_forum_form_submitted"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_creat_forum\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="afo_add_forum_form_submitted"><![CDATA[
+      $query1 = array(
+            'UPDATE'    => 'statistics_vars',
+            'SET'    => 'value=\'1\'',
+            'WHERE'    => 'name=\'flag_creat_forum\''
+         );
+      $forum_db->query_build($query1) or error(__FILE__, __LINE__);
+     ]]></hook>
+     <hook id="in_start"><![CDATA[
+            if (!defined('PUN_ROOT_URL'))
+                define('PUN_ROOT_URL', $_SERVER['REQUEST_URI']);
+     ]]></hook>
+
+     <hook id="ft_about_end" priority="10"><![CDATA[
+     if (defined('PUN_ROOT_URL'))
+     {
+         $time_l = 0; $time_n = 0;
+         $pun_stat = array();
+         include FORUM_ROOT.'extensions/pun_stat/stat_functions.php';
+        $pun_stat = create_stat();       //use function from stat_functions.php
+
+     //show results
+         $buffer_old = ob_get_contents();
+         ob_clean();
+         ?>
+         <div id="pun-main" class="main">
+         <div class="main-head">
+             <h2><span>Statistics</span></h2>
+         </div>
+         <div id="Statistics" class="main-content category">
+              <table cellspacing="0" summary="Statistics">
+                  <thead>
+                      <tr>
+                            <?php
+                            echo 'In total: '.$pun_stat['i_posts'].' '.$pun_stat['text_posts'].' in '.$pun_stat['i_topics'].' '.$pun_stat['text_topics'].' in '.$pun_stat['i_forums'].' '.$pun_stat['text_forums'];
+                            ?>
+                      </tr>
+                      <tr>
+                            <?php   echo 'Today create: '.$pun_stat['i_posts_today'] .' Posts, '.$pun_stat['i_topics_today'].' Topics, '.$pun_stat['i_forums_today'].' Forums ';  ?>
+                      </tr>
+
+                      <tr>
+                            <?php
+                                if ($forum_config['o_stat_users'] == '1')
+                                    echo 'Registered users: '.$pun_stat['i_reg_users']  ;
+                            ?>
+                      </tr>
+                      <tr>
+                            <?php
+                                if ($forum_config['o_stat_users'] == '1')
+                                    if($pun_stat['i_registered_today'] > 0) echo 'registered users today: '.$pun_stat['i_registered_today'] ;
+                            ?>
+                      </tr>
+                      <tr>
+                            <?php
+                                if ($forum_config['o_stat_users'] == '1')
+                                    echo ' Last registered user: '.$pun_stat['last_reg_user_link'] ;
+                            ?>
+                      </tr>
+                      <tr>
+                            <?php
+                                if ($forum_config['o_stat_users'] == '1')
+                                    echo 'Maximum visitors were : '.$pun_stat['i_max_visitors'].', '.$pun_stat['i_max_visitors_date'];
+                            ?>
+                      </tr>
+
+                      <tr>
+                            <?php
+                                if ($forum_config['o_stat_users'] == '1')
+                                {
+                                     echo 'On site '.$pun_stat['online_all'].' visitors: '."\t";
+                                     if ($pun_stat['num_guests']!=0) echo 'guests: '.$pun_stat['num_guests']."\t";
+                                     if (count($pun_stat['users'])!=0) echo 'registered users: '.count($pun_stat['users'])."\t";
+                                     if (count($pun_stat['users']) > 0) echo implode(', ', $pun_stat['users']);
+                                }
+                            ?>
+                      </tr>
+
+                      <tr>
+                            <?php
+                            if ($forum_config['o_stat_topics'] == '1')
+                                echo $pun_stat['last_topic_link'].' created by '.$pun_stat['last_topic_user_link'];  ?>
+                      </tr>
+
+                      <tr>
+                            <?php
+                            if ($forum_config['o_stat_posts'] == '1')
+                                echo $pun_stat['last_post_link'].' created by '.$pun_stat['last_post_user_link'];    ?>
+                      </tr>
+                      <tr>
+                            <?php echo substr($buffer_old, 0, strlen($buffer_old)); ?>
+                      </tr>
+                  </thead>
+              </table>
+         </div>
+         </div>
+         <?php
+      }
+
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+
+	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+
+}
+     ]]></hook>
+
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		]]></hook>
+    </hooks>
+</extension>

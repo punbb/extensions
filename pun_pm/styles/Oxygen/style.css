@@ -1,0 +1,76 @@
+/* Styles for pun_pm extension */
+
+/* Message list styles */
+
+table.pun_pm_list {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1em;
+}
+
+table.pun_pm_list tr td, table.pun_pm_list tr th {
+	height: auto;
+	width: auto;
+	margin: 0;
+	padding: 0.3em !important;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #e2e2e4;
+}
+table.pun_pm_list tr.pm_new td, table.pun_pm_list tr.pm_new td span {
+	font-weight: bold;
+}
+table.pun_pm_list tr .td1, table.pun_pm_list tr .td2 {
+	width: 2.3em;
+	text-align: center;
+	padding-left: 0;
+	padding-right: 0;
+	vertical-align: middle;
+}
+
+table.pun_pm_list tr .td5, table.pun_pm_list tr .td3 {
+	width: 20%;
+}
+
+table.pun_pm_list tr .td4 span {
+	overflow: hidden;
+	display: block;
+	height: 1.3em;
+}
+
+table.pun_pm_list tr .td4 a.mess {
+	text-decoration: none;
+	color: #999;
+}
+
+/* Message styles */
+
+div.pun_pm_msg table tr td {
+	width: auto;
+	border-width: 0;
+	padding: 0.3em 0;
+}
+
+div.pun_pm_msg .td1 {
+	font-weight: bold;
+	width: 17.7em;
+	padding-right: 1em;
+	text-align: right;
+	vertical-align: top;
+}
+
+/*
+* html div.pun_pm_msg .td1 {
+	width: 15em !important;
+}
+*/
+div.pun_pm_msg .post-entry  {
+	margin: 0;
+	padding: 0;
+	margin-bottom: 1.5em;
+}
+
+div.pun_pm_msg, div.pun_pm_msg .post-entry .entry-content {
+	margin: 1em 0.7em;
+	width: auto !important;
+}

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+<extension engine="1.0">
+	<id>pun_admin_lang_checker</id>
+	<title>Lang checker</title>
+	<version>0.9</version>
+	<description>Lang checker</description>
+	<author>PunBB Development Team</author>
+
+	<minversion>1.3 SVN</minversion>
+	<maxtestedon>1.3 SVN</maxtestedon>
+		
+	<note type="install" timing="pre">Scans all php files and gets 2 arrays as a result: All fetches of lang-loggings that don’t have lang-files, All lang-loggings in the lang-files that don’t have fetches.</note>
+	<note type="install" timing="pre">The file with results will be generated when you visit the main page.</note>
+		<install>
+		<![CDATA[
+		
+		]]></install>
+		  
+		<uninstall>
+		<![CDATA[
+		
+		]]></uninstall>
+		
+		<hooks>
+			
+			<hook id="in_start"><![CDATA[
+		   		if (!defined('PUN_ROOT_URL'))
+					define('PUN_ROOT_URL', $_SERVER['REQUEST_URI']);
+	 		]]></hook>
+				
+				   
+			<hook id="ca_admin_menu_new_sublink"><![CDATA[
+				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+					require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+				else
+					require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+				if ((FORUM_PAGE_SECTION == 'extensions') && ($forum_user['g_id'] == FORUM_ADMIN))
+					$adnav_sublinks[] = '<li'.((FORUM_PAGE == 'admin-lang-checker') ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['admin-lang-checker']).'">'.$lang_pun_admin_lang_checker['lang checker'].'</a></li>';
+			]]></hook>
+			
+			<hook id="aex_new_action"><![CDATA[
+				if ($section == 'lang_checker')
+				{
+					if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+						require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+					else
+						require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+					
+					require $ext_info['path'].'/functions.php';
+					
+					// Setup breadcrumbs
+					$forum_page['crumbs'] = array(
+						array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+						array($lang_admin['Forum administration'], forum_link($forum_url['admin_index'])),
+						'Lang Checker'
+					);
+
+					define('FORUM_PAGE_SECTION', 'extensions');
+					define('FORUM_PAGE', 'admin-lang-checker');
+					require FORUM_ROOT.'header.php';
+
+					
+					// START SUBST - <!-- forum_main -->
+					ob_start();
+					
+					$lang_info = array();
+					$mas_lang = array();
+					$text_calls = ''; 
+					$text_entries = '';
+					if (file_exists(FORUM_CACHE_DIR.'cache_lang_checker.php'))
+					{
+						$fh = @fopen(FORUM_CACHE_DIR.'cache_lang_checker.php', 'r');
+							if ($fh) 
+							{
+								include FORUM_CACHE_DIR.'cache_lang_checker.php';   
+								$flag_timestamp_over = 30;
+								$date_in_sec = time();
+								$date_in_sec_minus = $date_in_sec - $flag_timestamp_over;  
+								$b = false;
+								if ($pun_lang_checker_timestamp < $date_in_sec_minus)
+								{
+									$b = true;
+								}
+							}
+							else 
+								error('Unable to read configuration cache file in cache directory. Please make sure PHP has write access to the directory \'cache\'.', __FILE__, __LINE__);
+					}
+					if (!file_exists(FORUM_CACHE_DIR.'cache_lang_checker.php')||($b == true))
+					{
+						$lang_info = pun_lang_main_function(&$mas_lang);
+						pun_lang_checker_do_texts($lang_info, $mas_lang, $text_calls, $text_entries);
+					}		
+								
+					pun_lang_checker_show_results($text_calls, $text_entries);
+					
+					$tpl_temp = trim(ob_get_contents());
+					$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+
+					ob_end_clean();
+
+					// END SUBST - <!-- forum_main -->
+
+					require FORUM_ROOT.'footer.php';
+				}
+			]]></hook>
+			
+			<hook id="co_common"><![CDATA[
+				$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+
+				//require_once $ext_info['path'].'/functions.php';
+				$forum_url['admin-lang-checker'] = 'admin/extensions.php?section=lang_checker';
+
+				//pun_admin_hook_navigator_add_register_function();
+			]]></hook>
+		</hooks>	
+</extension>		
