@@ -834,7 +834,7 @@ function pun_pm_box($forum_page)
 				$message['status'] != 'sent' ? '<input type="checkbox" name="pm_delete[]" value="'.$message['id'].'" />' : '',
 				'<img src="'.$icons_path.'/'.($message['status'] == 'delivered' ? $forum_page['type'].'_' : '').$message['status'].'.png" height="16" width="16" alt="'.$message['status'].'" title="'.$message['status'].'" />',
 				$message['username'] ? '<a href="'.forum_link($forum_url['user'], $message['user_id']).'">'.forum_htmlencode($message['username']).'</a>' : $lang_pun_pm['Empty'],
-				'<span><a href="'.$message_link.'">'.trim($message['subject'] ? forum_htmlencode($message['subject']) : $lang_pun_pm['Empty']).'</a>'.($forum_user['pun_pm_long_subject'] == '1' ? ' <a class="mess" href="'.$message_link.'">'.preg_replace('#((\S*\s*){10})(.*)$#u', '$1', $message['body']).'</a>' : '').'</span>',
+				'<span><a href="'.$message_link.'">'.trim($message['subject'] ? forum_htmlencode($message['subject']) : $lang_pun_pm['Empty']).'</a>'.($forum_user['pun_pm_long_subject'] == '1' ? ' <a class="mess" href="'.$message_link.'">'.preg_replace('#((?:\S*\s*){20})(?:.*)$#su', '$1', $message['body']).'</a>' : '').'</span>',
 				format_time($message['sent_at']),
 			);
 			echo "\t\t\t\t\t", '<tr', $forum_page['type'] == 'inbox' && $message['status'] == 'delivered' ? ' class="pm_new"': '', '>', "\n";
