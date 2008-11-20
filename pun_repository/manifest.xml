@@ -167,7 +167,7 @@ if (empty($pun_repository_parsed) && (count($pun_repository_skipped['installed']
 
 	?>
 		<div class="ct-box info-box">
-			<p><?php echo $lang_pun_repository['All installed or downloaded'] ?></p>
+			<p class="warn"><?php echo $lang_pun_repository['All installed or downloaded'] ?></p>
 		</div>
 	<?php
 
