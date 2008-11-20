@@ -443,7 +443,7 @@
 		}
 	]]></hook>
 	<hook id="se_post_results_fetched"><![CDATA[
-		if ($forum_config['o_pun_tags_show'] == 1)
+		if ($forum_config['o_pun_tags_show'] == 1 && !empty($search_set))
 		{
 			$tags_results = array();
 			foreach ($search_set as $res)
