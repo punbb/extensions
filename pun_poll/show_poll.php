@@ -38,9 +38,7 @@ var URLwithNUM = "<?php echo (forum_link(($_SERVER['PHP_SELF'].'?id=$1&foob=$2&n
 
 $num = isset($_POST['pun_poll_radio']) ? intval($_POST['pun_poll_radio']) : 0; 
 $pids = isset($_GET['pid']) ? $_GET['pid'] : 0;
-$rev = isset($_POST['revote_poll']) ? 1 : 0; // revote poll
-
-//echo ($rev) ? 'Revote poll is exist' : 'Revote poll doesn\'t exist';
+$rev = isset($_POST['revote_poll']) ? 1 : 0;
 
 $count = 5;
 
@@ -195,11 +193,7 @@ if ($id || $pid)
 				if ($max_len < strlen($row2['answer'])) $max_len = strlen($row2['answer']);
 					$arr[] = 0;
 			}
-			/*echo '
-				<div class="frm-head">
-					<h2><span>'.$lang_pun_poll['Poll question'].' '.$row['question'].'</span></h2>
-				</div>
-				<div class="frm-form">';*/
+			
 			echo '
 				<div class="main-subhead">
 					<h2 class="hn"><span>'.$lang_pun_poll['Poll question'].':  '.$row['question'].'</span></h2>
@@ -221,27 +215,19 @@ if ($id || $pid)
 				'csrf_token'	=> '<input type="hidden" name="csrf_token" value="'.generate_form_token($polls_page['form_action']).'" />',
 				'form_sent'		=> '<input type="hidden" name="form_sent" value="1" />'
 			);
-			/*
-			$polls_page['hidden_fields'] = array(
-				'form_sent'		=> '<input type="hidden" name="form_sent" value="1" />',
-				'form_user'	=> '<input type="hidden" name="form_user" value="'.((!$forum_user['is_guest']) ? forum_htmlencode($forum_user['username']) : 'Guest').'" />',
-				'csrf_token'	=> '<input type="hidden" name="csrf_token" value="'.generate_form_token($polls_page['form_action']).'" />'
-			);
-			*/
-			//echo '<table>';
 			
 			?>
 			<div class="main-content">
 			<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $polls_page['form_action'] ?>">
 				<div class="hidden">
 					<?php echo implode("\n\t\t\t\t", $polls_page['hidden_fields'])."\n" ?>
-				</div>	
+				</div>
+			
 			<?php
 
 			echo '<div class="mf-box">';
 			for($iter = 0; $iter < count($arr_ans); $iter++)
 			{
-				//echo '<tr>';
 				if (!$forum_user['is_guest'])
 				{
 					if ($poll_allow_days['able_end_day'] > time())
@@ -250,39 +236,30 @@ if ($id || $pid)
 						if ($rev || $forum_db->num_rows($poll_result_test) == 0)
 						{
 							?>
+							
 							<div class="mf-item">
 								<span class="fld-input"><input type="radio" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="pun_poll_radio" value="<?php echo $number_radio; ?> onclick=""<?php (($iter == 0) ? ' checked ' : '') ?> /></span>
 								<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo htmlspecialchars($arr_ans[$iter]) ?></label>
 							</div>
+							
 							<?php
-							//echo '<div class="mf-item"><input type="radio" name="pun_poll_radio" value="'.$number_radio.'" onclick="" '.(($iter == 0) ? ' checked ' : '').' >'.htmlspecialchars($arr_ans[$iter]).'</div>';	
 						}
-						//else
-							//echo '<td align="left">'.htmlspecialchars($arr_ans[$iter]).' - ';
 					}
-					//else
-						//echo '<td align="left">'.htmlspecialchars($arr_ans[$iter]).' - ';
 				}
-				//else
-					//echo '<td align="left">'.htmlspecialchars($arr_ans[$iter]).' - ';
 
 				if ((($num_dis_see['able_see'] == 1) && ($id || $pid)) || (($id || $pid) && ($forum_db->num_rows($poll_result_test) != 0)) || (($id || $pid) && $forum_user['is_guest']))
 				{
-					//echo '<td width="10%">';
 					if ($arr[$iter] == 0)
 					{
 						echo '<div class="mf-item"><label>'.htmlspecialchars($arr_ans[$iter]).' - '.'0'.'</label></div>';
-						//echo '0'.'</td>';
 					}
 					else
 					{
 						echo '<div class="mf-item"><label>'.htmlspecialchars($arr_ans[$iter]).' - '.$arr[$iter].'</label></div>';
-						//echo $arr[$iter].'</td>';
 					}
 				}
-				//echo '</tr>';
-			}	
-			//echo '</table>';
+			}
+			
 			echo '<fieldset class="frm-group group<?php echo ++$forum_page[\'group_count\'] ?>">';
 			if ($id || $pid)
 				echo '<ul class="user-ident ct-legend"><li class="usertitle"><font size=3>'.$lang_pun_poll['Count of voices'].' '.$count_arr.'</font></li></ul>';
