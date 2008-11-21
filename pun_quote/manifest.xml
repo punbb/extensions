@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE extension SYSTEM "ext-1.0.dtd">
 
-<!--
-***********************************************************************
+	<!--
+	***********************************************************************
 
 	Copyright (C) 2008  PunBB
 
@@ -21,62 +21,63 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 	MA  02111-1307  USA
 
-***********************************************************************
--->
+	***********************************************************************
+	-->
 
-<extension engine="1.0">
-	<id>pun_quote</id>
-	<title>JS post quote</title>
-	<version>2.0</version>
-	<description>Select the text you want to quote right in the topic view. Click "Quote" for multiple quotes in quick reply form.</description>
-	<author>PunBB Development Team</author>
+	<extension engine="1.0">
+		<id>pun_quote</id>
+		<title>JS post quote</title>
+		<version>2.0</version>
+		<description>Select the text you want to quote right in the topic view. Click "Quote" for multiple quotes in quick reply form.</description>
+		<author>PunBB Development Team</author>
 
-	<minversion>1.3dev</minversion>
-	<maxtestedon>1.3</maxtestedon>
+		<minversion>1.3dev</minversion>
+		<maxtestedon>1.3</maxtestedon>
 
-	<note type="install" timing="pre">Tested in Internet Explorer 7, FireFox 3, Opera 9.51 and Google Chrome 0.2.</note>
+		<note type="install" timing="pre">Tested in Internet Explorer 7, FireFox 3, Opera 9.51 and Google Chrome 0.2.</note>
 
-	<hooks>
-		<hook id="vt_end"><![CDATA[
-		?>
-		<script type="text/javascript" src="<?php echo $ext_info['url'] ?>/scripts.js"></script>
-		<form action="post.php" method="post" id="qq">
-			<input type="hidden" value="" id="post_msg" name="post_msg"/>
-			<script type="text/javascript">turnOnLinks()</script>
-		</form>
-		<?php
-		]]></hook>
+		<hooks>
+			<hook id="vt_end"><![CDATA[
+				?>
+				<script type="text/javascript" src="<?php echo $ext_info['url'] ?>/scripts.js"></script>
+				<form action="post.php" method="post" id="qq">
+					<input type="hidden" value="" id="post_msg" name="post_msg"/>
+					<input type="hidden" value="<?php echo forum_link($forum_url['quote'], array($id, $cur_post['id'])) ?>" id="pun_quote_url" name="pun_quote_url" />
+					<script type="text/javascript">turnOnLinks()</script>
+				</form>
+				<?php
+			]]></hook>
 
-		<hook id="po_qr_get_quote"><![CDATA[
-if(isset($_POST['post_msg']))
-	$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
-		]]></hook>
+			<hook id="po_qr_get_quote"><![CDATA[
+				if(isset($_POST['post_msg']))
+					$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
+			]]></hook>
 
-		<hook id="vt_row_pre_post_actions_merge"><![CDATA[
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			<hook id="vt_row_pre_post_actions_merge"><![CDATA[
+				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+					require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+				else
+					require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			
+				if (!$forum_user['is_guest'])
+				{
+					$forum_page['post_actions']['reply'] = '<span class="edit-post first-item" style="display: none"><a href ="javascript:Reply('.$id. ','.$cur_post['id'].')">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+					unset($forum_page['post_actions']['quote']);
+					$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'" onClick="QuickQuote('.$id. ','.$cur_post['id'].'); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+				}
+			]]></hook>
 
-if (!$forum_user['is_guest'])
-{
-	$forum_page['post_actions']['reply'] = '<span class="edit-post first-item" style="display: none"><a href ="javascript:Reply('.$id. ','.$cur_post['id'].')">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-	unset($forum_page['post_actions']['quote']);
-	$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'" onClick="QuickQuote('.$id. ','.$cur_post['id'].'); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-}
-		]]></hook>
 
+			<hook id="co_common"><![CDATA[
+				$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+			]]></hook>
 
-		<hook id="co_common"><![CDATA[
-$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
-	]]></hook>
-
-		<hook id="ft_about_end" priority="10"><![CDATA[
-if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
-{
-	define('PUN_EXTENSIONS_USED', 1);
-	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
-}
-		]]></hook>
-	</hooks>
+			<hook id="ft_about_end" priority="10"><![CDATA[
+				if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+				{
+					define('PUN_EXTENSIONS_USED', 1);
+					echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+				}
+			]]></hook>
+		</hooks>
 </extension>
