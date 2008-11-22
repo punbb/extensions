@@ -96,19 +96,19 @@ if ($forum_db->num_rows($result))
 	);
 	
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	
+
 	if ($forum_db->num_rows($result))
 	{
 		while ($cur_user = $forum_db->fetch_assoc($result))
 		{
-			if (strpos($rewritten_url, 'viewtopic.php') == 'true')
+			if (strpos(isset($rewritten_url) ? $rewritten_url : get_current_url(), 'viewtopic.php') == 'true')
 			{
 				if ($cur_user['user_id'] == 1)
 					$reading_guests_count++;
 				else 
 					$reading_users[] = '<a href="'.forum_link($forum_url['user'], $cur_user['user_id']).'">'.forum_htmlencode($cur_user['ident']).'</a>';	
 			}
-			else if (strpos($rewritten_url, 'post.php') == 'true')
+			else if (strpos(isset($rewritten_url) ? $rewritten_url : get_current_url(), 'post.php') == 'true')
 			{
 				if ($cur_user['logged'] + $forum_config['o_timeout_online'] > time())
 				{
@@ -128,8 +128,8 @@ else
 	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
 ?>
-<div class="main" id="topic_online_users">
-	<div class="main-head"><h2><span>Topic info</span></h2></div>
+<div class="brd-main" id="topic_online_users">
+	<div class="main-head"><h1 class="hn"><span><?php echo $lang_topic_online_users['Topic info']; ?></span></h1></div>
 	<div class="main-content">
 		<p><?php echo sprintf($lang_topic_online_users['Readers of topic'], $reading_guests_count, count($reading_users)), (count($reading_users) > 0 ? ' : '.implode(', ', $reading_users) : '') ?></p>
 <?php

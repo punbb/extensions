@@ -10,6 +10,7 @@ $lang_topic_online_users = array(
 	'Repliers of topic'     =>  '<b>%s</b> guests and <b>%s</b> users are replying this topic now',
 	'Presence settings'     =>  'Presence settings:',
 	'Display presence'      =>  'Do not ever display your presence at the forum to other users',
+	'Topic info'			=>	'Topic info'
 )
 
 ?>
