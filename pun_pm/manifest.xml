@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>1.2.2</version>
+	<version>1.2.3</version>
 	<description>Allows users to send private messages. This is the first simple version with minimum functions.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3dev</minversion>
@@ -443,6 +443,8 @@ if (!isset($form['pun_pm_show_global_link']) || $form['pun_pm_show_global_link']
 // 'New messages (N)' link
 if (!$forum_user['is_guest'] && $forum_config['o_pun_pm_show_new_count'])
 {
+	global $lang_pun_pm;
+
 	if (!isset($lang_pun_pm))
 	{
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
