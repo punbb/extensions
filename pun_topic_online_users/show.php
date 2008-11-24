@@ -31,7 +31,7 @@ if (empty($topic_online_uses_topic_id))
 	if (empty($pid))
 		return;
 
-	$query = array(
+	$query_tid = array(
 		'SELECT'	=> 'p.topic_id, t.subject',
 		'FROM'		=> 'posts AS p',
 		'JOINS'		=> array(
@@ -43,7 +43,7 @@ if (empty($topic_online_uses_topic_id))
 		'WHERE'		=> 'p.id = '.$pid,
 	);
 
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$result = $forum_db->query_build($query_tid) or error(__FILE__, __LINE__);
 
 	list($tid, $topic_subject) = $forum_db->fetch_row($result);
 }
@@ -55,13 +55,13 @@ if (empty($tid))
 
 if (empty($topic_online_uses_topic_subject))
 {
-	$query = array(
+	$query_subject = array(
 		'SELECT'	=> 'subject',
 		'FROM'		=> 'topics',
 		'WHERE'		=> 'id = '.$tid,
 	);
 
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$result = $forum_db->query_build($query_subject) or error(__FILE__, __LINE__);
 
 	list($topic_subject) = $forum_db->fetch_row($result);
 }
@@ -71,13 +71,13 @@ else
 if (empty($topic_subject))
 	return;
 	
-$query = array(
+$query_online_tid = array(
 		'SELECT'	=> 'pun_tou_tid',
 		'FROM'		=> 'online',
 		'WHERE'		=> 'user_id='.$forum_user['id']
 );
 
-$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+$result = $forum_db->query_build($query_online_tid) or error(__FILE__, __LINE__);
 
 $reading_users = array();
 $reading_guests_count = 0;
@@ -89,13 +89,13 @@ if ($forum_db->num_rows($result))
 {
 	$online_user_topic = $forum_db->fetch_assoc($result);
 	
-	$query = array(
+	$query_user_info = array(
 		'SELECT'	=> 'user_id, ident, logged, pun_tou_tid, prev_url',
 		'FROM'		=> 'online',
 		'WHERE'		=> 'pun_tou_tid='.intval($online_user_topic['pun_tou_tid'])
 	);
 	
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$result = $forum_db->query_build($query_user_info) or error(__FILE__, __LINE__);
 
 	if ($forum_db->num_rows($result))
 	{

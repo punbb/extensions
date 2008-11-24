@@ -96,47 +96,47 @@
 					{
 						$topic_id = intval($_GET['id']);
 
-						$query = array(
+						$query_update = array(
 							'UPDATE'	=> 'online',
 							'SET'		=> 'pun_tou_tid='.$topic_id,
 							'WHERE'		=> 'user_id='.$forum_user['id']
 						);
 
-						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 					}
 					else if (isset($_GET['pid']))
 					{
 						$post_id = intval($_GET['pid']);
 
-						$query = array(
+						$query_update = array(
 							'SELECT'	=> 'topic_id',
 							'FROM'		=> 'posts',
 							'WHERE'		=> 'id='.$post_id
 						);
 
-						$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$result = $forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 
 						if ($forum_db->num_rows($result))
 						{
 							$topic_id = $forum_db->fetch_assoc($result);
 
-							$query = array(
+							$query_update = array(
 								'UPDATE'	=> 'online',
 								'SET'		=> 'pun_tou_tid='.$topic_id['topic_id'],
 								'WHERE'		=> 'user_id='.$forum_user['id']
 							);
 
-							$forum_db->query_build($query) or error(__FILE__, __LINE__);
+							$forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 						}
 						else 
 						{
-							$query = array(
+							$query_update = array(
 								'UPDATE'	=> 'online',
 								'SET'		=> 'pun_tou_tid=0',
 								'WHERE'		=> 'user_id='.$forum_user['id']
 							);
 
-							$forum_db->query_build($query) or error(__FILE__, __LINE__);
+							$forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 						}
 					}
 				}
@@ -147,36 +147,36 @@
 					{
 						$topic_id = intval($_GET['tid']);
 
-						$query = array(
+						$query_update = array(
 							'UPDATE'	=> 'online',
 							'SET'		=> 'pun_tou_tid='.$topic_id,
 							'WHERE'		=> 'user_id='.$forum_user['id']
 						);
 
-						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 
 					}		
 					else 
 					{
-						$query = array(
+						$query_update = array(
 							'UPDATE'	=> 'online',
 							'SET'		=> 'pun_tou_tid=0',
 							'WHERE'		=> 'user_id='.$forum_user['id']
 						);
 
-						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 					}
 				}
 			}
 			else
 			{
-				$query = array(
+				$query_update = array(
 					'UPDATE'	=> 'online',
 					'SET'		=> 'pun_tou_tid=0',
 					'WHERE'		=> 'user_id='.$forum_user['id']
 				);
 
-				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$forum_db->query_build($query_update) or error(__FILE__, __LINE__);
 			}
 
 		]]></hook>
