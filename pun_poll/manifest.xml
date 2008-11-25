@@ -723,7 +723,7 @@
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_poll['Allow days'] ?></span><small></small></label><br />
-								<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="allow_poll_days" size="20" maxlength="20" value="<?php echo ($days_poll != NULL) ? 'value="'.intval($days_poll).'"' : ''; ?>" /></span>
+								<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="allow_poll_days" size="20" maxlength="20" value="<?php echo ($days_poll != NULL) ? intval($days_poll) : ''; ?>" /></span>
 							</div>
 						</div>
 					</fieldset>
@@ -854,7 +854,7 @@
 			
 		]]></hook>
 
-		<hook id="po_post_optional_fieldset"><![CDATA[
+		<hook id="po_pre_req_info_fieldset_end"><![CDATA[
 
 			if ($fid)
 			{
@@ -956,7 +956,7 @@
 						<div class="frm-fld text textarea required">
 							<label for="allow_poll_days">
 								<span class="fld-label"><?php echo $lang_pun_poll['Allow days'] ?></span><br />
-								<span class="fld-input"><input type="text" name="allow_poll_days" <?php echo ($days_poll != NULL) ? ' value="'.$days_poll.'"' : '' ?>></span><br />
+								<span class="fld-input"><input type="text" name="allow_poll_days"  value=" <?php echo ($days_poll != NULL) ? intval($days_poll) : '' ?>"></span><br />
 							</label>
 						</div>
 					</fieldset>
@@ -1102,9 +1102,7 @@
 		]]></hook>
 		
 		<hook id="co_common"><![CDATA[
-			
 			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
-			
 		]]></hook>
 		
 		<hook id="ft_about_end" priority="10"><![CDATA[
@@ -1114,6 +1112,5 @@
 				echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
 			}
 		]]></hook>
-		
 	</hooks>
 </extension>
