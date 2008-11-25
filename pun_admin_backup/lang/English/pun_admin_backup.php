@@ -53,7 +53,13 @@
 		'Cancel'					=>	'Cancel',
 		'Cr dir fail'				=>	'Can\'t create directory %s',
 		'Log error'					=>	'Can\'t write to log-file',
-		'Up error'					=>	'<strong>WARNING!</strong> The file with the name %s already exists. Rename the file or remove the old one to prevent data loss.'
+		'Up error'					=>	'<strong>WARNING!</strong> The file with the name %s already exists. Rename the file or remove the old one to prevent data loss.',
+		'Backup'					=>	'Backup',
+		'Backup form'				=>	'Backup form',
+		'Upload notice'				=>	'Select file for uploading.',
+		'Browse'					=>	'Browse',
+		'Move failed'				=>	'Moving of file was failed.',
+		'Wrong format'				=>	'<strong>WARNING!</strong> Uploaded file format is wrong.'
 	);
 
-?>
+?>	
