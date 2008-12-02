@@ -39,7 +39,14 @@ function turnOnLinks()
 		        span[5].style.display = "";
 		        tmp_k = 1;
 		        var a = span[7].getElementsByTagName('a');
-		        a[0].href = "javascript: QuickQuote()";
+		        
+		        if (a.length == 0)
+		        {
+		        	tmp_k = 1;
+		        	k = 0;
+		        }
+		        else
+		        	a[0].href = "javascript: QuickQuote()";
 			}
 			else
 			{
@@ -221,6 +228,40 @@ function ChangePost(post)
 	//Remove signature block
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*sig-content[\s]*["]*[\s]*>(:?.*?)<\/div>/gi,'');
 	
+	//Handle BB-codes
+	//code
+	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*codebox[\s]*["]*[\s]*>[\s]*<pre>[\s]*<code>/ig,'[code]');
+	post = post.replace(/[\s]*<\/code>[\s]*<\/pre>[\s]*<\/div>/ig,'[/code]\n');	
+	
+	//b
+	post = post.replace(/[\s]*<strong>[\s]*/ig,'[b]');
+	post = post.replace(/[\s]*<\/strong>[\s]*/ig,'[/b]');
+	
+	//list
+	post = post.replace(/[\s]*<ul>[\s]*/ig,'[list]');
+	post = post.replace(/[\s]*<ol[\s]*class[\s]*=[\s]*["]decimal["][\s]*>[\s]*/ig,'[list=1]');
+	post = post.replace(/[\s]*<ol[\s]*class[\s]*=[\s]*["]alpha["][\s]*>[\s]*/ig,'[list=a]');
+	post = post.replace(/[\s]*<li>[\s]*/ig,'[*]');
+	post = post.replace(/[\s]*<\/li>[\s]*/ig,'[/*]');
+	post = post.replace(/[\s]*<\/ol>[\s]*/ig,'[/list]');
+	post = post.replace(/[\s]*<\/ul>[\s]*/ig,'[/list]');
+			
+	for (temp = 0; temp < 6; temp++)
+	{
+		//color
+		post = post.replace(/<span[\s]*style[\s]*=[\s]*["]*color[\s]*:[\s]*([\#a-zA-Z0-9]*)\;{1}["]*[\s]*>([^\<]*)<\/span>[\s]*/ig,'[color=$1]$2[/color]');
+		//u
+		post = post.replace(/[\s]*<span[\s]*class[\s]*=[\s]*["]*bbu["]*[\s]*>([^\<]*)<\/span>[\s]*/ig,'[u]$1[/u]');	
+		//i
+		post = post.replace(/[\s]*<em>([^\<]*)<\/em>[\s]*/ig,'[i]$1[/i]');
+		//h
+		post = post.replace(/[\s]*<h5>([^\<]*)<\/h5>[\s]*/ig,'[i]$1[/i]');
+		//email
+		post = post.replace(/<a[\s]*href=["]*mailto:[\s]*([^]*)["]*[\s]*>([^]*)<\/a>/ig,'[email=\"$1\"]$2[/email]');
+		//url
+		post = post.replace(/<a[\s]*href=["]*http\:\/\/([^]*)["]*[\s]*>([^]*)<\/a>/ig,'[url=\"$1\"]$2[/url]');
+	}
+
 	//Remove tags
 	post = post.replace(/<(:?.*?)>/gi,'');
 	
