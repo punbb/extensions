@@ -224,10 +224,7 @@ function ChangePost(post)
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*quotebox[\s]*["]*[\s]*>/ig,'[quote]');
 	post = post.replace(/[\s]*wrote:/g,"]");
 	post = post.replace(/[\s]*<\/blockquote>[\s]*/ig,'[/quote]\n');
-	
-	//Remove signature block
-	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*sig-content[\s]*["]*[\s]*>(:?.*?)<\/div>/gi,'');
-	
+
 	//Handle BB-codes
 	//code
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*codebox[\s]*["]*[\s]*>[\s]*<pre>[\s]*<code>/ig,'[code]');
@@ -261,6 +258,9 @@ function ChangePost(post)
 		//url
 		post = post.replace(/<a[\s]*href=["]*http\:\/\/([^]*)["]*[\s]*>([^]*)<\/a>/ig,'[url=\"$1\"]$2[/url]');
 	}
+	
+	//Remove signature block
+	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*sig-content[\s]*["]*[\s]*>(.*)<\/div>/gi,'');
 
 	//Remove tags
 	post = post.replace(/<(:?.*?)>/gi,'');
