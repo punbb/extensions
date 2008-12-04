@@ -1,33 +1,20 @@
 
-/***********************************************************************
-
-		Copyright (C) 2008  PunBB
-		
-		PunBB is free software; you can redistribute it and/or modify it
-		under the terms of the GNU General Public License as published
-		by the Free Software Foundation; either version 2 of the License,
-		or (at your option) any later version.
-		
-		PunBB is distributed in the hope that it will be useful, but
-		WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
-		
-		You should have received a copy of the GNU General Public License
-		along with this program; if not, write to the Free Software
-		Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-		MA  02111-1307  USA
-
-***********************************************************************/
+/**
+ * Allows users to quote posts without a page reloading
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_quote
+ */
 
 document.onmouseup = SetSelected;
 
 function turnOnLinks()
 {
 	var p = document.getElementsByTagName('p');
-	
+
 	var tmp_k = 0;
-	
+
 	for (var k=0; k < p.length; k++ )
 	{
 		if (p[k].className.match(/post-actions/))
@@ -36,23 +23,23 @@ function turnOnLinks()
 	
 			if (tmp_k == 0)
 			{
-		        span[5].style.display = "";
-		        tmp_k = 1;
-		        var a = span[7].getElementsByTagName('a');
-		        
-		        if (a.length == 0)
-		        {
-		        	tmp_k = 1;
-		        	k = 0;
-		        }
-		        else
-		        	a[0].href = "javascript: QuickQuote()";
+				span[5].style.display = "";
+				tmp_k = 1;
+				var a = span[7].getElementsByTagName('a');
+
+				if (a.length == 0)
+				{
+					tmp_k = 1;
+					k = 0;
+				}
+				else
+					a[0].href = "javascript: QuickQuote()";
 			}
 			else
 			{
-		        span[6].style.display = "";
-		        var a = span[8].getElementsByTagName('a');
-		        a[0].href = "javascript: QuickQuote()";
+				span[6].style.display = "";
+				var a = span[8].getElementsByTagName('a');
+				a[0].href = "javascript: QuickQuote()";
 			}
 		}
 	}
@@ -85,9 +72,8 @@ function Reply(tid_param, qid_param)
 	{
 		if(element[i].className.match(/^post\s.*/ig))
 		{
-	
 			var post = new String(element[i].innerHTML);
-	
+
 			if(post.search('Reply[(]' + tid_param + ',' + qid_param + '[)]') != -1)
 			{
 				post=ChangePost(post);
@@ -96,7 +82,7 @@ function Reply(tid_param, qid_param)
 				var reply_url = document.getElementById("pun_quote_url");
 				reply_url = reply_url.value;
 				var replace_url;
-	
+
 				if((selected_text != undefined)&&(selected_text!=''))
 				{
 					//this is for Chrome browser. Text, selected by user, has 'Range' type, not 'String'. And in some cases, when there is no text selected, Chrome returns one symbol of 'Caret' type
@@ -164,7 +150,7 @@ function QuickQuote(tid_param, qid_param)
 					//this is for Chrome browser. Text, selected by user, has 'Range' type, not 'String'. And in some cases, when there is no text selected, Chrome returns one symbol of 'Caret' type
 					if((selected_text.type=='Range') || (selected_text.type=='Caret'))
 						selected_text=selected_text.toString();
-	
+
 					selected_text = RemoveSymbols(selected_text);
 
 					if ((post_new.indexOf(selected_text) != -1) && (selected_text.charAt(0) != ''))
@@ -198,27 +184,27 @@ function RemoveSymbols(string)
 function ChangePost(post)
 {
 	var reg = new RegExp('<DIV[\\s]*class[\\s]*=[\\s]*["]*[\\s]*entry\\-content[\\s]*["]*[\\s]*>[\\s\\S]*<DIV[\\s]*class[\\s]*=[\\s]*["]*[\\s]*postfoot[\\s]*["]*[\\s]*>','ig');
-	
+
 	var post = new String(reg.exec(post));
-	
+
 	var browse = navigator.userAgent.toLowerCase();
-	
+
 	post = post.replace(/((<BR>)(<\/P>))|((<BR\/>)(<\/P>))/ig,'$2$4');
-	
+
 	if(browse.indexOf('opera') == -1)
 		post = post.replace(/((<BR>)(<P>))|((<BR\/>)(<P>))/ig,'$2$4');
-	
+
 	post = post.replace(/(:?<BR>)|(:?<BR\/>)/ig,'\n');
-	
+
 	//</p><p> = \n\n  - Opera FF
 	//</p><p> = /n - IE 7.0
 	if(browse.indexOf('opera') != -1 ||  browse.indexOf('gecko') != -1)
 		post = post.replace(/(:?<\/p>)|(:?<p>)/ig,'\n');
 	else
 		post = post.replace(/<\/p>[\s]*<p>/ig,'\n');
-	
+
 	post = post.replace(/>[\s]*</,'><');
-	
+
 	//Make [quote="name"]...[/quote]
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*quotebox[\s]*["]*[\s]*>[\s]*<cite>/ig,'[quote=');
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*quotebox[\s]*["]*[\s]*>/ig,'[quote]');
@@ -229,11 +215,11 @@ function ChangePost(post)
 	//code
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*codebox[\s]*["]*[\s]*>[\s]*<pre>[\s]*<code>/ig,'[code]');
 	post = post.replace(/[\s]*<\/code>[\s]*<\/pre>[\s]*<\/div>/ig,'[/code]\n');	
-	
+
 	//b
 	post = post.replace(/[\s]*<strong>[\s]*/ig,'[b]');
 	post = post.replace(/[\s]*<\/strong>[\s]*/ig,'[/b]');
-	
+
 	//list
 	post = post.replace(/[\s]*<ul>[\s]*/ig,'[list]');
 	post = post.replace(/[\s]*<ol[\s]*class[\s]*=[\s]*["]decimal["][\s]*>[\s]*/ig,'[list=1]');
@@ -242,7 +228,7 @@ function ChangePost(post)
 	post = post.replace(/[\s]*<\/li>[\s]*/ig,'[/*]');
 	post = post.replace(/[\s]*<\/ol>[\s]*/ig,'[/list]');
 	post = post.replace(/[\s]*<\/ul>[\s]*/ig,'[/list]');
-			
+
 	for (temp = 0; temp < 6; temp++)
 	{
 		//color
@@ -264,13 +250,13 @@ function ChangePost(post)
 
 	//Remove tags
 	post = post.replace(/<(:?.*?)>/gi,'');
-	
+
 	//Replace quote = name name on quote = "name name"
 	post = post.replace(/\[quote=(["][-a-zA-Z0-9]*)[\s]+([-"a-zA-Z0-9]*)\]/g,'[quote=\"$1 $2\"]');
-	
+
 	//Insert \n before [/quote]
 	post = post.replace(/\]\[\/quote\]/g,']\n[/quote]');
-	
+
 	//exotic symbols =)
 	post = post.replace(/\u00A0/g,' ');
 	post = post.replace(/&nbsp;/g,' ');
