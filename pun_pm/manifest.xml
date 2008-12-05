@@ -14,11 +14,11 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>1.2.3</version>
+	<version>1.2.4</version>
 	<description>Allows users to send private messages. This is the first simple version with minimum functions.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3dev</minversion>
-	<maxtestedon>1.3</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.1</maxtestedon>
 
 	<note type="uninstall" timing="pre">WARNING! All users' messages will be removed during the uninstall process. It is strongly recommended you to disable 'Private Messages' extension instead or to upgrade it without uninstalling.</note>
 
@@ -463,6 +463,15 @@ if (!$forum_user['is_guest'] && $forum_config['o_pun_pm_show_new_count'])
 
 		<hook id="vt_row_pre_post_contacts_merge"><![CDATA[
 
+global $lang_pun_pm;
+
+if (!isset($lang_pun_pm))
+{
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+}
 // Links 'Send PM' near posts
 if (!$forum_user['is_guest'] && $cur_post['poster_id'] > 1 && $forum_user['id'] != $cur_post['poster_id'])
 	$forum_page['post_contacts']['PM'] = '<a class="contact" title="'.$lang_pun_pm['Send PM'].'" href="'.forum_link($forum_url['pun_pm_post_link'], $cur_post['poster_id']).'">'.$lang_pun_pm['PM'].'</a>';
