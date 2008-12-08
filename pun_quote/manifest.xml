@@ -59,7 +59,6 @@
 			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
 		]]></hook>
 
-<<<<<<< .mine
 			<hook id="po_qr_get_quote"><![CDATA[
 				if(isset($_POST['post_msg']))
 					$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
@@ -118,7 +117,6 @@
 				}
 			]]></hook>
 		</hooks>
-=======
 		<hook id="ft_about_end" priority="10"><![CDATA[
 			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 			{
@@ -127,5 +125,4 @@
 			}
 		]]></hook>
 	</hooks>
->>>>>>> .r972
 </extension>
