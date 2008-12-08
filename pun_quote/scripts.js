@@ -1,4 +1,3 @@
-
 /**
  * Allows users to quote posts without a page reloading
  *
@@ -8,6 +7,7 @@
  */
 
 document.onmouseup = SetSelected;
+var selNode;
 
 function turnOnLinks()
 {
@@ -47,35 +47,116 @@ function turnOnLinks()
 
 function getSelectedText()
 {
-	var result = '';
-	if (document.selection)
-		result = document.selection.createRange().text;
-	else if (document.getSelection)
-		result = document.getSelection();
-	else if (window.getSelection)
-		result = window.getSelection();
-	else
-		return result;
+	try
+	{
+		var result = undefined;
+		
+		if (document.selection)
+		{
+			selNode = document.selection.createRange().parentElement();
+			
+			var testNode = selNode;
+			var flag = 1;
+			
+			while(flag == 1)
+			{
+				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
+					testNode = testNode.parentNode.parentNode;
+				else if ((testNode.nodeName == 'CODE'))
+						testNode = testNode.parentNode.parentNode;
+				else if ((testNode.nodeName == 'CITE'))
+					testNode = testNode.parentNode;						
+				else
+					flag = 0;
+			}
+			
+			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
+				result = document.selection.createRange().text;
+		}
+		else if (document.getSelection)
+		{
+			selNode = window.getSelection().anchorNode.parentNode;
+			
+			var testNode = selNode;
+			var flag = 1;
+			
+			while(flag == 1)
+			{
+				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
+					testNode = testNode.parentNode.parentNode;
+				else if ((testNode.nodeName == 'CODE'))
+						testNode = testNode.parentNode.parentNode;
+				else if ((testNode.nodeName == 'CITE'))
+					testNode = testNode.parentNode;
+				else
+					flag = 0;
+					
+	
+			}
+			
+			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
+				result = document.getSelection();
+		}
+		else if (window.getSelection)
+		{
+			selNode = window.getSelection().anchorNode.parentNode;
+			
+			var testNode = selNode;
+			var flag = 1;
+			
+			while(flag == 1)
+			{
+				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
+					testNode = testNode.parentNode.parentNode;
+				else if ((testNode.nodeName == 'CODE'))
+						testNode = testNode.parentNode.parentNode;
+				else if ((testNode.nodeName == 'CITE'))
+					testNode = testNode.parentNode;						
+				else
+					flag = 0;
+			}
+			
+			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
+				result = window.getSelection();
+		}
+		else
+			return result;
+	}
+	catch(err)
+	{
+		result = undefined;
+	}
+		
 	return result;
 }
 
-function TrimString(param)
-{
-	param = param.replace(/ /g,' ');
-	return param.replace(/(^\s+)|(\s+$)/g, '');
-}
+function Reply(tid_param, qid_param, d)
+{	
+	var selected_text = getSelectedText();
+	var element;
+	var reply_text = "";
+	var pun_quote_whole_citing = 0;
 
-function Reply(tid_param, qid_param)
-{
-	var element = document.getElementsByTagName('div');
-	for (var i=0; i < element.length; i++)
+	if ((selected_text != undefined) && (selected_text != ''))
 	{
-		if(element[i].className.match(/^post\s.*/ig))
+		while(selNode.className.indexOf('postbody') == -1)
+			selNode = selNode.parentNode;
+			
+		selNode = selNode.parentNode.getElementsByTagName('a');
+		
+		for (i = 0; i < selNode.length; i++)
 		{
+<<<<<<< .mine
+			if (selNode[i].innerHTML.indexOf('Reply') != -1)
+=======
 			var post = new String(element[i].innerHTML);
 
 			if(post.search('Reply[(]' + tid_param + ',' + qid_param + '[)]') != -1)
+>>>>>>> .r972
 			{
+<<<<<<< .mine
+				if (d == selNode[i])
+=======
 				post=ChangePost(post);
 				var post_new = RemoveSymbols(post);
 				var selected_text = (window.selected_text_first == '')?window.selected_text_second:window.selected_text_first;//getSelectedText();
@@ -84,88 +165,148 @@ function Reply(tid_param, qid_param)
 				var replace_url;
 
 				if((selected_text != undefined)&&(selected_text!=''))
+>>>>>>> .r972
 				{
-					//this is for Chrome browser. Text, selected by user, has 'Range' type, not 'String'. And in some cases, when there is no text selected, Chrome returns one symbol of 'Caret' type
-					if((selected_text.type=='Range')||(selected_text.type=='Caret'))
-					selected_text=selected_text.toString();
+					var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
+					var flag = 1;
+					var i = 0;
+				
+					while(pun_quote_post[i].className != 'entry-content')
+						i++;
 					
+					var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
+					author = author[0].innerHTML;
+					
+					if((selected_text.type=='Range') || (selected_text.type=='Caret'))
+						selected_text=selected_text.toString();
+			
 					selected_text = RemoveSymbols(selected_text);
+					reply_text +=(window.selected_text_first == '') ? window.selected_text_second + '\n': window.selected_text_first + '\n';
 					
-					post = TrimString(post);
-					
-					if((post_new.indexOf(selected_text) != -1) && (selected_text.charAt(0) != ''))
-					{
-						var form = document.getElementById('qq');
-						//form.action='post.php?tid=' + tid_param + '&qid=' + qid_param;
-						replace_url = reply_url.replace('$2',qid_param.toString());
-						form.action = replace_url.toString();
-						element = document.getElementById('post_msg');
-						element.value =(window.selected_text_first == '')?window.selected_text_second:window.selected_text_first;//getSelectedText();
-						form.submit();
-						break;
-					}
+					element = document.getElementById('post_msg');
+					element.value = reply_text;
+					var form = document.getElementById('qq');
+					var reply_url = document.getElementById('pun_quote_url').value;
+					replace_url = reply_url.replace('$2',qid_param.toString());
+					form.action = replace_url.toString();
+					form.submit();
 				}
-				replace_url = reply_url.replace('$2',qid_param.toString());
-				location = replace_url.toString();
+				else
+					pun_quote_whole_citing = 1;
+					
+				break;
 			}
 		}
+	}
+	else
+		pun_quote_whole_citing = 1;
+	
+	if (pun_quote_whole_citing == 1)
+	{
+		var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
+		var flag = 1;
+		var i = 0;
+	
+		while(flag == 1)
+		{
+			if (pun_quote_post[i].className == 'entry-content')
+				break;
+				
+			i++;
+		}
+		
+		var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
+		author = author[0].innerHTML;
+		
+		var paste_text = pun_quote_posts[qid_param];
+		paste_text = paste_text.replace(/<\/br>/ig,'\n');
+		element = document.getElementById('post_msg');
+		element.value = paste_text;
+		var form = document.getElementById('qq');
+		var reply_url = document.getElementById('pun_quote_url').value;
+		replace_url = reply_url.replace('$2',qid_param.toString());
+		form.action = replace_url.toString();
+		form.submit();
 	}
 	
 	return false;
 }
 
-function QuickQuote(tid_param, qid_param)
+function QuickQuote(tid_param, qid_param, d)
 {
-	var element = document.getElementsByTagName('div');
+	var selected_text = getSelectedText();
+	var element;
+	var pun_quote_whole_citing = 0;
 
-	for (var i=0; i < element.length; i++)
+	if ((selected_text != undefined) && (selected_text != ''))
 	{
-
-		if (element[i].className.match(/^post\s.*/ig))
-		{
+		while(selNode.className.indexOf('postbody') == -1)
+			selNode = selNode.parentNode;
+			
+		selNode = selNode.parentNode.getElementsByTagName('a');
 		
-			var post = new String(element[i].innerHTML);
-			if (post.search('QuickQuote[(]' + tid_param + ',' + qid_param + '[)]') != -1)
+		for (i = 0; i < selNode.length; i++)
+		{
+			if (selNode[i].innerHTML.indexOf('Quick quote') != -1)
 			{
-				//get quoted author name from the post
-				//var RegExp = /<cite>.*\sby\s(.*?):/ig;  old markup compatibility
-				var RegExp =/<span class="*post-byline"*>(?:.*?)<a(?:.*?)>(.*?)<\/a>/ig;
-				var result =  RegExp.exec(post);
-				RegExp.lastIndex=0;
-				var author_name;
-				
-				if(result!=null)
-					author_name=result[1];
-
-
-				post=ChangePost(post);
-				var post_new = RemoveSymbols(post);
-				var selected_text = (window.selected_text_first == '')?window.selected_text_second:window.selected_text_first;//getSelectedText();
-
-
-				post = TrimString(post);
-
-				if ((selected_text != undefined)&&(selected_text!=''))
+				if (d == selNode[i])
 				{
-					//this is for Chrome browser. Text, selected by user, has 'Range' type, not 'String'. And in some cases, when there is no text selected, Chrome returns one symbol of 'Caret' type
+					var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
+					var flag = 1;
+					var i = 0;
+				
+					while(pun_quote_post[i].className != 'entry-content')
+						i++;
+					
+					var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
+					author = author[0].innerHTML;
+					
 					if((selected_text.type=='Range') || (selected_text.type=='Caret'))
 						selected_text=selected_text.toString();
+<<<<<<< .mine
+			
+=======
 
+>>>>>>> .r972
 					selected_text = RemoveSymbols(selected_text);
-
-					if ((post_new.indexOf(selected_text) != -1) && (selected_text.charAt(0) != ''))
-					{
-						element = document.getElementById('fld1');
-						element.value +=(window.selected_text_first == '')?'[quote='+author_name+']'+window.selected_text_second+'[/quote]'+'\n':'[quote='+author_name+']'+window.selected_text_first+'[/quote]'+'\n';//getSelectedText();
-						break;
-					}
+			
+					element = document.getElementById('fld1');
+					element.value +=(window.selected_text_first == '')?'[quote='+author+']'+window.selected_text_second+'[/quote]'+'\n':'[quote='+author+']'+window.selected_text_first+'[/quote]'+'\n';					
 				}
-				element = document.getElementById('fld1');
-				element.value+='[quote='+author_name+']'+post+'[/quote]'+'\n';
+				else
+					pun_quote_whole_citing = 1;
+					
+				break;
 			}
 		}
 	}
-
+	else
+		pun_quote_whole_citing = 1;
+	
+	if (pun_quote_whole_citing == 1)
+	{
+		var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
+		var flag = 1;
+		var i = 0;
+	
+		while(flag == 1)
+		{
+			if (pun_quote_post[i].className == 'entry-content')
+				break;
+				
+			i++;
+		}
+		
+		var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
+		author = author[0].innerHTML;
+		
+		element = document.getElementById('fld1');
+		var paste_text = pun_quote_posts[qid_param];
+		paste_text = paste_text.replace(/<\/br>/ig,'\n');
+		element.value += '[quote='+author+']' + paste_text + '[/quote]'+'\n';
+		return false;
+	}
+	
 	return false;
 }
 
@@ -181,6 +322,8 @@ function RemoveSymbols(string)
 	string = string.replace(/<BR>/ig,'');
 	return string;
 }
+<<<<<<< .mine
+=======
 function ChangePost(post)
 {
 	var reg = new RegExp('<DIV[\\s]*class[\\s]*=[\\s]*["]*[\\s]*entry\\-content[\\s]*["]*[\\s]*>[\\s\\S]*<DIV[\\s]*class[\\s]*=[\\s]*["]*[\\s]*postfoot[\\s]*["]*[\\s]*>','ig');
@@ -210,7 +353,10 @@ function ChangePost(post)
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*quotebox[\s]*["]*[\s]*>/ig,'[quote]');
 	post = post.replace(/[\s]*wrote:/g,"]");
 	post = post.replace(/[\s]*<\/blockquote>[\s]*/ig,'[/quote]\n');
+>>>>>>> .r972
 
+<<<<<<< .mine
+=======
 	//Handle BB-codes
 	//code
 	post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*codebox[\s]*["]*[\s]*>[\s]*<pre>[\s]*<code>/ig,'[code]');
@@ -265,6 +411,7 @@ function ChangePost(post)
 	return post;
 }
 
+>>>>>>> .r972
 function SetSelected()
 {
 	switch(window.selected_text_pointer)
