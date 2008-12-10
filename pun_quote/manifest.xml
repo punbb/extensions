@@ -40,17 +40,43 @@
 				$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
 		]]></hook>
 
+		<hook id="vt_modify_topic_info"><![CDATA[
+
+			$pun_quote_query = array(
+				'SELECT'	=> 'id, message',
+				'FROM'		=> 'posts',
+				'WHERE'		=> 'topic_id='.$id
+			);
+
+			$pun_quote_result = $forum_db->query_build($pun_quote_query) or error(__FILE__, __LINE__);
+			
+			if ($forum_db->num_rows($pun_quote_result))
+			{
+				echo '<script type="text/javascript">';
+				echo 'var pun_quote_posts = new Array();';
+
+				while ($pun_quote_curr_message = $forum_db->fetch_assoc($pun_quote_result))
+				{
+					$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '</br>', $pun_quote_curr_message['message']);
+					echo 'pun_quote_posts['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['message'].'";';
+				}
+
+				echo '</script>';
+			}
+
+		]]></hook>
+
 		<hook id="vt_row_pre_post_actions_merge"><![CDATA[
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-
+		
 			if (!$forum_user['is_guest'])
 			{
-				$forum_page['post_actions']['reply'] = '<span class="edit-post first-item" style="display: none"><a href ="javascript:Reply('.$id. ','.$cur_post['id'].')">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+				$forum_page['post_actions']['reply'] = '<span class="edit-post first-item" style="display: none"><a href="#" onclick="Reply('.$id. ','.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
 				unset($forum_page['post_actions']['quote']);
-				$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'" onClick="QuickQuote('.$id. ','.$cur_post['id'].'); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+				$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'" onclick="QuickQuote('.$id. ','.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
 			}
 		]]></hook>
 
@@ -59,64 +85,6 @@
 			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
 		]]></hook>
 
-			<hook id="po_qr_get_quote"><![CDATA[
-				if(isset($_POST['post_msg']))
-					$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
-			]]></hook>
-			
-			<hook id="vt_modify_topic_info"><![CDATA[
-			
-				$pun_quote_query = array(
-					'SELECT'	=> 'id, message',
-					'FROM'		=> 'posts',
-					'WHERE'		=> 'topic_id='.$id
-				);
-				
-				$pun_quote_result = $forum_db->query_build($pun_quote_query) or error(__FILE__, __LINE__);
-				
-				if ($forum_db->num_rows($pun_quote_result))
-				{
-					echo '<script type="text/javascript">';
-					echo 'var pun_quote_posts = new Array();';
-				
-					while ($pun_quote_curr_message = $forum_db->fetch_assoc($pun_quote_result))
-					{
-						$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '</br>', $pun_quote_curr_message['message']);
-						echo 'pun_quote_posts['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['message'].'";';
-					}
-					
-					echo '</script>';
-				}			
-			
-			]]></hook>
-
-			<hook id="vt_row_pre_post_actions_merge"><![CDATA[
-				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-					require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-				else
-					require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-			
-				if (!$forum_user['is_guest'])
-				{
-					$forum_page['post_actions']['reply'] = '<span class="edit-post first-item" style="display: none"><a href = "#" onclick="Reply('.$id. ','.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-					unset($forum_page['post_actions']['quote']);
-					$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'" onclick="QuickQuote('.$id. ','.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-				}
-			]]></hook>
-
-
-			<hook id="co_common"><![CDATA[
-				$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
-			]]></hook>
-
-			<hook id="ft_about_end" priority="10"><![CDATA[
-				if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
-				{
-					define('PUN_EXTENSIONS_USED', 1);
-					echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
-				}
-			]]></hook>
-		</hooks>
 		<hook id="ft_about_end" priority="10"><![CDATA[
 			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 			{
