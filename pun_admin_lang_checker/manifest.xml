@@ -33,8 +33,9 @@
 	<minversion>1.3 SVN</minversion>
 	<maxtestedon>1.3 SVN</maxtestedon>
 		
-	<note type="install" timing="pre">Scans all php files and gets 2 arrays as a result: All fetches of lang-loggings that don’t have lang-files, All lang-loggings in the lang-files that don’t have fetches.</note>
-	<note type="install" timing="pre">The file with results will be generated when you visit the main page.</note>
+	<note type="install" timing="pre">Scans all php files and gets 2 arrays as a result: All fetches of lang-loggings that don’t have lang-files, All lang-loggings in the lang-files that don’t have fetches</note>
+	<note type="install" timing="pre">Works only for English lang-files</note>
+	<note type="install" timing="pre">You can see result on page /admin/extensions.php?section=lang_checker</note>
 		<install>
 		<![CDATA[
 		
