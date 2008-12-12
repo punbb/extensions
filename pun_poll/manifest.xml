@@ -899,12 +899,12 @@
 
 					?>
 
-					<fieldset class="frm-set set<?php echo ++$forum_page['set_count'] ?>">
-						<div class="frm-fld text textarea required">
-							<label for="quest">
-								<span class="fld-label"><?php echo $lang_pun_poll['Poll question'] ?></span><br />
-								<span class="fld-input"><input type="text" id="quest" name="question_of_poll" size="84%" maxlength="150" value="<?php echo (isset($_POST['question_of_poll'])) ? htmlspecialchars($_POST['question_of_poll']) : '' ?>"></span><br />
-							</label>
+					
+						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+							<div class="sf-box text">
+								<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_poll['Poll question'] ?></span></label><br />
+								<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="question_of_poll" size="80" maxlength="150" value="" /></span>
+							</div>
 						</div>
 
 						<?php
@@ -940,12 +940,12 @@
 
 						?>
 
-							<div class="frm-fld text textarea required">
-								<label for="answer<?php echo $iter ?>">
-									<span class="fld-label"><?php echo $lang_pun_poll['Voting answer'] ?></span><br />
-									<span class="fld-input"><input type="text" id="poll_answer[]" name="poll_answer[]" size="84%" maxlength="50" value="<?php echo ((isset($poll_array_answer[$iter])) ? htmlspecialchars($poll_array_answer[$iter]) : '') ?>"></span><br />
-								</label>
-							</div>
+							<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+								<div class="sf-box text">
+									<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_poll['Voting answer'] ?></span><small></small></label><br />
+									<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="poll_answer[]" size="80" maxlength="150" value="<?php echo ((isset($poll_array_answer[$iter])) ? $poll_array_answer[$iter] : '') ?>" /></span>
+								</div>
+							</div>	
 
 						<?php
 
@@ -953,25 +953,30 @@
 
 						?>
 
-						<div class="frm-fld text textarea required">
-							<label for="allow_poll_days">
-								<span class="fld-label"><?php echo $lang_pun_poll['Allow days'] ?></span><br />
-								<span class="fld-input"><input type="text" name="allow_poll_days"  value=" <?php echo ($days_poll != NULL) ? intval($days_poll) : '' ?>"></span><br />
-							</label>
+						<input type="hidden" name="preview_push" value="<?php echo (isset($_POST['preview'])) ? '1' : '0'; ?>" />
+						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+							<div class="sf-box text">
+								<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_poll['Allow days'] ?></span><small></small></label><br />
+								<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="allow_poll_days" size="20" maxlength="20" value="<?php echo ($days_poll != NULL) ? intval($days_poll) : ''; ?>" /></span>
+							</div>
+						</div>
+					
+					<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
+						<legend><span><?php echo $lang_pun_poll['Additional options'] ?></span></legend>
+						<div class="mf-box checkbox">			
+							<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld <?php echo (++$forum_page['fld_count'])?>" name="dis_see" value="1" <?php echo ($forum_config['p_pun_poll_disable_see'] != '0') ? 'disabled' : ((isset($_POST['dis_see'])) ? 'checked' : '') ?> /></span> <label for="fld<?php echo $forum_page['fld_count']?>"><?php echo $lang_pun_poll['See results']?></label></div>
+							<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld <?php echo (++$forum_page['fld_count'])?>" name="dis_rev" value="1" <?php echo ($forum_config['p_pun_poll_disable_revote'] != '0') ? 'disabled' : ((isset($_POST['dis_rev'])) ? 'checked' : '') ?> /></span> <label for="fld<?php echo $forum_page['fld_count']?>"><?php echo $lang_pun_poll['Able revote']?></label></div>	
 						</div>
 					</fieldset>
-					<fieldset class="frm-set set<?php echo ++$forum_page['set_count'] ?>">
-						<fieldset class="frm-group">
-							<legend><span><?php echo $lang_pun_poll['Additional options'] ?></span></legend>
-							<div class="radbox"><label for="first_option"><input type="checkbox" id="first_option" name="dis_see" <?php echo ($forum_config['p_pun_poll_disable_see'] != '0') ? 'disabled' : ((isset($_POST['dis_see'])) ? 'checked' : '') ?>> <?php echo $lang_pun_poll['See results'] ?></label></div>
-							<div class="radbox"><label for="second_option"><input type="checkbox" id="second_option" name="dis_rev" <?php echo ($forum_config['p_pun_poll_disable_revote'] != '0') ? 'disabled' : ((isset($_POST['dis_rev'])) ? 'checked' : '') ?>> <?php echo $lang_pun_poll['Able revote'] ?></label></div>
-						</fieldset>
-					</fieldset>
-					<fieldset class="frm-set set<?php echo ++$forum_page['set_count'] ?>">
+					<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+						<div class="sf-box text">
+							<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_poll['Summary count']; ?></span><small></small></label><br />
+							<span class="fld-input"><input type="text" name="poll_ans_count" size="2px" maxlength="20" value="<?php echo $count_poll_ans ?>" /></span>		
+						</div>
 						<div class="frm-buttons">
-							<span class="fld-label"><?php echo $lang_pun_poll['Summary count']?><input type="text" name="poll_ans_count" size="5%" value="<?php echo ($count_poll_ans != NULL) ? intval($count_poll_ans) : '2'; ?>"> <input type="submit" name="update_poll" value="Update poll"></span>
+							<span class="submit"><input type="submit" name="update_poll" value="Update poll" /></span>
 						</div>
-					</fieldset>
+					</div>
 
 				<?php
 
