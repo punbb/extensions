@@ -31,7 +31,7 @@ $lang_pun_poll = array(
 	'Voting answer'					=> 'Poll option',
 	'Delete poll'					=> 'Deleting poll',
 	'Delete message'				=> 'Would you like to delete poll from your topic (Yes/No)',
-	'See results'					=> 'Check to show results to all users (user has to vote to see results if unchecked)',
+	'See results'					=> 'Unvoting users can see poll results',
 	'Able revote'					=> 'Allow users to change their opinions.',
 	'Delete all'					=> 'Would you like to delete all poll results if answers will be changed (Yes/No)',
 	'Additional options'			=> 'Poll settings',
@@ -40,15 +40,15 @@ $lang_pun_poll = array(
 	'Actions'						=> 'Edit actions',
 
 	// admin
-	'Name plugin'					=> 'Configuration of extension "Easy poll"',
+	'Name plugin'					=> 'Settings for polls',
 	'Plugin option'					=> 'Option of poll',
 	'Plugin option info'            => 'In given options you may include poll in forum.',
 	'Maximum answers'				=> 'Maximum answers in poll (2-100)',
-	'Disable see results'			=> 'Unvoting users can\'t see results of poll (Yes/No)',
-	'Disable revoting'				=> 'Users can\'t revote (Yes/No)',
+	'Disable revoting'				=> 'Allow vote change',
+	'Disable see results'			=> 'Enable read results',
 	'Maximum answers info'			=> 'Maximum answers',
-	'Disable see results info'		=> 'Disable see results',
-	'Disable revoting info'			=> 'Disable revoting',
+	'Disable see results info'		=> 'Unvoting users can see poll results ',
+	'Disable revoting info'			=> 'Enable revoting',
 	'Poll add'						=> 'Allows users to use poll in their topics',
 	'Permission'					=> 'Voting permission',
 
@@ -72,6 +72,13 @@ $lang_pun_poll = array(
 	'Revote'						=> 'Revote poll',
 	'Summary count'					=> 'Number of poll options',
 	'Allow days'					=> 'Run poll for (days)',
-	'Send opinion'					=> 'Sending opinion. Redirecting ...'
-
+	'Send opinion'					=> 'Sending opinion. Redirecting ...',
+	
+	'Count'							=> 'Count',
+	'Button note'					=> 'Update poll',
+	'Show poll res'					=> 'Showing poll results',
+	'All ch vote'					=> 'Allow to change voiting',
+	'Max cnt options'				=> 'Count of options can\'t be more than %s.',
+	'Min cnt options'				=> 'Count of options can\'t be less than 2',
+	'Days limit'					=> 'Count of poll days can be more than 30 and less than 1.'	
 );
