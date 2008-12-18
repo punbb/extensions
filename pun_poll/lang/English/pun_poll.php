@@ -72,13 +72,24 @@ $lang_pun_poll = array(
 	'Revote'						=> 'Revote poll',
 	'Summary count'					=> 'Number of poll options',
 	'Allow days'					=> 'Run poll for (days)',
+	'Votes needed'					=> 'Votes count',
 	'Send opinion'					=> 'Sending opinion. Redirecting ...',
-	
+	'Input error'					=> 'You should enter number of days for voting or count of votes.',
+
 	'Count'							=> 'Count',
 	'Button note'					=> 'Update poll',
 	'Show poll res'					=> 'Showing poll results',
 	'All ch vote'					=> 'Allow to change voiting',
 	'Max cnt options'				=> 'Count of options can\'t be more than %s.',
 	'Min cnt options'				=> 'Count of options can\'t be less than 2',
-	'Days limit'					=> 'Count of poll days can be more than 30 and less than 1.'	
+	'Days limit'					=> 'Count of poll days can be more than 30 and less than 1.',
+	'Votes count'					=> 'Count of votes can be more than 500 and less than 10.',
+	'Header note'					=> 'Vouting',
+	'Options'						=> 'Vote options',
+	'Results'						=> 'Voting results:',
+	'No votes'						=> 'There is no votes in this poll yet.',
+	'Dis read vote'					=> 'You can\'t see voting results until you don\'t vote.',
+	'But note'						=> 'Vote',
+	'User vote error'				=> 'You have voted yet.',
+	'End of vote'					=> 'Poll that you want to vote is out of date.'
 );
