@@ -159,39 +159,39 @@
 		
 		<hook id="fn_delete_topic_qr_delete_topic"><![CDATA[
 
-			$query_poll_poll = array(
+			$query_poll = array(
 				'DELETE'	=> 'voting',
 				'WHERE'		=> 'topic_id='.$topic_id
 			);
-			$forum_db->query_build($query_poll_poll) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 
-			$query_poll_poll = array(
+			$query_poll = array(
 				'DELETE'	=> 'questions',
 				'WHERE'		=> 'topic_id='.$topic_id
 			);
-			$forum_db->query_build($query_poll_poll) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 
-			$query_poll_poll = array(
+			$query_poll = array(
 				'DELETE'	=> 'answers',
 				'WHERE'		=> 'ques_id='.$topic_id
 			);
-			$forum_db->query_build($query_poll_poll) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 
 		]]></hook>
 
-		<hook id="po_posting_location_selected"><![CDATA[
+		<hook id="po_posting_location_selected, ed_main_output_start"><![CDATA[
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 			//Validate of input in pun_poll form
-			if (isset($fid))
+			if ((defined('FORUM_PAGE') && FORUM_PAGE == 'postedit') || isset($fid))
 			{
 				//User press update poll
 				if (isset($_POST['update_poll']))
 				{
 					unset($_POST['form_sent']);
-			
+
 					$subject = forum_trim($_POST['req_subject']);
 					if ($subject == '')
 						$errors[] = $lang_post['No subject'];
@@ -279,141 +279,9 @@
 		]]></hook>
 
 		<hook id="po_req_info_fieldset_end"><![CDATA[
-			if ($fid && empty($forum_user['is_guest']))
-			{
-				if ($forum_user['g_poll_add'] || $forum_user['is_admmod'])
-				{
-
-			?>
-					<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
-						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"">
-							<div class="sf-box text">
-								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span>
-										<?php echo $lang_pun_poll['Poll question'] ?>
-									</span>
-								</label>
-								<br/>
-								<span class="fld-input">
-									<input type="text" id="quest" name="question_of_poll" size="80" maxlength="150"  value="<?php echo (isset($_POST['question_of_poll'])) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '' ?>">
-								</span>
-							</div>
-						</div>
-						<?php
-
-						//Validate of pull_answers
-						if ($poll_answers != null)
-						{
-							for ($ans_num = 0; $ans_num < count($poll_answers); $ans_num++)
-								$poll_answers[$ans_num] = forum_trim($poll_answers[$ans_num]);
-							$poll_answers = array_unique($poll_answers);
-						}
-
-						for ($opt_num = 0; $opt_num < $options_count; $opt_num++)
-						{
-
-						?>
-							<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"">
-								<div class="sf-box text">
-									<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-										<span>
-											<?php echo $lang_pun_poll['Voting answer'] ?>
-										</span>
-									</label>
-									<br/>
-									<span class="fld-input">
-										<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="poll_answer[]" size="80" maxlength="70" value="<?php echo ($poll_answers != null && isset($poll_answers[$opt_num]) ? forum_htmlencode($poll_answers[$opt_num]) : '') ?>">
-									</span>
-								</div>
-							</div>
-						<?php
-
-						}
-
-						?>
-					</fieldset>
-					<fieldset class="frm-group frm-hdgroup group<?php echo ++$forum_page['group_count'] ?>">
-						<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?> mf-head">
-							<legend>
-								<span><?php echo $lang_pun_poll['Summary count'] ?></span>
-							</legend>
-							<div class="mf-box">
-								<div class="mf-field mf-field1">
-									<label for="fld1">
-										<span class="fld-label"><?php echo $lang_pun_poll['Count']; ?></span>
-									</label>
-									<br/>
-									<span class="fld-input">
-										<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="text" name="poll_ans_count" size="5" maxlength="5" value="<?php echo $options_count ?>">
-									</span>
-								</div>
-								<div class="mf-field">
-									<span class="submit">
-										<input type="submit" name="update_poll" value="<?php echo $lang_pun_poll['Button note'] ?>">
-									</span>
-								</div>
-							</div>                
-						</fieldset>
-					</fieldset>
-					<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
-						<?php if ($forum_config['p_pun_poll_enable_read']): ?>
-						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"">
-							<div class="sf-box checkbox">
-								<span class="fld-input">
-									<input type="checkbox" id="first_option" value="1" name="read_unvote_users" <?php echo isset($_POST['read_unvote_users']) ? 'checked' : '' ?>/>
-								</span>
-								<label for="fld<?php echo $forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_poll['Show poll res'] ?></span>
-									<?php echo $lang_pun_poll['See results'] ?>
-								</label>
-							</div>
-						</div>
-						<?php endif; ?>
-						<?php if ($forum_config['p_pun_poll_enable_revote']): ?>
-						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"">
-							<div class="sf-box checkbox">
-								<span class="fld-input">
-									<input type="checkbox" id="second_option" value="1" name="revouting" <?php echo isset($_POST['revouting']) ? 'checked' : '' ?>/>
-								</span>
-								<label for="fld<?php echo $forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_poll['All ch vote'] ?></span>
-									<?php echo $lang_pun_poll['Able revote'] ?>
-								</label>
-							</div>
-						</div>
-						<?php endif; ?>
-						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-							<div class="sf-box text">
-								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span>
-										<?php echo $lang_pun_poll['Allow days'] ?>
-									</span>
-								</label>
-								<br/>
-								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="allow_poll_days" size="5" maxlength="5" value="<?php echo $days_poll; ?>">
-								</span>
-							</div>
-						</div>
-						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-							<div class="sf-box text">
-								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span>
-										<?php echo $lang_pun_poll['Votes needed'] ?>
-									</span>
-								</label>
-								<br/>
-								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="allow_poll_votes" size="5" maxlength="5" value="<?php echo ($votes_poll == null) ? ('') : ($votes_poll); ?>">
-								</span>
-							</div>
-						</div>
-					</fieldset>
-					<?php
-
-				}
-			}
-
+			include $ext_info['path'].'/functions.php';
+			if (($fid && empty($forum_user['is_guest'])) && ($forum_user['g_poll_add'] || $forum_user['is_admmod']))
+				form_of_poll( isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', $poll_answers , $options_count, $days_poll, $votes_poll);
 		]]></hook>
 
 		<hook id="vt_modify_topic_info"><![CDATA[
@@ -446,9 +314,10 @@
 						'WHERE'		=>	'topic_id='.$id
 					);
 					$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
-					list($vote_count) = $forum_db->fetch_row($result_pun_poll);
+					if ($forum_db->num_rows($result_pun_poll) > 0)
+						list($vote_count) = $forum_db->fetch_row($result_pun_poll);
 
-					if ($vote_count > 0 && $vote_count > $max_votes_count)
+					if (isset($vote_count) && $vote_count > 0 && $vote_count > $max_votes_count)
 						$end_voting = true;
 				}
 				if (isset($_POST['vote']))
@@ -526,13 +395,108 @@
 				}
 			}
 		]]></hook>
+		<hook id="ed_main_fieldset_end"><![CDATA[
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+			if ($can_edit_subject)
+			{
+				//Get info about poll
+				$query_pun_poll = array(
+					'SELECT'	=>	'question, read_unvote_users, revote, created, days_count, votes_count',
+					'FROM'		=>	'questions',
+					'WHERE'		=>	'topic_id = '.$cur_post['tid']	
+				);
+				$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+
+				//Is there something?
+				if ($forum_db->num_rows($result_pun_poll) > 0)
+				{
+					list($question, $read_unvote_users, $revote, $created, $days_count, $max_votes_count) = $forum_db->fetch_row($result_pun_poll);
+					//TODO:add notices
+				?>
+				<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+					<legend class="group-legend">
+						<span><?php echo 'Reset' ?></span>
+					</legend>
+					<div class="sf-set set1">
+						<div class="sf-box checkbox">
+							<span class="fld-input">
+								<input id="fld<?php echo ++ $forum_page['fld_count'] ?>" type="checkbox" value="1" name="reset_poll"/>
+							</span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>">
+								<span><?php echo $lang_pun_poll['Reset res'] ?></span>
+								<?php echo $lang_pun_poll['Reset res notice'] ?>
+							</label>
+						</div>
+					</div>
+					<div class="sf-set set2">
+						<div class="sf-box checkbox">
+							<span class="fld-input">
+								<input id="fld<?php echo ++ $forum_page['fld_count'] ?>" type="checkbox" value="1" name="remove_poll"/>
+							</span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>">
+								<span><?php echo $lang_pun_poll['Remove v'] ?></span>
+								<?php echo $lang_pun_poll['Remove v notice'] ?>
+							</label>
+						</div>
+					</div>
+				</fieldset>
+					<?php
+
+					if ($forum_page['is_admmod'])
+					{
+						include $ext_info['path'].'/functions.php';
+						if ($poll_answers == null)
+						{
+							$query_pun_poll = array(
+								'SELECT'	=>	'id, answer',
+								'FROM'		=>	'answers',
+								'WHERE'		=>	'topic_id = '.$cur_post['tid'] 
+							);
+							$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+							$poll_answers = array();
+							$poll_ids = array();
+							$num_rows = $forum_db->num_rows($result_pun_poll);
+							if ($num_rows > 0)
+							{
+								while ($row = $forum_db->fetch_assoc($result_pun_poll))
+								{				
+									$poll_ids[] = $row['id'];
+									$poll_answers[] = $row['answer'];
+								}
+								$options_count = $num_rows;
+							}			
+						}
+						form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : $question, $poll_answers, $options_count, ($days_poll == null) ? $days_count : $days_poll, ($votes_poll == null) ? $max_votes_count : $votes_poll, $poll_ids);
+					}
+
+					?>
+				<?php
+				}
+			}
+		]]></hook>
 
 		<hook id="hd_main_elements"><![CDATA[	
 			//Is there something to show?
 			if (FORUM_PAGE == 'viewtopic' && isset($read_unvote_users))
 			{
+				//If we don\'t get count of votes
+				if (!isset($vote_count))
+				{
+					$query_pun_poll = array(
+						'SELECT'	=>	'COUNT(id)',
+						'FROM'		=>	'voting',
+						'WHERE'		=>	'topic_id='.$id
+					);
+					$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+		
+					list($vote_count) = $forum_db->fetch_row($result_pun_poll);
+				}
 				//Showing of vote-form
-				if (!isset($end_voting) && (($is_voted_user && $revote) || !$is_voted_user || isset($revote)))
+				if (!isset($end_voting) && (($is_voted_user && $revote) || !$is_voted_user))
 				{
 					$query_pun_poll = array(
 						'SELECT'	=>	'id, answer',
@@ -578,18 +542,6 @@
 				//Showing voting results
 				if (isset($end_voting) || $is_voted_user || (!$is_voted_user && $read_unvote_users))
 				{
-					//If we don\'t get count of votes
-					if (!isset($vote_count))
-					{
-						$query_pun_poll = array(
-							'SELECT'	=>	'COUNT(id)',
-							'FROM'		=>	'voting',
-							'WHERE'		=>	'topic_id='.$id
-						);
-						$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
-			
-						list($vote_count) = $forum_db->fetch_row($result_pun_poll);
-					}
 					if ($vote_count > 0)
 					{		
 						$query_pun_poll = array(

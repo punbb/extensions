@@ -91,5 +91,9 @@ $lang_pun_poll = array(
 	'Dis read vote'					=> 'You can\'t see voting results until you don\'t vote.',
 	'But note'						=> 'Vote',
 	'User vote error'				=> 'You have voted yet.',
-	'End of vote'					=> 'Poll that you want to vote is out of date.'
+	'End of vote'					=> 'Poll that you want to vote is out of date.',
+	'Reset res'						=> 'Reset voting results',
+	'Reset res notice'				=> 'Check this if you want to reset voting results',
+	'Remove v'						=> 'Remove voting',
+	'Remove v notice'				=> 'Check this if you want to remove voting'
 );
