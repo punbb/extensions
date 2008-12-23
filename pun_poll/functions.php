@@ -1,6 +1,6 @@
 <?php
 
-function form_of_poll($question, $poll_answers, $options_count, $days_poll, $votes_poll, $poll_ids = array())
+function form_of_poll($question, $poll_answers, $options_count, $days_poll, $votes_poll)
 {
 	global $forum_user, $lang_pun_poll, $forum_config, $forum_page;
 
@@ -42,7 +42,7 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
                     </label>
                     <br/>
                     <span class="fld-input">
-                        <input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="poll_answer[<?php echo !empty($poll_ids[$opt_num]) ? $poll_ids[$opt_num] : '' ?>]" size="80" maxlength="70" value="<?php echo ($poll_answers != null && isset($poll_answers[$opt_num]) ? forum_htmlencode($poll_answers[$opt_num]) : '') ?>">
+                        <input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="poll_answer[]" size="80" maxlength="70" value="<?php echo ($poll_answers != null && isset($poll_answers[$opt_num]) ? forum_htmlencode($poll_answers[$opt_num]) : '') ?>">
                     </span>
                 </div>
             </div>
@@ -129,6 +129,6 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
             </div>
         </div>
     </fieldset>
-    <?php
+<?php
 
 }

@@ -95,5 +95,6 @@ $lang_pun_poll = array(
 	'Reset res'						=> 'Reset voting results',
 	'Reset res notice'				=> 'Check this if you want to reset voting results',
 	'Remove v'						=> 'Remove voting',
-	'Remove v notice'				=> 'Check this if you want to remove voting'
+	'Remove v notice'				=> 'Check this if you want to remove voting',
+	'Empty question'				=> 'You should enter a question of poll.'
 );
