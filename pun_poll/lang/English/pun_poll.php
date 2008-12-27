@@ -1,45 +1,23 @@
 <?php
 
-/***********************************************************************
-
-	Copyright (C) 2008  PunBB
-
-	PunBB is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published
-	by the Free Software Foundation; either version 2 of the License,
-	or (at your option) any later version.
-
-	PunBB is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-	MA  02111-1307  USA
-
-***********************************************************************/
+/**
+ * Lang file for voting
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_poll
+ */
 
 if (!defined('FORUM')) exit;
 
 $lang_pun_poll = array(
 
-	// post
-	'User wish'						=> 'Would you like to plug extension "Easy poll" into your topic? (Yes/No)',
 	'Poll question'					=> 'Poll question',
 	'Voting answer'					=> 'Poll option',
-	'Delete poll'					=> 'Deleting poll',
-	'Delete message'				=> 'Would you like to delete poll from your topic (Yes/No)',
 	'See results'					=> 'Unvoting users can see poll results',
 	'Able revote'					=> 'Allow users to change their opinions.',
 	'Delete all'					=> 'Would you like to delete all poll results if answers will be changed (Yes/No)',
-	'Additional options'			=> 'Poll settings',
-	'Incorrect data'				=> 'Input the incorrect data. Please go to back',
-	'Bad request'					=> 'Bad request. The link you followed is incorrect or outdated.',
-	'Actions'						=> 'Edit actions',
 
-	// admin
 	'Name plugin'					=> 'Settings for polls',
 	'Plugin option'					=> 'Option of poll',
 	'Plugin option info'            => 'In given options you may include poll in forum.',
@@ -52,30 +30,13 @@ $lang_pun_poll = array(
 	'Poll add'						=> 'Allows users to use poll in their topics',
 	'Permission'					=> 'Voting permission',
 
-	// errors
-	'Text area'						=> 'All field are incorporated not',
-	'Bad symbols'					=> 'Inadmissible symbols are Incorporated',
-	'Question'						=> 'Not question is incorporated',
-	'Max number'					=> 'The entered value exceeds the maximally allowed answer number. It was replaced by 100',
-	'Min number'					=> 'The entered value exceeds the marginally allowed answer number. It was replaced by 50',
-
-	// viewtopic
-	'Topic poll'					=> 'Topic poll',
-	'Guest vote'					=> 'Guest don\'t vote.',
-	'Already vote'					=> 'You opinion is already counted.',
-	'Please go'						=> 'You have already voted.',
-	'Results hidden'				=> 'Please, submit your opinion to see poll results.',
-	'Submit opinion'				=> 'Submit opinion',
-	'No questions'					=> 'No questions in this theme.',
-	'Count of voices'				=> 'Votes count:',
-	'Thank you'						=> 'Thank you for go into this poll',
 	'Revote'						=> 'Revote poll',
 	'Summary count'					=> 'Number of poll options',
 	'Allow days'					=> 'Run poll for (days)',
 	'Votes needed'					=> 'Votes count',
 	'Send opinion'					=> 'Sending opinion. Redirecting ...',
 	'Input error'					=> 'You should enter number of days for voting or count of votes.',
-
+	'Option'						=> 'Option',	
 	'Count'							=> 'Count',
 	'Button note'					=> 'Update poll',
 	'Show poll res'					=> 'Showing poll results',
@@ -90,11 +51,15 @@ $lang_pun_poll = array(
 	'No votes'						=> 'There is no votes in this poll yet.',
 	'Dis read vote'					=> 'You can\'t see voting results until you don\'t vote.',
 	'But note'						=> 'Vote',
-	'User vote error'				=> 'You have voted yet.',
+	'User vote error'				=> 'You have already voted.',
 	'End of vote'					=> 'Poll that you want to vote is out of date.',
 	'Reset res'						=> 'Reset voting results',
 	'Reset res notice'				=> 'Check this if you want to reset voting results',
 	'Remove v'						=> 'Remove voting',
 	'Remove v notice'				=> 'Check this if you want to remove voting',
-	'Empty question'				=> 'You should enter a question of poll.'
+	'Empty question'				=> 'You should enter a question of poll.',
+	'Merge error'					=> 'You can\'t merge this topics, because 2 or more topics have voting. Remove voting before merging.',
+	'Edit voting'					=> 'This two options allow to you reset voting results or remove voting. If you want to edit voting send e-mail to administrator of Forum <a href="mailto:%s">%s</a>.',
+	'New voting'					=> 'You can create new voting, using this form. Number of answers can\'t be less than 2. Length of question can\'t be less than 10 symbols. If you want to add answer, enter number of answers that you needed in the field and press "Update poll". You can choose when your voting will be finished. For this you can enter count of days or maximum count of votes. Remember: if you enter count of days, count of votes will be ignored. If your administrator allow to change user vote or unvoted users can see voting results you will see appropriate options.',
+	'Edit voting admin'				=> 'You can edit voting.'
 );
