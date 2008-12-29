@@ -36,7 +36,6 @@ $lang_pun_poll = array(
 	'Votes needed'					=> 'Votes count',
 	'Send opinion'					=> 'Sending opinion. Redirecting ...',
 	'Input error'					=> 'You should enter number of days for voting or count of votes.',
-	'Option'						=> 'Option',	
 	'Count'							=> 'Count',
 	'Button note'					=> 'Update poll',
 	'Show poll res'					=> 'Showing poll results',

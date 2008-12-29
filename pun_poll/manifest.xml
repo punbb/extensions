@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_poll</id>
 	<title>Pun poll</title>
-	<version>1.0</version>
+	<version>1.0.1</version>
 	<description>Adds polls feature for topics.</description>
 	<author>PunBB Development team</author>
 	<minversion>1.3 SVN</minversion>
@@ -160,19 +160,19 @@
 		<hook id="fn_delete_topic_qr_delete_topic"><![CDATA[
 			$query_poll = array(
 				'DELETE'	=> 'voting',
-				'WHERE'		=> 'topic_id='.$topic_id
+				'WHERE'		=> 'topic_id = '.$topic_id
 			);
 			$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 
 			$query_poll = array(
 				'DELETE'	=> 'questions',
-				'WHERE'		=> 'topic_id='.$topic_id
+				'WHERE'		=> 'topic_id = '.$topic_id
 			);
 			$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 
 			$query_poll = array(
 				'DELETE'	=> 'answers',
-				'WHERE'		=> 'ques_id='.$topic_id
+				'WHERE'		=> 'topic_id = '.$topic_id
 			);
 			$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 
@@ -854,13 +854,14 @@
 
 						$num = 0;
 						$vote_results = isset($vote_form) ? '' : '<div class="ct-box info-box"><p>'.$lang_pun_poll['Results'].forum_htmlencode($question).'</p></div>';
-						$vote_results .= '<div class="ct-group"><table cellspacing="0"><thead><th class="tc0" scope="col">'.$lang_pun_poll['Option'].'</th><th class="tc1" scope="col">'.$lang_pun_poll['Count'].'</th></thead><tbody>';
+						$vote_results .= '<div class="ct-group"><table cellspacing="0"><thead><th class="tc0" scope="col">&nbsp;</th><th class="tc1" scope="col">&nbsp;</th><th class="tc2" scope="col">&nbsp;</th></thead><tbody>';
 						while (list($answer, $count_v) = $forum_db->fetch_row($result_pun_poll))
 						{
 							$num++;
 							$vote_results .= '<tr class="'.($num % 2 == 0 ? 'even' : 'odd').'">';
 							$vote_results .= '<td class="tc0">'.forum_htmlencode($answer).'</td>';
-							$vote_results .= '<td class="tc1">'.forum_number_format($count_v).' '.forum_number_format((float)$count_v/$vote_count * 100, 2).'%</td></tr>';
+							$vote_results .= '<td class="tc1">'.forum_number_format($count_v).'</td>';
+							$vote_results .= '<td class="tc2">'.forum_number_format((float)$count_v/$vote_count * 100, 2).'%</td></tr>';
 						}
 						$vote_results .= '</tbody></table></div>';
 					}
