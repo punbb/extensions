@@ -1,293 +1,143 @@
-/**
- * Allows users to quote posts without a page reloading
- *
- * @copyright Copyright (C) 2008 PunBB
- * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_quote
- */
+
+/***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************/
 
 document.onmouseup = SetSelected;
-var selNode;
-
-function turnOnLinks()
-{
-	var p = document.getElementsByTagName('p');
-
-	var tmp_k = 0;
-
-	for (var k=0; k < p.length; k++ )
-	{
-		if (p[k].className.match(/post-actions/))
-		{
-			var span = p[k].getElementsByTagName('span');
-	
-			if (tmp_k == 0)
-			{
-				span[5].style.display = "";
-				tmp_k = 1;
-				var a = span[7].getElementsByTagName('a');
-
-				if (a.length == 0)
-				{
-					tmp_k = 1;
-					k = 0;
-				}
-				else
-					a[0].href = "javascript: QuickQuote()";
-			}
-			else
-			{
-				span[6].style.display = "";
-				var a = span[8].getElementsByTagName('a');
-				a[0].href = "javascript: QuickQuote()";
-			}
-		}
-	}
-}
 
 function getSelectedText()
 {
-	try
-	{
-		var result = undefined;
-		
-		if (document.selection)
-		{
-			selNode = document.selection.createRange().parentElement();
-			
-			var testNode = selNode;
-			var flag = 1;
-			
-			while(flag == 1)
-			{
-				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
-					testNode = testNode.parentNode.parentNode;
-				else if ((testNode.nodeName == 'CODE'))
-						testNode = testNode.parentNode.parentNode;
-				else if ((testNode.nodeName == 'CITE'))
-					testNode = testNode.parentNode;						
-				else
-					flag = 0;
-			}
-			
-			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
-				result = document.selection.createRange().text;
-		}
-		else if (document.getSelection)
-		{
-			selNode = window.getSelection().anchorNode.parentNode;
-			
-			var testNode = selNode;
-			var flag = 1;
-			
-			while(flag == 1)
-			{
-				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
-					testNode = testNode.parentNode.parentNode;
-				else if ((testNode.nodeName == 'CODE'))
-						testNode = testNode.parentNode.parentNode;
-				else if ((testNode.nodeName == 'CITE'))
-					testNode = testNode.parentNode;
-				else
-					flag = 0;
-					
-	
-			}
-			
-			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
-				result = document.getSelection();
-		}
-		else if (window.getSelection)
-		{
-			selNode = window.getSelection().anchorNode.parentNode;
-			
-			var testNode = selNode;
-			var flag = 1;
-			
-			while(flag == 1)
-			{
-				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
-					testNode = testNode.parentNode.parentNode;
-				else if ((testNode.nodeName == 'CODE'))
-						testNode = testNode.parentNode.parentNode;
-				else if ((testNode.nodeName == 'CITE'))
-					testNode = testNode.parentNode;						
-				else
-					flag = 0;
-			}
-			
-			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
-				result = window.getSelection();
-		}
-		else
-			return result;
-	}
-	catch(err)
-	{
-		result = undefined;
-	}
-		
+	var result = '';
+	if (document.selection)
+		result = document.selection.createRange().text;
+	else if (document.getSelection)
+		result = document.getSelection();
+	else if (window.getSelection)
+		result = window.getSelection();
+	else
+		return result;
 	return result;
 }
 
-function Reply(tid_param, qid_param, d)
-{	
-	var selected_text = getSelectedText();
-	var element;
-	var reply_text = "";
-	var pun_quote_whole_citing = 0;
-
-	if ((selected_text != undefined) && (selected_text != ''))
-	{
-		while(selNode.className.indexOf('postbody') == -1)
-			selNode = selNode.parentNode;
-			
-		selNode = selNode.parentNode.getElementsByTagName('a');
-		
-		for (i = 0; i < selNode.length; i++)
-		{
-			if (selNode[i].innerHTML.indexOf('Reply') != -1)
-			{	
-				if (d == selNode[i])
-				{
-					var reply_url = document.getElementById("pun_quote_url");
-					reply_url = reply_url.value;
-					var replace_url;
-					var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
-					var flag = 1;
-					var i = 0;
-				
-					while(pun_quote_post[i].className != 'entry-content')
-						i++;
-					
-					var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
-					author = author[0].innerHTML;
-					
-					if((selected_text.type=='Range') || (selected_text.type=='Caret'))
-						selected_text=selected_text.toString();
-			
-					selected_text = RemoveSymbols(selected_text);
-					reply_text +=(window.selected_text_first == '') ? window.selected_text_second + '\n': window.selected_text_first + '\n';
-					
-					element = document.getElementById('post_msg');
-					element.value = reply_text;
-					var form = document.getElementById('qq');
-					var reply_url = document.getElementById('pun_quote_url').value;
-					replace_url = reply_url.replace('$2',qid_param.toString());
-					form.action = replace_url.toString();
-					form.submit();
-					break;
-				}
-				else
-					pun_quote_whole_citing = 1;
-			}
-		}
-	}
-	else
-		pun_quote_whole_citing = 1;
-	
-	if (pun_quote_whole_citing == 1)
-	{
-		var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
-		var flag = 1;
-		var i = 0;
-	
-		while(flag == 1)
-		{
-			if (pun_quote_post[i].className == 'entry-content')
-				break;
-				
-			i++;
-		}
-		
-		var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
-		author = author[0].innerHTML;
-		
-		var paste_text = pun_quote_posts[qid_param];
-		paste_text = paste_text.replace(/<\/br>/ig,'\n');
-		element = document.getElementById('post_msg');
-		element.value = paste_text;
-		var form = document.getElementById('qq');
-		var reply_url = document.getElementById('pun_quote_url').value;
-		replace_url = reply_url.replace('$2',qid_param.toString());
-		form.action = replace_url.toString();
-		form.submit();
-	}
-	
-	return false;
+function TrimString(param)
+{
+	param = param.replace(/ /g,' ');
+	return param.replace(/(^\s+)|(\s+$)/g, '');
 }
 
-function QuickQuote(tid_param, qid_param, d)
+function Reply(tid_param, qid_param)
 {
-	var selected_text = getSelectedText();
-	var element;
-	var pun_quote_whole_citing = 0;
-
-	if ((selected_text != undefined) && (selected_text != ''))
+	var element = document.getElementsByTagName('div');
+	for (var i=0; i < element.length; i++)
 	{
-		while(selNode.className.indexOf('postbody') == -1)
-			selNode = selNode.parentNode;
-			
-		selNode = selNode.parentNode.getElementsByTagName('a');
-		
-		for (i = 0; i < selNode.length; i++)
+		if(element[i].className.match(/^post\s.*/ig))
 		{
-			if (selNode[i].innerHTML.indexOf('Quick quote') != -1)
+
+			var post = new String(element[i].innerHTML);
+
+			if(post.search('Reply[(]' + tid_param + ',' + qid_param + '[)]') != -1)
 			{
-				if (d == selNode[i])
-				{
-					var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
-					var flag = 1;
-					var i = 0;
+				post=ChangePost(post);
+				var post_new = RemoveSymbols(post);
+				var selected_text = (window.selected_text_first == '')?window.selected_text_second:window.selected_text_first;//getSelectedText();				
 				
-					while(pun_quote_post[i].className != 'entry-content')
-						i++;
-					
-					var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
-					author = author[0].innerHTML;
-					
-					if((selected_text.type=='Range') || (selected_text.type=='Caret'))
+				if((selected_text != undefined)&&(selected_text!=''))
+				{
+				   //this is for Chrome browser. Text, selected by user, has 'Range' type, not 'String'. And in some cases, when there is no text selected, Chrome returns one symbol of 'Caret' type
+					if((selected_text.type=='Range')||(selected_text.type=='Caret'))
 						selected_text=selected_text.toString();
-	
+
 					selected_text = RemoveSymbols(selected_text);
-					element = document.getElementById('fld1');
-					element.value +=(window.selected_text_first == '')?'[quote='+author+']'+window.selected_text_second+'[/quote]'+'\n':'[quote='+author+']'+window.selected_text_first+'[/quote]'+'\n';					
-				}
-				else
-					pun_quote_whole_citing = 1;
 					
-				break;
+					post = TrimString(post);
+
+					if((post_new.indexOf(selected_text) != -1) && (selected_text.charAt(0) != ''))
+					{
+						var form = document.getElementById('qq');
+						form.action='post.php?tid=' + tid_param + '&qid=' + qid_param;
+						element = document.getElementById('post_msg');
+						element.value =(window.selected_text_first == '')?window.selected_text_second:window.selected_text_first;//getSelectedText();
+						form.submit();
+						break;
+					}
+				}
+				location = 'post.php?tid=' + tid_param + '&qid=' + qid_param;
 			}
 		}
 	}
-	else
-		pun_quote_whole_citing = 1;
-	
-	if (pun_quote_whole_citing == 1)
+}
+
+function QuickQuote(tid_param, qid_param)
+{
+	var element = document.getElementsByTagName('div');
+
+	for (var i=0; i < element.length; i++)
 	{
-		var pun_quote_post = d.parentNode.parentNode.parentNode.parentNode.parentNode.getElementsByTagName('div');
-		var flag = 1;
-		var i = 0;
 	
-		while(flag == 1)
+		if(element[i].className.match(/^post\s.*/ig))
 		{
-			if (pun_quote_post[i].className == 'entry-content')
-				break;
+		
+			var post = new String(element[i].innerHTML);
+			post = post.replace(/[\s]*<p[\s]*class[\s]*=[\s]*["]*[\s]*lastedit[\s]*["]*[\s]*>[\s]*(.*?)[\s]*<\/p>[\s]*/ig,'');
+			post = post.replace(/[\s]*<div[\s]*class[\s]*=[\s]*["]*[\s]*sig-content[\s]*["]*[\s]*>[\s]*(.*?)[\s]*<\/div>[\s]*/ig,'');
+			if(post.search('QuickQuote[(]' + tid_param + ',' + qid_param + '[)]') != -1)
+			{
+				//get quoted author name from the post
+				//var RegExp = /<cite>.*\sby\s(.*?):/ig;  old markup compatibility
+				var RegExp =/<span class="*post-byline"*>(?:.*?)<a(?:.*?)>(.*?)<\/a>/ig;
+				var result =  RegExp.exec(post);
+				RegExp.lastIndex=0;
+				var author_name;
+
+				if(result!=null)
+					author_name=result[1];
 				
-			i++;
-		}
-		
-		var author = pun_quote_post[i].parentNode.parentNode.parentNode.getElementsByTagName('a');
-		author = author[0].innerHTML;
-		
-		element = document.getElementById('fld1');
-		var paste_text = pun_quote_posts[qid_param];
-		paste_text = paste_text.replace(/<\/br>/ig,'\n');
-		element.value += '[quote='+author+']' + paste_text + '[/quote]'+'\n';
-		return false;
-	}
+			
+				post=ChangePost(post);
+				var post_new = RemoveSymbols(post);
+				var selected_text = (window.selected_text_first == '')?window.selected_text_second:window.selected_text_first;//getSelectedText();				
+
+				
+				post = TrimString(post);
+
+				if((selected_text != undefined)&&(selected_text!=''))
+				{
+				   //this is for Chrome browser. Text, selected by user, has 'Range' type, not 'String'. And in some cases, when there is no text selected, Chrome returns one symbol of 'Caret' type
+					if((selected_text.type=='Range')||(selected_text.type=='Caret'))
+						selected_text=selected_text.toString();
 	
-	return false;
+					selected_text = RemoveSymbols(selected_text);
+
+					if((post_new.indexOf(selected_text) != -1) && (selected_text.charAt(0) != ''))
+					{
+						element = document.getElementById('fld1');
+						element.value +=(window.selected_text_first == '')?'[quote='+author_name+']\n'+window.selected_text_second+'[/quote]'+'\n':'[quote='+author_name+']\n'+window.selected_text_first+'[/quote]'+'\n';//getSelectedText();
+						break;
+					}
+				}
+				element = document.getElementById('fld1');
+				element.value+='[quote='+author_name+']\n'+post+'\n[/quote]'+'\n';
+			}
+		}
+	}
+
 }
 
 function RemoveSymbols(string)
@@ -302,6 +152,74 @@ function RemoveSymbols(string)
 	string = string.replace(/<BR>/ig,'');
 	return string;
 }
+function ChangePost(post)
+{
+	var reg = new RegExp('<DIV[\\s]*class[\\s]*=[\\s]*["]*[\\s]*entry\\-content[\\s]*["]*[\\s]*>[\\s\\S]*<DIV[\\s]*class[\\s]*=[\\s]*["]*[\\s]*postfoot[\\s]*["]*[\\s]*>','ig');
+
+	var post = new String(reg.exec(post));
+
+	var browse = navigator.userAgent.toLowerCase();
+
+	post = post.replace(/((<BR>)(<\/P>))|((<BR\/>)(<\/P>))/ig,'$2$4');
+
+	if(browse.indexOf('opera') == -1)
+		post = post.replace(/((<BR>)(<P>))|((<BR\/>)(<P>))/ig,'$2$4');
+
+		post = post.replace(/(:?<BR>)|(:?<BR\/>)/ig,'\n');
+
+		//</p><p> = \n\n  - Opera FF
+		//</p><p> = /n - IE 7.0
+		if(browse.indexOf('opera') != -1 ||  browse.indexOf('gecko') != -1)
+			post = post.replace(/(:?<\/p>)|(:?<p>)/ig,'\n');
+		else
+			post = post.replace(/<\/p>[\s]*<p>/ig,'\n');
+
+		post = post.replace(/>[\s]*</,'><');
+
+		//Make [quote="name"]...[/quote]
+		post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*quotebox[\s]*["]*[\s]*>[\s]*<cite>[\s]*/ig,'[quote=');
+		post = post.replace(/[\s]*wrote:/g,"]");
+		post = post.replace(/<div[\s]*class[\s]*=[\s]*["]*[\s]*quotebox[\s]*["]*[\s]*>[\s]*/ig,'[quote]');
+		post = post.replace(/[\s]*<\/blockquote>[\s]*/ig,"[/quote]");
+
+		//IMG
+		post = post.replace(/<img[\s]*src[\s]*=[\s]*["]*[\s]*(.*?)[\s]*["]*[\s]*alt[\s]*=[\s]*["]*[\s]*(.*?)[\s]*["]*[\s]*>[\s]*/ig,'[img]$1[/img]');
+		//B
+		post = post.replace(/<strong>[\s]*(.*?)[\s]*<\/strong>/ig,'[b]$1[/b]');
+		//I
+		post = post.replace(/<em>[\s]*(.*?)[\s]*<\/em>/ig,'[i]$1[/i]');
+		//U
+		post = post.replace(/<span[\s]*class[\s]*=[\s]*["]*[\s]*bbu[\s]*["]*[\s]*>[\s]*(.*?)[\s]*<\/span>/ig,'[u]$1[/u]');
+		//LIST
+		post = post.replace(/<ul>/ig,'[list]\n');
+		post = post.replace(/<ol[\s]*class[\s]*=[\s]*["]*[\s]*decimal[\s]*["]*[\s]*>/ig,'[list=1]\n');
+		post = post.replace(/<ol[\s]*class[\s]*=[\s]*["]*[\s]*alpha[\s]*["]*[\s]*>/ig,'[list=a]\n');
+		post = post.replace(/<li>[\s]*(.*?)[\s]*<\/li>[\s]*/ig,'[*]$1[/*]\n');
+		post = post.replace(/<\/ul>/ig,'[/list]\n');
+		post = post.replace(/<\/ol>/ig,'[/list]\n');
+		//URL
+		post = post.replace(/<a[\s]*href[\s]*=[\s]*["]*[\s]*(.*?)[\s]*["]*[\s]*>(.*?)<\/a>/ig,'[url=$1]$2[/url]');
+		//CODE
+		post = post.replace(/<pre><code>[\s]*(.*?)[\s]*<\/code><\/pre>[\s]*/ig,'[code]\n$1\n[/code]\n');
+		//COLOR
+		post = post.replace(/<span[\s]*style[\s]*=[\s]*["]*[\s]*color:[\s]*(.*?)[\s]*;[\s]*["]*[\s]*>(.*?)<\/span>/ig,'[color=$1]$2[/color]');
+
+		//Remove tags
+		post = post.replace(/<(:?.*?)>/gi,'');
+
+		//Replace quote = name name on quote = "name name"
+		post = post.replace(/\[quote=(["][-a-zA-Z0-9]*)[\s]+([-"a-zA-Z0-9]*)\]/g,'[quote=\"$1 $2\"]');
+
+		//Insert \n before [/quote]
+		post = post.replace(/\[\/quote\]/g,'\n[/quote]');
+
+		//exotic symbols =)
+		post = post.replace(/\u00A0/g,' ');
+		post = post.replace(/&nbsp;/g,' ');
+		post = post.replace(/&lt;/g,'<');
+		post = post.replace(/&gt;/g,'>');
+		return post;
+}
 
 function SetSelected()
 {
@@ -310,14 +228,14 @@ function SetSelected()
 		case 0:
 			window.selected_text_pointer = 1;
 			window.selected_text_first = getSelectedText();
-		break;
+			break;
 		case 1:
 			window.selected_text_pointer = 0;
 			window.selected_text_second = getSelectedText();
-		break;
+			break;
 		case undefined:
 			window.selected_text_pointer = 0;
 			window.selected_text_second = getSelectedText();
-		break;
+			break;
 	}
 }
