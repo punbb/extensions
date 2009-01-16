@@ -27,7 +27,7 @@
 <extension engine="1.0">
 	<id>pun_admin_events</id>
 	<title>Events registration</title>
-	<version>0.7</version>
+	<version>0.7.1</version>
 	<description>Adds gear to logging events and GUI to browse this log.</description>
 	<author>PunBB Development Team</author>
 
@@ -108,6 +108,7 @@
 
 			require $ext_info['path'].'/functions.php';
 
+			// Setup breadcrumbs
 			$forum_page['crumbs'] = array(
 				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 				array($lang_admin['Forum administration'], forum_link($forum_url['admin_index'])),
@@ -118,21 +119,22 @@
 			define('FORUM_PAGE', 'admin-management-events');
 			require FORUM_ROOT.'header.php';
 
+			// START SUBST - <!-- forum_main -->
 			ob_start();
 			?>
 			<div id="pun-main" class="main sectioned admin">
-				<?php echo generate_admin_menu(); ?>
+				<?php echo generate_admin_menu();?>
 				<div class="main-head">
-					<h1><span>{ <?php echo end($forum_page['crumbs']); ?> }</span></h1>
+					<h1><span>{ <?php echo end($forum_page['crumbs']) ?> }</span></h1>
 				</div>
 
 				<div class="main-content frm">
 					<div class="frm-head">
-						<h2><span><?php echo $lang_pun_admin_events['Filter selection']; ?></span></h2>
+						<h2><span><?php echo $lang_pun_admin_events['Filter selection'] ?></span></h2>
 					</div>
-				<form class="frm-form" name="mainform" method="post" accept-charset="utf-8" action="<?php echo $base_url; ?>/admin/extensions.php?section=events">
+				<form class="frm-form" name="mainform" method="post" accept-charset="utf-8" action="<?php echo $base_url ?>/admin/extensions.php?section=events">
 					<div class="hidden">
-						<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($base_url.'/admin/extensions.php?section=events'); ?>" />
+						<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($base_url.'/admin/extensions.php?section=events') ?>" />
 					</div>
 					<div class="hidden">
 						<input type="hidden" name="page" value="1" />
@@ -167,7 +169,7 @@
 						<span class="fld-label">By Event:</span>
 						<span class="fld-input">
 							<select id="fld-event-id" name="event_id">
-							<?php
+							<?
 								$query = array(
 									'SELECT'	=> 'distinct type',
 									'FROM'		=> 'pun_admin_events',
@@ -178,7 +180,7 @@
 								if(isset($_POST['event_id']) && $_POST['event_id'] != '')
 									echo '<option value="">'.$lang_pun_admin_events['Any'].'</option>';
 								else
-									echo '<option selected="selected" value="">'.$lang_pun_admin_events['Any'].'</option>';
+									echo '<option selected="selected" value="0">'.$lang_pun_admin_events['Any'].'</option>';
 
 								while($_tmp = $forum_db->fetch_assoc($result))
 								{
@@ -200,15 +202,15 @@
 						</span>
 					</div>
 					</fieldset>
-					<fieldset class="frm-set set4">
+					<fieldset class="frm-set set3">
 					<div class="frm-fld text">
 						<span class="fld-label"><?php echo $lang_pun_admin_events['By UserName']; ?></span>
 						<span class="fld-input">
-							<input id="fld-name" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '*'; ?>" />
+							<input id="fld-ip" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '*'; ?>" />
 						</span>
 					</div>
 					</fieldset>
-					<fieldset class="frm-set set5">
+					<fieldset class="frm-set set4">
 					<div class="frm-fld text">
 						<span class="fld-label"><?php echo $lang_pun_admin_events['By Comment']; ?></span>
 						<span class="fld-input">
@@ -216,12 +218,12 @@
 						</span>
 					</div>
 					</fieldset>
-					<fieldset class="frm-set set6">
+					<fieldset class="frm-set set2">
 					<div class="frm-fld text">
 						<span class="fld-label">Sort by:</span>
 						<span class="fld-input">
-							<select id="fld-sort-by" name="sort_by">
-								<?php
+							<select id="fld-event-id" name="sort_by">
+								<?php 
 								if(isset($_POST['sort_by']))
 								{
 									$schema[] = 'Date';
@@ -229,9 +231,9 @@
 									$schema[] = 'IP';
 									$schema[] = 'User_Name';
 
-									for($i = 0; $i < count($schema); $i++)
+									for($i = 0; $i < 4; $i++)
 									{
-										if($_POST['sort_by'] == $schema[$i])
+										if($_POST['sort_rule'] == $schema[$i])
 											echo '<option selected="selected" value="'.$schema[$i].'">'.$lang_pun_admin_events[$schema[$i]].'</option>';
 										else
 											echo '<option value="'.$schema[$i].'">'.$lang_pun_admin_events[$schema[$i]].'</option>';
@@ -246,7 +248,7 @@
 								}
 								?>
 							</select>
-							<select id="fld-sort-rule" name="sort_rule">
+							<select id="fld-event-id" name="sort_rule">
 								<?php
 								if(isset($_POST['sort_rule']) && $_POST['sort_rule'] == 'DESC')
 								{
@@ -270,17 +272,21 @@
 				</form>
 			</div>
 			<div class="main-content frm">
-<?php
+<?
+	//$results_onpage - results per page
 	$results_onpage = 20;
 
+	//Prepare ORDER clause.
 	$order_by = '';
 	if(isset($_POST['sort_by']))
 		$order_by = $_POST['sort_by'].' '.$_POST['sort_rule'];
 	else
 		$order_by = 'date';
 
+	//Prepare WHERE clause
 	$sql_where = implode(' && ', pun_events_generate_where());
 
+	//Count rows
 	$query = array(
 		'SELECT'	=> 'count(*)',
 		'FROM'		=> 'pun_admin_events',
@@ -291,6 +297,7 @@
 	$num_rows = $forum_db->result($result);
 	$data = array();
 
+	//if no rows was founded don't try to find it agein =)
 	if($num_rows != 0)
 	{
 		$query = array(
@@ -307,6 +314,7 @@
 			$data[] = $_tmp;
 	}
 
+	//Draw results
 	$schema = array(
 		'ip'			=> $lang_pun_admin_events['IP'],
 		'type'			=> $lang_pun_admin_events['Type'],
@@ -331,6 +339,8 @@
 			$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
 
 			ob_end_clean();
+
+			// END SUBST - <!-- forum_main -->
 
 			require FORUM_ROOT.'footer.php';
 		}
