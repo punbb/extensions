@@ -113,7 +113,9 @@
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name = "p_pun_poll_enable_read"'
 		);
-		if ($forum_db->num_rows($query_pun_poll) == 0)
+		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+
+		if ($forum_db->num_rows($result_pun_poll) == 0)
 		{
 			$query_poll_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
@@ -129,7 +131,9 @@
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name = "p_pun_poll_enable_revote"'
 		);
-		if ($forum_db->num_rows($query_pun_poll) == 0)
+		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+
+		if ($forum_db->num_rows($result_pun_poll) == 0)
 		{
 			$query_poll_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
@@ -145,7 +149,9 @@
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name = "p_pun_poll_max_answers"'
 		);
-		if ($forum_db->num_rows($query_pun_poll) == 0)
+		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+
+		if ($forum_db->num_rows($result_pun_poll) == 0)
 		{
 			$query_poll_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
