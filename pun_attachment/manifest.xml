@@ -29,7 +29,7 @@
 <extension engine="1.0">
 	<id>pun_attachment</id>
 	<title>Attachment</title>
-	<version>1.0a.1</version>
+	<version>1.0a.2</version>
 	<description>Allows you to attach files to posts.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3 SVN</minversion>
@@ -40,184 +40,163 @@
 	<install><![CDATA[
 
 		require FORUM_ROOT.'/extensions/'.$id.'/install_function.php';
+		if (file_exists(FORUM_ROOT.'/extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php'))
+			require FORUM_ROOT.'/extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php';
+		else
+			require FORUM_ROOT.'/extensions/'.$id.'/lang/English/'.$id.'.php';
 
-		$forum_db->query("CREATE TABLE IF NOT EXISTS ".$forum_db->prefix."attach_files (
-			id int(10) unsigned NOT NULL auto_increment,
-			owner_id int(10) unsigned NOT NULL default '0',
-			post_id int(10) unsigned NOT NULL default '0',
-			topic_id int(10) unsigned NOT NULL default '0',
-			filename varchar(255) NOT NULL default '',
-			file_ext varchar(64) NOT NULL default '',
-			file_mime_type varchar(64) NOT NULL default '',
-			file_path text NOT NULL,
-			size int(10) unsigned NOT NULL default '0',
-			download_counter int(10) unsigned NOT NULL default '0',
-			uploaded_at int(10) unsigned default NULL,
-			UNIQUE KEY id (id))") or error(__FILE__, __LINE__);
+		if (!$forum_db->table_exists('attach_files'))
+		{
+			$schema = array(
+				'FIELDS' => array(
+					'id'		=> array(
+						'datatype'		=> 'SERIAL',
+						'allow_null'	=> false
+					),
+					'owner_id'	=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'post_id'	=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'topic_id'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'filename'		=> array(
+						'datatype'		=> 'VARCHAR(255)',
+						'allow_null'	=> false
+					),
+					'file_ext'		=> array(
+						'datatype'		=> 'VARCHAR(64)',
+						'allow_null'	=> false
+					),
+					'file_mime_type' => array(
+						'datatype'		=> 'VARCHAR(64)',
+						'allow_null'	=> false
+					),
+					'file_path'		=> array(
+						'datatype'		=> 'TEXT',
+						'allow_null'	=> false
+					),
+					'size'			=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'download_counter'	=>	array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'uploaded_at'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					)
+				),
+				'PRIMARY KEY'	=> array('id')
+			);
+			$forum_db->create_table('attach_files', $schema);
+		}
 
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_allow_download TINYINT(1) default '1' NULL");
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_allow_upload TINYINT(1) default '1' NULL");
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_allow_delete TINYINT(1) default '0' NULL");
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_allow_delete_own TINYINT(1) default '1' NULL");
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_upload_max_size INT(10) default '2000000' NULL");
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_files_per_post TINYINT(3) default '1' NULL");
-		$forum_db->query("ALTER TABLE ".$forum_db->prefix."groups ADD g_pun_attachment_disallowed_extensions TEXT NULL");
+		//Check up for existing column for attachments, it will be nessecary to determine needing of updating permissions to groups
+		$exist = $forum_db->field_exists('groups', 'g_pun_attachment_allow_download');
 
-		$query = array(
-			'UPDATE'	=> 'groups',
-			'SET'		=> 'g_pun_attachment_allow_download=1, g_pun_attachment_allow_upload=1, g_pun_attachment_allow_delete=1, g_pun_attachment_allow_delete_own=1, g_pun_attachment_upload_max_size=0, g_pun_attachment_files_per_post=-1, g_pun_attachment_disallowed_extensions=" "',
-			'WHERE'		=> 'g_id=1'
-		);
+		$forum_db->add_field('groups', 'g_pun_attachment_allow_download', 'TINYINT(1)', true, '1');
+		$forum_db->add_field('groups', 'g_pun_attachment_allow_upload', 'TINYINT(1)', true, '1');
+		$forum_db->add_field('groups', 'g_pun_attachment_allow_delete', 'TINYINT(1)', true, '0');
+		$forum_db->add_field('groups', 'g_pun_attachment_allow_delete_own', 'TINYINT(1)', true, '1');
+		$forum_db->add_field('groups', 'g_pun_attachment_upload_max_size', 'INT(10)', true, '2000000');
+		$forum_db->add_field('groups', 'g_pun_attachment_files_per_post', 'TINYINT(3)', true, '1');
+		$forum_db->add_field('groups', 'g_pun_attachment_disallowed_extensions', 'TEXT', true);
+		
+		//If it's fresh install
+		if (!$exist)			
+		{
+			$query = array(
+				'UPDATE'	=> 'groups',
+				'SET'		=> 'g_pun_attachment_allow_download = 1, g_pun_attachment_allow_upload = 1, g_pun_attachment_allow_delete = 1, g_pun_attachment_allow_delete_own = 1, g_pun_attachment_upload_max_size = 0, g_pun_attachment_files_per_post = -1, g_pun_attachment_disallowed_extensions=\'\'',
+				'WHERE'		=> 'g_id = 1'
+			);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		}
+		
+		if (!$exist)			
+		{
+			$query = array(
+				'UPDATE'	=> 'groups',
+				'SET'		=> 'g_pun_attachment_allow_download = 0, g_pun_attachment_allow_upload = 0, g_pun_attachment_allow_delete = 0, g_pun_attachment_allow_delete_own = 0, g_pun_attachment_upload_max_size = 0, g_pun_attachment_files_per_post = 0, g_pun_attachment_disallowed_extensions = \'\'',
+				'WHERE'		=> 'g_id = 2'
+			);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		}
 
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		$query = array(
-			'UPDATE'	=> 'groups',
-			'SET'		=> 'g_pun_attachment_allow_download=0, g_pun_attachment_allow_upload=0, g_pun_attachment_allow_delete=0, g_pun_attachment_allow_delete_own=0, g_pun_attachment_upload_max_size=0, g_pun_attachment_files_per_post=0, g_pun_attachment_disallowed_extensions=" "',
-			'WHERE'		=> 'g_id=2'
-		);
-
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		$basepath = realpath(FORUM_ROOT.'/extensions/pun_attachment/attachments').'/';
+		$basepath = realpath(FORUM_ROOT.'/extensions/'.$id.'/attachments').'/';
 		$newname = attach_generate_pathname($basepath);
-
-		$attach_config = array(
-			'attach_always_deny'		=>'html,htm,php,php3,php4,exe,com,bat',
-			'attach_basefolder'			=>$basepath,
-			'attach_create_orphans'		=>'1',
-			'attach_cur_version'		=>'2',
-			'attach_icon_folder'		=> $base_url.'/extensions/pun_attachment/img/',
-			'attach_icon_extension'		=>'txt,doc,pdf,wav,mp3,ogg,avi,mpg,mpeg,png,jpg,jpeg,gif',
-			'attach_icon_name'			=>'text.png,doc.png,doc.png,audio.png,audio.png,audio.png,video.png,video.png,video.png,image.png,image.png,image.png,image.png',
-			'attach_subfolder'			=>$newname,
-			'attach_use_icon'			=>'1',
-			'attach_disp_small'			=>'1',
-			'attach_small_height'		=>'60',
-			'attach_small_width'		=>'60',
-			'attach_disable_attach'		=>'0'
-		);
 
 		if (!attach_create_subfolder($newname, $basepath))
 			error('Unable to create new subfolder with name "'.$newname.'", make sure php has write access to that folder!',__FILE__,__LINE__);
 
-		foreach($attach_config AS $key => $value)
+		$query = array(
+			'SELECT'	=> '1',
+			'FROM'		=> 'config',
+			'WHERE'		=> 'conf_name = \'attach_always_deny\''
+		);
+		$result_attach = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		//If its fresh install, set init values
+		if ($forum_db->num_rows($result_attach) == 0)
 		{
-			$query = array(
-				'INSERT'	=> 'conf_name, conf_value',
-				'INTO'		=> 'config',
-				'VALUES'	=> '\''.$key.'\', \''.$forum_db->escape($value).'\''
+			$attach_config = array(
+				'attach_always_deny'		=> 'html,htm,php,php3,php4,exe,com,bat',
+				'attach_basefolder'			=> $basepath,
+				'attach_create_orphans'		=> '1',
+				'attach_cur_version'		=> '1.0a.1',
+				'attach_icon_folder'		=>  $base_url.'/extensions/pun_attachment/img/',
+				'attach_icon_extension'		=> 'txt,doc,pdf,wav,mp3,ogg,avi,mpg,mpeg,png,jpg,jpeg,gif',
+				'attach_icon_name'			=> 'text.png,doc.png,doc.png,audio.png,audio.png,audio.png,video.png,video.png,video.png,image.png,image.png,image.png,image.png',
+				'attach_subfolder'			=> $newname,
+				'attach_use_icon'			=> '1',
+				'attach_disp_small'			=> '1',
+				'attach_small_height'		=> '60',
+				'attach_small_width'		=> '60',
+				'attach_disable_attach'		=> '0'
 			);
 
-			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			foreach ($attach_config as $key => $value)
+			{
+				$query_attach = array(
+					'INSERT'	=> 'conf_name, conf_value',
+					'INTO'		=> 'config',
+					'VALUES'	=> '\''.$key.'\', \''.$forum_db->escape($value).'\''
+				);
+				$forum_db->query_build($query_attach) or error(__FILE__, __LINE__);
+			}
+			unset($query_attach);
 		}
 
 		require_once FORUM_ROOT.'include/cache.php';
-
 		generate_config_cache();
-
 	]]></install>
 
 	<uninstall><![CDATA[
-		$forum_db->query('DROP TABLE '.$forum_db->prefix.'attach_files');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_allow_download');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_allow_upload');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_allow_delete');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_allow_delete_own');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_upload_max_size');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_files_per_post');
-		$forum_db->query('ALTER TABLE '.$forum_db->prefix.'groups DROP g_pun_attachment_disallowed_extensions');
+		$forum_db->drop_table('attach_files');
+		$forum_db->drop_field('groups', 'g_pun_attachment_allow_download');
+		$forum_db->drop_field('groups', 'g_pun_attachment_allow_upload');
+		$forum_db->drop_field('groups', 'g_pun_attachment_allow_delete');
+		$forum_db->drop_field('groups', 'g_pun_attachment_allow_delete_own');
+		$forum_db->drop_field('groups', 'g_pun_attachment_upload_max_size');
+		$forum_db->drop_field('groups', 'g_pun_attachment_files_per_post');
+		$forum_db->drop_field('groups', 'g_pun_attachment_disallowed_extensions');
 		
-		$query_log = array(
+		$config_names  =  array('conf_name = \'attach_always_deny\'', 'conf_name = \'attach_basefolder\'', 'conf_name = \'attach_create_orphans\'', 'conf_name = \'attach_cur_version\'', 'conf_name = \'attach_icon_folder\'', 'conf_name = \'attach_icon_extension\'', 'conf_name = \'attach_icon_name\'', 'conf_name = \'attach_subfolder\'', 'conf_name = \'attach_use_icon\'', 'conf_name = \'attach_disable_attach\'', 'conf_name = \'attach_disp_small\'', 'conf_name = \'attach_small_height\'', 'conf_name = \'attach_small_width\'');
+		$query_attach = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_always_deny"',
-			'LIMIT'		=> '1'
+			'WHERE'		=> implode(' OR ', $config_names)
+			
 		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_basefolder"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_create_orphans"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_cur_version"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_icon_folder"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_icon_extension"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_icon_name"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_subfolder"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_use_icon"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_disable_attach"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_disp_small"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_small_height"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
-		
-		$query_log = array(
-			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="attach_small_width"',
-			'LIMIT'		=> '1'
-		);
-		$forum_db->query_build($query_log) or error(__FILE__, __LINE__);
+		$forum_db->query_build($query_attach) or error(__FILE__, __LINE__);		
 	]]></uninstall>
 
 	<hooks>
@@ -307,8 +286,7 @@
 					'SET'		=> 'g_pun_attachment_allow_download='.$allow_down.', g_pun_attachment_allow_upload='.$allow_upl.', g_pun_attachment_allow_delete='.$allow_del.', g_pun_attachment_allow_delete_own='.$allow_del_own.', g_pun_attachment_upload_max_size='.$size.', g_pun_attachment_files_per_post='.$per_post.', g_pun_attachment_disallowed_extensions=\''.$forum_db->escape($file_ext).'\'',
 					'WHERE'		=> 'g_id='.$group_id
 				);
-
-				$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
+				$forum_db->query_build($query) or error(__FILE__,__LINE__);
 			}
 
 		]]></hook>

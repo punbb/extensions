@@ -28,49 +28,50 @@ if (!defined('FORUM')) exit;
 function attach_create_subfolder($subfolder, $basepath)
 {
 	global $ext_info, $forum_user, $lang_attach;
-	if(!is_dir($basepath.$subfolder))
+
+	if (!is_dir($basepath.$subfolder))
 	{
-		// if the folder doesn't excist, try to create it
-		if(!mkdir($basepath.$subfolder,0750))
-			error($lang_attach['Error: mkdir'].' \''.$basepath.$subfolder.'\' '.$lang_attach['Error: 0750'],__FILE__,__LINE__);
-		// create a .htaccess and index.html file in the new subfolder
+		//If the folder doesn't exist, try to create it
+		if(!mkdir($basepath.$subfolder, 0750))
+			error($lang_attach['Error: mkdir'].' \''.$basepath.$subfolder.'\' '.$lang_attach['Error: 0750'], __FILE__, __LINE__);
+
+		//Create a .htaccess and index.html file in the new subfolder
 		if(!copy($basepath.'.htaccess', $basepath.$subfolder.'/.htaccess'))
-			error($lang_attach['Error: .htaccess'].' \''.$basepath.$subfolder.'\'',__FILE__,__LINE__);
+			error($lang_attach['Error: .htaccess'].' \''.$basepath.$subfolder.'\'', __FILE__, __LINE__);
 		if(!copy($basepath.'index.html', $basepath.$subfolder.'/index.html'))
-			error($lang_attach['Error: index.html'].' \''.$basepath.$subfolder.'\'',__FILE__,__LINE__);
-		// if the folder was created continue
+			error($lang_attach['Error: index.html'].' \''.$basepath.$subfolder.'\'', __FILE__, __LINE__);
 	}
-	// return true if everything has gone as planned, return false if the new folder could not be created (rights etc?)
+	//Will return true if everything has gone as planned, return false if the new folder could not be created (rights etc?)
 	return true;
 }
 
 function attach_generate_pathname($storagepath = '')
 {
 	global $lang_attach;
-	if(strlen($storagepath) != 0)
-	{
-		$not_unique=true;
 
-		while($not_unique)
+	if (!empty($storagepath))
+	{
+		while (1)
 		{
 			$newdir = attach_generate_pathname();
 
-			if(!is_dir($storagepath.$newdir))
+			if (!is_dir($storagepath.$newdir))
 				return $newdir;
 		}
 	}
 	else
-		return substr(md5(time().$lang_attach['Put salt'].rand(0, 1E6)),0,32);
+		return substr(md5(time().$lang_attach['Put salt'].rand(0, 1E6)), 0, 32);
 }
 
 function attach_generate_filename($storagepath, $messagelenght = 0, $filesize = 0)
 {
 	global $lang_attach;
-	$not_unique=true;
-	while($not_unique)
+
+	while (1)
 	{
 		$newfile = md5(attach_generate_pathname().$messagelenght.$filesize.$lang_attach['Some more salt keywords']).'.attach';
-		if(!is_file($storagepath.$newfile))return $newfile;
+		if (!is_file($storagepath.$newfile))
+			return $newfile;
 	}
 }
 
