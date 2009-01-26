@@ -153,7 +153,7 @@
 
 		if ($forum_db->num_rows($result_pun_poll) == 0)
 		{
-			$query_poll_poll = array(
+			$query_pun_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
 				'VALUES'	=> '"p_pun_poll_max_answers", "7"'
