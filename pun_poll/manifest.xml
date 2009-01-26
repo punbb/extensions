@@ -106,7 +106,7 @@
 			$forum_db->create_table('answers', $schema);
 		}
 
-		$forum_db->add_field('groups', 'g_poll_add', 'tinyint(1)', false, 1);
+		$forum_db->add_field('groups', 'g_poll_add', 'TINYINT(1)', false, 1);
 
 		$query_pun_poll = array(
 			'SELECT'	=>	'1',
@@ -117,16 +117,16 @@
 
 		if ($forum_db->num_rows($result_pun_poll) == 0)
 		{
-			$query_poll_poll = array(
+			$query_pun_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"p_pun_poll_enable_read","0"'
+				'VALUES'	=> '"p_pun_poll_enable_read", "0"'
 			);
 
 			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 		}
 
-		$query_poll_poll = array(
+		$query_pun_poll = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name = "p_pun_poll_enable_revote"'
@@ -135,10 +135,10 @@
 
 		if ($forum_db->num_rows($result_pun_poll) == 0)
 		{
-			$query_poll_poll = array(
+			$query_pun_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"p_pun_poll_enable_revote","0"'
+				'VALUES'	=> '"p_pun_poll_enable_revote", "0"'
 			);
 
 			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
@@ -156,7 +156,7 @@
 			$query_poll_poll = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"p_pun_poll_max_answers","7"'
+				'VALUES'	=> '"p_pun_poll_max_answers", "7"'
 			);
 
 			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
@@ -171,7 +171,7 @@
 
 		$query_poll = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="p_pun_poll_enable_read" OR conf_name="p_pun_poll_enable_revote" OR conf_name="p_pun_poll_max_answers"'
+			'WHERE'		=> 'conf_name = "p_pun_poll_enable_read" OR conf_name = "p_pun_poll_enable_revote" OR conf_name = "p_pun_poll_max_answers"'
 		);
 		$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 	]]></uninstall>
