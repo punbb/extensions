@@ -17,8 +17,8 @@
 	<version>1.0.2</version>
 	<description>Adds polls feature for topics.</description>
 	<author>PunBB Development team</author>
-	<minversion>1.3 SVN</minversion>
-	<maxtestedon>1.3 SVN</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.2</maxtestedon>
 
 	<install><![CDATA[
 		if (!$forum_db->table_exists('questions'))
@@ -251,7 +251,7 @@
 				else if ($num_polls == 1)
 					list($question_id) = $forum_db->fetch_row($result_pun_poll);
 
-				unset($num_polls);	
+				unset($num_polls);
 			}
 		]]></hook>
 		
@@ -308,7 +308,7 @@
 				if ($poll_answers == null && !empty($_POST['poll_answer']))
 					message($lang_common['Bad request']);
 				$days_poll = isset($_POST['allow_poll_days']) && !empty($_POST['allow_poll_days']) ? intval($_POST['allow_poll_days']) : null;
-				if ($days_poll != null && ($days_poll > 30 || $days_poll < 1))
+				if ($days_poll != null && ($days_poll > 90 || $days_poll < 1))
 					message($lang_pun_poll['Days limit']);
 				$votes_poll = isset($_POST['allow_poll_votes']) && !empty($_POST['allow_poll_votes']) ? intval($_POST['allow_poll_votes']) : null;
 				if ($votes_poll != null && ($votes_poll > 500 || $votes_poll < 2))
@@ -559,7 +559,7 @@
 					if ($poll_answers == null && !empty($_POST['poll_answer']))
 						message($lang_common['Bad request']);
 					$days_poll = isset($_POST['allow_poll_days']) && !empty($_POST['allow_poll_days']) ? intval($_POST['allow_poll_days']) : null;
-					if ($days_poll != null && ($days_poll > 30 || $days_poll < 1))
+					if ($days_poll != null && ($days_poll > 90 || $days_poll < 1))
 						message($lang_pun_poll['Days limit']);
 					$votes_poll = isset($_POST['allow_poll_votes']) && !empty($_POST['allow_poll_votes']) ? intval($_POST['allow_poll_votes']) : null;
 					if ($votes_poll != null && ($votes_poll > 500 || $votes_poll < 2))
@@ -577,14 +577,14 @@
 						);
 						$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 	
-						$poll_answers = array();					
+						$poll_answers = array();
 						$num_rows = $forum_db->num_rows($result_pun_poll);
 						if ($num_rows > 0)
 						{
 							while ($row = $forum_db->fetch_assoc($result_pun_poll))
 								$poll_answers[] = $row['answer'];
 							$options_count = $num_rows;
-						}				
+						}
 					}
 				}
 			}
@@ -624,14 +624,14 @@
 						</div>
 					</div>
 				</fieldset>
-					<?php					
+					<?php
 
 					if ($forum_page['is_admmod'])
 						form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : $question, $poll_answers, $options_count, ($days_poll == null) ? (($days_count == 0) ? '' : $days_count) : $days_poll, ($votes_poll == null) ? (($max_votes_count == 0) ? '' : $max_votes_count) : $votes_poll, true);
 
 				}
 				else
-					form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', (isset($poll_answers) && $poll_answers != null) ? $poll_answers : array(), isset($options_count) ? $options_count : 2, (isset($days_poll) && ($days_poll != null)) ? $days_poll : '', (isset($votes_poll) && $votes_poll != null) ? $votes_poll : '');	
+					form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', (isset($poll_answers) && $poll_answers != null) ? $poll_answers : array(), isset($options_count) ? $options_count : 2, (isset($days_poll) && ($days_poll != null)) ? $days_poll : '', (isset($votes_poll) && $votes_poll != null) ? $votes_poll : '');
 			}
 		]]></hook>
 
@@ -644,7 +644,7 @@
 				$reset_poll = (isset($_POST['reset_poll']) && $_POST['reset_poll'] == '1') ? true : false;
 				$remove_poll = (isset($_POST['remove_poll']) && $_POST['remove_poll'] == '1') ? true : false;
 
-				//We need to reset poll		
+				//We need to reset poll
 				if ($reset_poll || $remove_poll)
 				{
 					//Remove voting results
@@ -776,7 +776,7 @@
 					//Validate of pull_answers
 					$answers = array();
 					if ($poll_answers != null)
-					{				
+					{
 						for ($ans_num = 0; $ans_num < count($poll_answers); $ans_num++)
 						{
 							 $ans = forum_trim($poll_answers[$ans_num]);
@@ -821,7 +821,7 @@
 		}
 		]]></hook>
 
-		<hook id="hd_main_elements"><![CDATA[	
+		<hook id="hd_main_elements"><![CDATA[
 			//Is there something to show?
 			if (FORUM_PAGE == 'viewtopic' && isset($read_unvote_users) && !$forum_user['is_guest'])
 			{
@@ -844,7 +844,7 @@
 					$query_pun_poll = array(
 						'SELECT'	=>	'id, answer',
 						'FROM'		=>	'answers',
-						'WHERE'		=>	'topic_id = '.$id	
+						'WHERE'		=>	'topic_id = '.$id
 					);
 					$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
@@ -963,7 +963,7 @@
 			?>
 					<div class="content-head">
 						<h2 class="hn"><span><?php echo $lang_pun_poll['Name plugin'] ?></span></h2>
-					</div>					
+					</div>
 					<fieldset class="frm-group group1">
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box checkbox">
@@ -1006,7 +1006,7 @@
 
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
 
-			$query_poll['SET'] .= ', g_poll_add='.((isset($_POST['poll_add']) && $_POST['poll_add'] == '1') ? 1 : 0);
+			$query['SET'] .= ', g_poll_add='.((isset($_POST['poll_add']) && $_POST['poll_add'] == '1') ? 1 : 0);
 
 		]]></hook>
 
