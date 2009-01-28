@@ -373,7 +373,7 @@
 
 			//Show form for creation of poll
 			include $ext_info['path'].'/functions.php';
-			if (($fid > 0 && empty($forum_user['is_guest'])) && ($forum_user['g_poll_add'] || $forum_user['is_admmod']))
+			if (($fid > 0 && empty($forum_user['is_guest'])) && ($forum_user['g_poll_add'] || $forum_user['g_id'] == FORUM_ADMIN))
 				form_of_poll( isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', isset($poll_answers) ? $poll_answers : array() , $options_count, isset($days_poll) ? $days_poll : '', isset($votes_poll) ? $votes_poll : '');
 
 		]]></hook>
@@ -524,7 +524,7 @@
 					$poll = false;
 
 				//If its editing or voting doesn't exist
-				if ($forum_page['is_admmod'] || (isset($_POST['form_sent']) && !$poll))
+				if ($forum_user['g_id'] == FORUM_ADMIN || (isset($_POST['form_sent']) && !$poll))
 				{
 					//User press update poll
 					if (isset($_POST['update_poll']))
@@ -626,7 +626,7 @@
 				</fieldset>
 					<?php
 
-					if ($forum_page['is_admmod'])
+					if ($forum_user['g_id'] == FORUM_ADMIN)
 						form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : $question, $poll_answers, $options_count, ($days_poll == null) ? (($days_count == 0) ? '' : $days_count) : $days_poll, ($votes_poll == null) ? (($max_votes_count == 0) ? '' : $max_votes_count) : $votes_poll, true);
 
 				}
@@ -670,7 +670,7 @@
 						$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);	
 					}
 				}
-				else if ($forum_page['is_admmod'])
+				else if ($forum_user['g_id'] == FORUM_ADMIN)
 				{
 					list($question, $read_unvote_users, $revote, $created, $days_count, $max_votes_count) = $forum_db->fetch_row($result_pun_poll);
 					for ($ans_num = 0; $ans_num < count($poll_answers); $ans_num++)

@@ -85,7 +85,7 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 				</span>
 				<label for="fld<?php echo $forum_page['fld_count'] ?>">
 					<span><?php echo $lang_pun_poll['Show poll res'] ?></span>
-					<?php echo $lang_pun_poll['See results'] ?>
+					<?php echo $lang_pun_poll['Disable see results info'] ?>
 				</label>
 			</div>
 		</div>
