@@ -44,7 +44,7 @@
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-		'Attachment'
+		$lang_attach['Attachment']
 	);
 	
 	define('FORUM_PAGE_SECTION', 'settings');
@@ -65,7 +65,7 @@
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($attach_url['admin_options_attach'])) ?>" />
 			<input type="hidden" name="form_sent" value="1" />
 		</div>
-		<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+		<fieldset class="frm-group group1">
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box checkbox">
 					<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[disable_attach]" value="1"<?php if ($forum_config['attach_disable_attach'] == '1') echo ' checked="checked"' ?> /></span>
@@ -106,67 +106,48 @@
 		<div class="content-head">
 			<h2 class="hn"><span><?php echo $lang_attach['Manage icons'] ?></span></h2>
 		</div>
-		<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
-			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-				<div class="sf-box checkbox">
-					<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[use_icon]" value="1"<?php if ($forum_config['attach_use_icon'] == '1') echo ' checked="checked"' ?> /></span>
-					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Use icons'] ?></span><?php echo 'Enable it if you want to display icons.' ?></label>
-				</div>
-			</div>
-		</fieldset>
 		<div class="ct-box">
 			<p><?php echo $lang_attach['Icons help'] ?></p>
 		</div>
-		
-<?php		
-
-if (!empty($pun_attach_errors['missing_files']) || !empty($pun_attach_errors['big_images']))
-{
-
-?>
-
+<?php if (!empty($pun_attach_errors['missing_files']) || !empty($pun_attach_errors['big_images'])): ?>
 		<div class="ct-box error-box">
-				
 <?php
 
-	if (!empty($pun_attach_errors['missing_files']))
-	{
+		if (!empty($pun_attach_errors['missing_files']))
+		{
 
 ?>
-
 			<h2 class="warn hn"><?php echo $lang_attach['Missing icons'] ?></h2>
 			<ul class="error-list">
 				<?php echo implode("\n\t\t\t\t", $pun_attach_errors['missing_files'])."\n" ?>
 			</ul>
-					
 <?php
 
-	}
-	
-	if (!empty($pun_attach_errors['big_images']))
-	{
+		}
+		if (!empty($pun_attach_errors['big_images']))
+		{
 
 
 ?>
-
 			<h2 class="warn hn"><?php echo $lang_attach['Big icons'] ?></h2>
 			<ul class="error-list">
 				<?php echo implode("\n\t\t\t\t", $pun_attach_errors['missing_files'])."\n" ?>
 			</ul>
-
 <?php
 
-	}
-			
+		}
+
 ?>
-
 		</div>
-<?php } ?>
+<?php endif; ?>
 		<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
-	
+			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="sf-box checkbox">
+					<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[use_icon]" value="1"<?php if ($forum_config['attach_use_icon'] == '1') echo ' checked="checked"' ?> /></span>
+					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Use icons'] ?></span><?php echo $lang_attach['Display icons'] ?></label>
+				</div>
+			</div>
 <?php
-
-
 
 			if (isset($names) && isset($icons))
 			{

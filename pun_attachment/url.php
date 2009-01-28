@@ -32,12 +32,12 @@ $attach_url = array(
 	'admin_attach_rules'		=>	'extensions/attachment/attachment.php?section=rules',
 	'admin_attach_file'			=>	'extensions/attachment/attach_file.php',
 	'admin_attach_delete'		=>	'admin/settings.php?section=list_attach&amp;action=delete&amp;id=$1&amp;csrf_token=$2',
-	'admin_attach_detach'		=>	'admin/settings.php?section=list_attach&amp;action=detach&id=$1&pid=$2&csrf_token=$3',
+	'admin_attach_detach'		=>	'admin/settings.php?section=list_attach&amp;action=detach&amp;id=$1&pid=$2&amp;csrf_token=$3',
 	'admin_attach_rename'		=>	'admin/settings.php?section=list_attach&amp;action=rename&amp;id=$1&amp;csrf_token=$2',
 	'admin_options_attach'		=>	'admin/settings.php?section=pun_attach',
-	'admin_attachment_edit'		=>	'admin/settings.php?section=pun_list_attach&id=$1',
+	'admin_attachment_edit'		=>	'admin/settings.php?section=pun_list_attach&amp;id=$1',
 	'misc_download'				=>	'misc.php?item=$1&amp;download=0',
-	'misc_preview'				=>	'misc.php?item=$1&amp;download=1',
+	'misc_preview'				=>	'misc.php?item=$1&amp;download=1&amp;back=$2&amp;id=$3&amp;topic=$4',
 	'misc_vt_down'				=>	'misc.php?item=$1&amp;download=$2',
 	'misc_admin'				=>	'misc.php?item=$1'
 );

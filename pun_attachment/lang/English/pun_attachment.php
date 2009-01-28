@@ -30,8 +30,9 @@ $lang_attach = array(
 //admin
 'Attach part head'		=>	'<strong>%s.</strong> User attachments',
 'Icon part head'		=>	'<strong>%s.</strong> Icon settings',
-'Display small'			=>	'Enable it if you want to display small images, which size is smaller than parameters below.',
-'Disable attachments'	=>	'Enable it if you want to disable attachments.',
+'Display small'			=>	'Displaying small images, which size is smaller than parameters below.',
+'Disable attachments'	=>	'Disable attachments',
+'Display icons' 		=>	'Enable displaying icons',
 'Create orphans'		=>	'Enable it if you want to create orphans.',
 'Always deny'			=>	'Always deny',
 'Filesize'				=>	'Filesize',
@@ -55,7 +56,7 @@ $lang_attach = array(
 'Ascending'				=>	'Ascending',
 'Descending'			=>	'Descending',
 
-'Orphans help'			=>	'If this option turned on, the attachment will not be removed from the database if the post it belongs to is deleted.',
+'Orphans help'			=>	'If this option is enabled, attachments will not be removed from the database, when a user wants to delete a post with these attachments.',
 'Icons help'			=>	'Icons for attachment types are stored in ../extensions/attachment/img/ To add or change icons, use the following form. In cells of the first coloumn enter type and in opposed cell enter icon name. PunBB allowed you to use icons of the png, gif, jpeg, ico types.',
 
 
@@ -67,9 +68,9 @@ $lang_attach = array(
 'Kbytes'				=>	' kbytes',
 'Mbytes'				=>	' mbytes',
 'Bytes'					=>	' bytes',
-'Kb'				    =>	' kb',
-'Mb'    				=>	' mb',
-'B'			     		=>	' b',
+'Kb'					=>	' kb',
+'Mb'					=>	' mb',
+'B'						=>	' b',
 'Since'					=>	'%s downloads since %s',
 'Never download'		=>	'file has never been downloaded.',
 'Since (title)'			=>	'%s times downloaded since %s',
@@ -98,7 +99,7 @@ $lang_attach = array(
 'Allowed files'			=>	'Allowed files',
 'Allowed comment'		=>	'If empty, allow all files except those to always deny.',
 
-// Notices
+// NoticesF
 'Wrong post'			=>	'You have entered wrong post id. Please correct.',
 'Forbid delete'			=>	'You do not have permissions to delete attachments.',
 'Forbid upload'			=>	'You do not have permissions to upload files.',
@@ -149,6 +150,14 @@ $lang_attach = array(
 'Wrong post id'			=>	'You have entered wrong post id. Please, correct it if you want to attach file to post.',
 'Empty post id'			=>	'Please, enter not empty post id if you want to attach this file to post.',
 'Attach error'			=>	'<strong>Warning!</strong> The following errors must be corrected before you can attach file:',
-'Rename error'			=>	'<strong>Warning!</strong> The following errors must be corrected before you can rename attachment:'
+'Rename error'			=>	'<strong>Warning!</strong> The following errors must be corrected before you can rename attachment:',
+
+'Delete'				=>	'Delete',
+'Edit attachments'		=>	'Edit attachments',
+'Post attachments'		=>	'Post attachments',
+'Image preview'			=>	'Preview image',
+
+'Manage attahcments'	=>	'Manage attachments',
+'Manage id'				=>	'Manage attachment %s'
 
 );

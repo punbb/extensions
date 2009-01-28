@@ -124,8 +124,8 @@ if (isset($_GET['id']))
 			{
 				$query = array(
 					'UPDATE'	=> 'attach_files',
-					'SET'		=> 'topic_id='.$pun_attach_topic_id['topic_id'].', post_id='.$pun_attach_topic_id['post_id'],
-					'WHERE'		=> 'id='.$id
+					'SET'		=> 'topic_id = '.$pun_attach_topic_id['topic_id'].', post_id = '.$pun_attach_topic_id['post_id'],
+					'WHERE'		=> 'id = '.$id
 				);
 				
 				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
@@ -158,14 +158,13 @@ if (isset($_GET['id']))
 	$pun_current_attach = $forum_db->fetch_assoc($result);
 	
 	$pun_attach_frm_buttons = array();
-	$pun_attach_frm_buttons[] = '<input type="submit" name="pun_attach_rename" value="'.$lang_attach['Rename button'].'">';
-	$pun_attach_frm_buttons[] = '<input type="submit" name="pun_attach_delete" value="'.$lang_attach['Delete button'].'">';
-	
+	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_rename" value="'.$lang_attach['Rename button'].'"></span>';
+	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_delete" value="'.$lang_attach['Delete button'].'"></span>';
+
 	if ($pun_current_attach['post_id'] == '0')
-		$pun_attach_frm_buttons[] = '<input type="submit" name="pun_attach_attach" value="'.$lang_attach['Attach button'].'">';
+		$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_attach" value="'.$lang_attach['Attach button'].'"></span>';
 	else 
-		$pun_attach_frm_buttons[] = '<input type="submit" name="pun_attach_detach" value="'.$lang_attach['Detach button'].'">';
-			
+		$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_detach" value="'.$lang_attach['Detach button'].'"></span>';
 
 	// Setup the form
 	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
@@ -174,7 +173,8 @@ if (isset($_GET['id']))
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-		'Attachments manage'
+		array($lang_attach['Manage attahcments'], forum_link($attach_url['admin_attachment_manage'])),
+		sprintf($lang_attach['Manage id'], $pun_current_attach['filename'])
 	);
 
 	define('FORUM_PAGE_SECTION', 'management');
@@ -261,7 +261,7 @@ if (isset($_GET['id']))
 						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pun_attach_new_name" size="10" maxlength="15" /></span><br />
 					</div>
 				</div>
-<?php if ($pun_current_attach['post_id'] == '0') { ?>
+<?php if ($pun_current_attach['post_id'] == '0'): ?>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
@@ -270,7 +270,7 @@ if (isset($_GET['id']))
 						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pun_attach_new_post_id" size="10" maxlength="15" /></span><br />
 					</div>
 				</div>
-<?php } ?>
+<?php endif; ?>
 			</fieldset>
 			<div class="frm-buttons">
 				<?php echo implode('', $pun_attach_frm_buttons) ?>

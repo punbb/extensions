@@ -10,6 +10,11 @@
 
 	if (!defined('FORUM')) die();
 
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
 	if (isset($_GET['id']))
 		require $ext_info['path'].'/pun_attachment_page.php';
 
@@ -136,7 +141,7 @@
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-		'Attachments manage'
+		$lang_attach['Manage attahcments']
 	);
 
 	define('FORUM_PAGE_SECTION', 'management');
@@ -144,7 +149,7 @@
 	require FORUM_ROOT.'header.php';
 	
 	// START SUBST - <!-- forum_main -->
-	ob_start();		
+	ob_start();
 
 ?>
 
@@ -182,7 +187,7 @@
 							<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[size_start]" value="<?php echo (isset($form['size_start']) ? intval($form['size_start']) : '') ?>" size="10" maxlength="15" />
 							<?php echo '&nbsp;'.$lang_attach['to'].'&nbsp;' ?>
 							<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[size_end]" value="<?php echo (isset($form['size_end']) ? intval($form['size_end']) : '') ?>" size="10" maxlength="15" />
-						</span>						
+						</span>
 					</div>
 				</div>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -202,7 +207,7 @@
 							}
 
 ?>
-							</select>						
+							</select>
 						</span>
 					</div>
 				</div>
@@ -242,7 +247,7 @@
 								<option <?php echo ((isset($form['order']) && ($form['order'] == 'topic_id')) ? 'selected="selected"' : '') ?> value="topic_id">Topic</option>
 								<option <?php echo ((isset($form['order']) && ($form['order'] == 'post_id')) ? 'selected="selected"' : '') ?> value="post_id">Post id</option>
 								<option <?php echo ((isset($form['order']) && ($form['order'] == 'download_counter')) ? 'selected="selected"' : '') ?> value="downloads">Downloads</option>
-							</select>						
+							</select>
 						</span>
 					</div>
 				</div>
@@ -260,7 +265,7 @@
 								<input type="radio" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[sort_dir]" value="DESC"<?php echo(($form['sort_dir'] == 'DESC') ? 'checked="checked"' : '') ?> />
 							</span>
 							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Descending'] ?></label>
-						</div>							
+						</div>
 					</div>
 				</fieldset>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -268,7 +273,7 @@
 						<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[orphans]" value="1" <?php echo (isset($show_orphans) && ($show_orphans == '1') ? 'checked="checked"' : '') ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Orphans'] ?></span><?php echo $lang_attach['Show only "Orphans"'] ?></label>
 					</div>
-				</div>				
+				</div>
 			</fieldset>
 			<div class="frm-buttons">
 				<input type="submit" name="apply" value="<?php echo $lang_attach['Apply'] ?>">
@@ -293,54 +298,51 @@ if (!empty($attachments))
 					</thead>
 					
 <?php
-					
+
 		foreach ($attachments as $key => $value)
 		{
 			$args = array();
 			$args[] = $key;
 			$args[] = generate_form_token('rename'.$forum_user['id']);
 
-			
 ?>
 
 					<tbody>
 						<tr>
 							<td class="tc0" scope="col"><a href="<?php echo forum_link($attach_url['admin_attachment_edit'], array($key)) ?>"><?php echo $attachments[$key]['filename'] ?></td>
-	 						<td class="tc1" scope="col"><?php echo format_size($attachments[$key]['size']) ?></td>
-	 						<td class="tc2" scope="col"><?php echo $attachments[$key]['username'] ?></td>
-	 						<td class="tc3" scope="col"><?php echo date('Y-m-d', $attachments[$key]['uploaded_at']) ?></td>
-	 						<td class="tc4" scope="col"><?php echo $attachments[$key]['file_mime_type'] ?></td>
-	 						<td class="tc5" scope="col"><?php echo $attachments[$key]['download_counter'] ?></td>
-	 					</tr>
+							<td class="tc1" scope="col"><?php echo format_size($attachments[$key]['size']) ?></td>
+							<td class="tc2" scope="col"><?php echo $attachments[$key]['username'] ?></td>
+							<td class="tc3" scope="col"><?php echo date('Y-m-d', $attachments[$key]['uploaded_at']) ?></td>
+							<td class="tc4" scope="col"><?php echo $attachments[$key]['file_mime_type'] ?></td>
+							<td class="tc5" scope="col"><?php echo $attachments[$key]['download_counter'] ?></td>
+						</tr>
 					</tbody>
-
 <?php
-	
+
 		}
-		
+
 ?>
-		
+
 				</table>
 			</div>
-			
+
 <?php
 
 }
-
 
 ?>
 
 		</form>
 	</div>
 
-	
+
 <?php
-	
+
 	$tpl_temp = trim(ob_get_contents());
 	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
 	ob_end_clean();
 	// END SUBST - <!-- forum_main -->
 
 	require FORUM_ROOT.'footer.php';
-	
+
 ?>

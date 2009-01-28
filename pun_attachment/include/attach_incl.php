@@ -25,10 +25,10 @@
 
 if (!defined('FORUM')) exit;
 
-// These constants are used when doing security checks
+//These constants are used when performing security checks
 
-define('MBYTE', 1000000);
-define('KBYTE',	1000);
+define('MBYTE', 1048576);
+define('KBYTE',	1024);
 
 $attach_icons = array();
 
