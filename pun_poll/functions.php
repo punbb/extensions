@@ -1,11 +1,10 @@
 <?php
 
-function form_of_poll($question, $poll_answers, $options_count, $days_poll, $votes_poll, $edit = false)
+function form_of_poll($question, $poll_answers, $options_count, $days_poll, $votes_poll)
 {
 	global $forum_user, $lang_pun_poll, $forum_config, $forum_page, $read_unvote_users, $revote;
 
 ?>
-	<div class="ct-box info-box"><p><?php echo (!$edit ? $lang_pun_poll['New voting'] : $lang_pun_poll['Edit voting admin']); ?></p></div>
 	<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
 		<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"">
 			<div class="sf-box text">
@@ -13,6 +12,7 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 					<span>
 						<?php echo $lang_pun_poll['Poll question'] ?>
 					</span>
+					<small><?php echo $lang_pun_poll['Question len limit'] ?></small>
 				</label>
 				<br/>
 				<span class="fld-input">
@@ -109,6 +109,7 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 					<span>
 						<?php echo $lang_pun_poll['Allow days'] ?>
 					</span>
+					<small><?php echo $lang_pun_poll['Days voting note']; ?></small>
 				</label>
 				<br/>
 				<span class="fld-input">
@@ -119,9 +120,10 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 		<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 			<div class="sf-box text">
 				<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-				<span>
+					<span>
 						<?php echo $lang_pun_poll['Votes needed'] ?>
 					</span>
+					<small><?php echo $lang_pun_poll['Maximum votes note']; ?></small>
 				</label>
 				<br/>
 				<span class="fld-input">

@@ -53,7 +53,10 @@ $lang_pun_poll = array(
 	'Remove v notice'				=> 'Check this if you want to remove voting.',
 	'Empty question'				=> 'You should enter a question of poll.',
 	'Merge error'					=> 'You can\'t merge these topics, because 2 or more topics include voting. Remove the voting before merging.',
-	'Edit voting'					=> 'This two options allow to you reset voting results or remove voting. If you want to edit voting send e-mail to administrator of Forum <a href="mailto:%s">%s</a>.',
-	'New voting'					=> 'Using this form, you can create a new voting. The number of possible answers can\'t be less than 2. A question\'s length can\'t be less than 5 symbols. A answer\'s length can\'t be less than 2 symbols.  If you want to add an answer, enter the number of answers you require in the corresponding field and press "Update poll". You can choose the time when your voting will be finished. For this purpose, you can enter a count of days or a maximum count of votes. Remember: if you enter the count of days, the count of votes will be ignored. If your administrator allows to change a user\'s vote or unvoted users can see voting results, you will see appropriate options.',
-	'Edit voting admin'				=> 'You can edit voting.'
+	'Edit voting'					=> 'If you want to edit question or answers of voting send e-mail to administrator of Forum <a href="mailto:%s">%s</a>.',
+
+	'Question len limit'			=> 'A question\'s length can\'t be less than 5 symbols.',
+
+	'Maximum votes note'			=> 'Maximum count of votes in poll',
+	'Days voting note'				=> 'Count of days for voting'
 );

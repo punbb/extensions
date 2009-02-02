@@ -330,7 +330,7 @@
 					for ($ans_num = 0; $ans_num < count($poll_answers); $ans_num++)
 					{
 						 $ans = forum_trim($poll_answers[$ans_num]);
-						 if (!empty($ans) && strlen($ans) > 1)
+						 if (!empty($ans))
 							$answers[] = $ans;
 					}
 					if (!empty($answers))
@@ -590,7 +590,7 @@
 			}
 		]]></hook>
 		<hook id="ed_main_fieldset_end"><![CDATA[
-			if ($can_edit_subject && !$forum_user['is_guest'])
+			if ($forum_user['g_id'] == FORUM_ADMIN && $can_edit_subject)
 			{
 				include $ext_info['path'].'/functions.php';
 
@@ -599,7 +599,6 @@
 				{
 
 				?>
-				<div class="ct-box info-box"><?php echo sprintf($lang_pun_poll['Edit voting'], forum_htmlencode($forum_config['o_admin_email']), forum_htmlencode($forum_config['o_admin_email'])); ?></div>
 				<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
 					<div class="sf-set set1">
 						<div class="sf-box checkbox">
@@ -624,11 +623,11 @@
 						</div>
 					</div>
 				</fieldset>
-					<?php
-
+				<?php
+					if ($forum_user['g_id'] != FORUM_ADMIN)
+						echo '<div class="ct-box info-box">'.sprintf($lang_pun_poll['Edit voting'], forum_htmlencode($forum_config['o_admin_email']), forum_htmlencode($forum_config['o_admin_email'])).'</div>';
 					if ($forum_user['g_id'] == FORUM_ADMIN)
-						form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : $question, $poll_answers, $options_count, ($days_poll == null) ? (($days_count == 0) ? '' : $days_count) : $days_poll, ($votes_poll == null) ? (($max_votes_count == 0) ? '' : $max_votes_count) : $votes_poll, true);
-
+						form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : $question, $poll_answers, $options_count, ($days_poll == null) ? (($days_count == 0) ? '' : $days_count) : $days_poll, ($votes_poll == null) ? (($max_votes_count == 0) ? '' : $max_votes_count) : $votes_poll);
 				}
 				else
 					form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', (isset($poll_answers) && $poll_answers != null) ? $poll_answers : array(), isset($options_count) ? $options_count : 2, (isset($days_poll) && ($days_poll != null)) ? $days_poll : '', (isset($votes_poll) && $votes_poll != null) ? $votes_poll : '');
@@ -783,7 +782,7 @@
 							 if (!empty($ans))
 								$answers[] = $ans;
 						}
-						if (!empty($answers) )
+						if (!empty($answers))
 							$answers = array_unique($answers);
 					}
 					if (!empty($answers) && count($answers) > 1 && strlen($question) >= 5)
@@ -804,7 +803,7 @@
 							'VALUES'	=> $cur_post['tid'].', \''.$forum_db->escape($question).'\', '.$read_unvote_users.', '.$revote.', '.time().', '.$days_poll.', '.$votes_poll
 						);
 						$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
-	
+
 						//Add answers to DB
 						foreach ($answers as $ans)
 						{
@@ -844,7 +843,8 @@
 					$query_pun_poll = array(
 						'SELECT'	=>	'id, answer',
 						'FROM'		=>	'answers',
-						'WHERE'		=>	'topic_id = '.$id
+						'WHERE'		=>	'topic_id = '.$id,
+						'GROUP BY'	=>	'id'
 					);
 					$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
@@ -898,7 +898,7 @@
 							),
 							'WHERE'		=>	'a.topic_id='.$id,
 							'GROUP BY'	=>	'a.id',
-							'ORDER BY'	=>	'answer'
+							'ORDER BY'	=>	'a.id'
 						);
 						$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
@@ -920,7 +920,7 @@
 				}
 				else
 					$vote_results = '<div class="ct-box info-box"><p>'.$lang_pun_poll['Dis read vote'].'</p></div>';
-			
+
 				if (!empty($main_elements['<!-- forum_main_pagepost_top -->']))
 					$tmp_pagepost = $main_elements['<!-- forum_main_pagepost_top -->'];
 				$main_elements['<!-- forum_main_pagepost_top -->'] = '<div class="main-head"><h2 class="hn">'.$lang_pun_poll['Header note'].'</h2></div><div class="main-content main-frm">';
@@ -983,8 +983,8 @@
 								</span>
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
 									<span><?php echo $lang_pun_poll['Disable see results'] ?></span>
+									<?php echo $lang_pun_poll['Disable see results info'] ?>
 								</label>
-								<?php echo $lang_pun_poll['Disable see results info'] ?>
 							</div>
 						</div>
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
