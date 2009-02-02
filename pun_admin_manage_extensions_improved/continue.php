@@ -42,7 +42,7 @@ ob_start();
 				if (isset($_POST['extens']))
 					echo '<input type="hidden" name="selected_extens" value="'.implode(',', array_keys($_POST['extens'])).'"/>';
 					
-				?>					
+				?>
 			</div>
 			
 			<fieldset class="frm-group">

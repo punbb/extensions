@@ -208,10 +208,10 @@ else
 	($hook = get_hook('aex_section_install_output_start')) ? eval($hook) : null;
 
 ?>
-	<div class="main-subhead">
+	<div class="main-subhead" id="ext_avail">
 		<h2 class="hn"><span><?php echo $lang_admin_ext['Extensions available'] ?></span></h2>
 	</div>
-	<div class="main-content main-frm main-extensions">
+	<div class="main-content main-frm main-extensions" id="ext_avail">
 
 <?php
 
@@ -259,7 +259,39 @@ else
 			{
 				if (!array_key_exists($entry, $inst_exts) || version_compare($inst_exts[$entry]['version'], $ext_data['extension']['version'], '!='))
 				{
-					$forum_page['ext_item'][] = '<div class="ct-box info-box extension available">'."\n\t\t\t".'<h3 class="ct-legend hn"><span>'.forum_htmlencode($ext_data['extension']['title']).'</span></h3>'."\n\t\t\t".'<ul class="data-list">'."\n\t\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Extension by'], forum_htmlencode($ext_data['extension']['author'])).'</span></li>'."\n\t\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Version'], $ext_data['extension']['version']).'</span></li>'.(($ext_data['extension']['description'] != '') ? "\n\t\t\t\t".'<li><span>'.forum_htmlencode($ext_data['extension']['description']).'</span></li>' : '')."\n\t\t\t".'</ul>'."\n\t\t\t".'<p class="options"><span class="first-item"><a href="'.$base_url.'/admin/extensions.php?install='.urlencode($entry).'">'.(isset($inst_exts[$entry]['version']) ? $lang_admin_ext['Upgrade extension'] : $lang_admin_ext['Install extension']).'</a></span></p>'."\n\t\t".'</div>';
+					$forum_page['ext_item'][] = '
+						<div class="ct-box info-box extension available">
+							'."\n\t\t\t".'
+								<h3 class="ct-legend hn">
+									<span>
+										'.forum_htmlencode($ext_data['extension']['title']).'
+									</span>
+								</h3>
+							'."\n\t\t\t".'
+								<ul class="data-list">
+									'."\n\t\t\t\t".'
+										<li>
+											<span>
+												'.sprintf($lang_admin_ext['Extension by'], forum_htmlencode($ext_data['extension']['author'])).'
+											</span>
+										</li>
+									'."\n\t\t\t\t".'
+										<li>
+											<span>
+												'.sprintf($lang_admin_ext['Version'], $ext_data['extension']['version']).'
+											</span>
+										</li>
+									'.(($ext_data['extension']['description'] != '') ? "\n\t\t\t\t".'<li><span>'.forum_htmlencode($ext_data['extension']['description']).'</span></li>' : '')."
+									\n\t\t\t".'
+								</ul>
+							'."\n\t\t\t".'
+							<p class="options">
+								<span class="first-item">
+									<a href="'.$base_url.'/admin/extensions.php?install='.urlencode($entry).'">'.(isset($inst_exts[$entry]['version']) ? $lang_admin_ext['Upgrade extension'] : $lang_admin_ext['Install extension']).'</a>
+								</span>
+							</p>
+							'."\n\t\t".'
+						</div>';
 					++$num_exts;
 				}
 			}
@@ -302,10 +334,10 @@ else
 
 ?>
 
-	<div class="main-subhead">
+	<div class="main-subhead2" id="ext_instal">
 		<h2 class="hn"><span><?php echo $lang_admin_ext['Installed extensions'] ?></span></h2>
 	</div>
-	<div class="main-content main-frm main-extensions">
+	<div class="main-content main-frm main-extensions2" id="ext_instal">
 		<form method="post" accept-charset="utf-8" action="<?php echo $base_url ?>/admin/extensions.php?section=manage&amp;multy">
 	
 <?php
@@ -400,7 +432,9 @@ else
 		<div class="ct-box info-box">
 			<p><?php echo $lang_pun_man_ext_improved['Ext note'] ?></p>
 		</div>
-		<div class="hidden"><input type="hidden" name="csrf_token" value="<?php echo generate_form_token($base_url.'/admin/extensions.php?section=manage&amp;multy') ?>"/></div>
+		<div class="hidden">
+			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($base_url.'/admin/extensions.php?section=manage&amp;multy') ?>"/>
+		</div>
 		<div class="frm-buttons">
 			<span class="submit"><input type="submit" name="disable_selected" value="<?php echo $lang_pun_man_ext_improved['Button disable'] ?>" /></span>
 			<span class="submit"><input type="submit" name="enable_selected" value="<?php echo $lang_pun_man_ext_improved['Button enable'] ?>" /></span>
