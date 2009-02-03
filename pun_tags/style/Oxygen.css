@@ -1,28 +1,18 @@
-/***********************************************************************
-
-	Copyright (C) 2008  PunBB
-
-	PunBB is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published
-	by the Free Software Foundation; either version 2 of the License,
-	or (at your option) any later version.
-
-	PunBB is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-	MA  02111-1307  USA
-
-***********************************************************************/
+/**
+ * CSS-Styles for pun_tags extension
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_tags
+ */
 #brd-pun_tags {
 	margin-bottom: 1em;
 }
 
 .brd #brd-pun_tags {
 	padding: 0.5em 1.5em;
+	overflow: auto;
+	display: block;
 	margin-top: 1em;
+	text-align: left;
 }

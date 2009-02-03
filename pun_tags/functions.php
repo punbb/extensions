@@ -1,26 +1,17 @@
 <?php
-/***********************************************************************
 
-	Copyright (C) 2008  PunBB
+/**
+ * pun_tags functions: tags cache, database, output
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_tags
+ */
 
-	PunBB is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published
-	by the Free Software Foundation; either version 2 of the License,
-	or (at your option) any later version.
+if (!defined('FORUM'))
+	die();
 
-	PunBB is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-	MA  02111-1307  USA
-
-***********************************************************************/
-
-// Generate Pun Tags cache file
+// Generate Pun Tags cache file	
 function pun_tags_generate_cache()
 {
 	global $forum_db;
@@ -123,7 +114,7 @@ function pun_tags_remove_orphans()
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	// Remove orphaned tags
-	while($row = $forum_db->fetch_assoc($result))
+	while ($row = $forum_db->fetch_assoc($result))
 	{
 		$query_tags = array(
 			'DELETE'	=> 'tags',
@@ -178,7 +169,7 @@ function pun_tags_add_new( $pun_tag, $tid )
 	$pun_tags_query = array(
 		'SELECT'	=> 'id',
 		'FROM'		=> 'tags',
-		'WHERE'		=> 'tag = \''.$forum_db->escape($pun_tag).'\''
+		'WHERE'		=> 'tag = \''.$forum_db->escape(substr_replace($pun_tag, '', 50)).'\''
 	);
 
 	$result = $forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
@@ -191,7 +182,7 @@ function pun_tags_add_new( $pun_tag, $tid )
 		$pun_tags_query = array(
 			'INSERT'	=> 'tag',
 			'INTO'		=> 'tags',
-			'VALUES'	=> '\''.$forum_db->escape($pun_tag).'\''
+			'VALUES'	=> '\''.$forum_db->escape(substr_replace($pun_tag, '', 50)).'\''
 		);
 		$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
 		$tag_id = $forum_db->insert_id();
