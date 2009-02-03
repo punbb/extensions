@@ -27,12 +27,12 @@
 <extension engine="1.0">
 	<id>pun_admin_manage_extensions_improved</id>
 	<title>Pun Admin Manage Extensions Improved</title>
-	<version>1.1</version>
+	<version>1.2</version>
 	<description>This extension allows to choose several extensions to enable/disable/uninstall them</description>
 	<author>PunBB Development Team</author>
 
-	<minversion>1.3 SVN</minversion>
-	<maxtestedon>1.3 SVN</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.2</maxtestedon>
 	
 	<note type="install" timing="pre">If extension "pun_extension_reinstaller" was installed, it will be disabled.</note>
 
