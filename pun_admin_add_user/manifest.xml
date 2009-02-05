@@ -161,32 +161,47 @@
 				?>
 
 				<div class="main-head">
-					 <h2><span><?php echo $lang_admin_add_user['Add user'] ?></span></h2>
+					<h2 class="hn"><span><?php echo $lang_admin_add_user['Add user'] ?></span></h2>
 				</div>
-				<div class="main-content frm">
-
+				<div class="main-content main-frm">
 					<form class="frm-form" id="frm-adduser" action="<?php echo $pun_add_user_form_action ?>#adduser-content" method="post">
-						<fieldset class="frm-set set<?php echo ++$forum_page['set_count'] ?>">
-
-							<div class="frm-fld text">
-								<label for="add_user_username">
-									<span class="fld-label">Username:</span>
+						<fieldset class="frm-group group1<?php /* echo ++$forum_page['set_count']*/ ?>">
+							<div class="sf-set set1">
+								<div class="sf-box text">
+									<label for="add_user_username">
+										<span>Username:</span>
+										<small>
+											<?php echo $lang_admin_add_user['Between 2 and 25 characters'] ?>
+										</small>
+									</label>
 									<span class="fld-input"><input type="text" id="add_user_username" name="req_username" size="35" value="<?php echo $username ?>" maxlength="25" /></span>
-									<span class="fld-help"><?php echo $lang_admin_add_user['Between 2 and 25 characters'] ?></span>
-								</label>
+								</div>
 							</div>
 
-							<div class="frm-fld text">
-								<label for="add_user_email">
-									<span class="fld-label">E-mail:</span>
+							<div class="sf-set set2">
+								<div class="sf-box text">
+									<label for="add_user_email">
+										<span>E-mail:</span>
+										<small>
+											<?php echo $lang_admin_add_user['Enter a current and valid e-mail address'] ?>
+										</small>
+									</label>
 									<span class="fld-input"><input type="text" id="add_user_email" name="req_email" size="35" value="<?php echo $email ?>" maxlength="80" /></span>
-									<span class="fld-help"><?php echo $lang_admin_add_user['Enter a current and valid e-mail address'] ?></span>
-								</label>
+								</div>
 							</div>
 
-							<fieldset class="frm-group">
+							<fieldset class="mf-set set3">
 								<legend><span>Edit User Identity:</span></legend>
-								<div class="radbox checkbox"><label for = "add_user_edit_user_identity" ><input type="checkbox" id="add_user_edit_user_identity" name="edit_identity" value="1"<?php echo $edit_identity ? ' checked="checked"' : '' ?>></label> <label><?php echo $lang_admin_add_user['Edit User Identity after adding User'] ?></label></div>
+								<div class="mf-box mf-yesno">
+									<span class="fld_input">
+										<input type="checkbox" id="add_user_edit_user_identity" name="edit_identity" value="1"<?php echo $edit_identity ? ' checked="checked"' : '' ?>>
+									</span>
+									<label for = "add_user_edit_user_identity" >
+										<span>
+											<?php echo $lang_admin_add_user['Edit User Identity after adding User'] ?>
+										</span>
+									</label>
+								</div>
 							</fieldset>
 
 						</fieldset>
