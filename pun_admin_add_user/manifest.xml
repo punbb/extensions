@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_admin_add_user</id>
 	<title>Admin add user</title>
-	<version>1.0.1</version>
+	<version>1.1</version>
 	<description>Admin may add new user using the form in the bottom of User list.</description>
 	<author>PunBB Development Team</author>
 
