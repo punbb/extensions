@@ -23,6 +23,7 @@ $lang_pun_admin_events = array(
 'Nothing found'		=> 'Nothing found',
 'Comment'			=> 'Comment',
 'Pages'				=> 'Pages',
-'Results'			=> 'Results'
+'Results'			=> 'Results',
+'Name page'			=> 'Management events',
 )
 ?>
