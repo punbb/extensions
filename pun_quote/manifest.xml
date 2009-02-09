@@ -41,7 +41,7 @@
 				$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
 		]]></hook>
 
-		<hook id="vt_modify_topic_info"><![CDATA[
+		<hook id="vt_main_output_start"><![CDATA[
 
 			$pun_quote_query = array(
 				'SELECT'	=> 'id, message, poster',
