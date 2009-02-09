@@ -339,46 +339,6 @@ function ParseMessage(string)
 
 function ContentCleaning(string)
 {
-	//[b][/b] tags
-	string = string.replace(/\[b\]/ig,'');
-	string = string.replace(/\[\/b\]/gi, '');
-	//[i][/i] tags
-	string = string.replace(/\[i\]/gi, '');
-	string = string.replace(/\[\/i\]/gi, '');
-	//[u][/u] tags
-	string = string.replace(/\[u\]/gi, '');
-	string = string.replace(/\[\/u\]/gi, '');
-	//[h][/h] tags
-	string = string.replace(/\[h\]/gi, '');
-	string = string.replace(/\[\/h\]/gi, '');
-	//[*][/*] tags
-	string = string.replace(/\[\*\]/gi, '');
-	string = string.replace(/\[\/\*\]/gi, '');	
-	//[list][/list] tags
-	string = string.replace(/\[list\]/gi, '');
-	string = string.replace(/\[list=[^\]]{1,}\]/gi, '');
-	string = string.replace(/\[\/list\]/gi, '');
-	//[img][/img] tags
-	string = string.replace(/\[img\]/gi, '');
-	string = string.replace(/\[\/img\]/gi, '');
-	//[code][/code] tags
-	string = string.replace(/\[code\]/gi, '');
-	string = string.replace(/\[\/code\]/gi, '');
-	//[quote][/quote] tags
-	string = string.replace(/\[quote\]/gi, '');
-	string = string.replace(/\[quote=[^\]]{1,}\]/gi, '');
-	string = string.replace(/\[\/quote\]/gi, '');
-	//[url][/url] tags
-	string = string.replace(/\[url\]/gi, '');
-	string = string.replace(/\[url=[^\]]{1,}\]/gi, '');
-	string = string.replace(/\[\/url\]/gi, '');
-	//[email][/email] tags
-	string = string.replace(/\[email\]/gi, '');
-	string = string.replace(/\[email=[^\]]{1,}\]/gi, '');
-	string = string.replace(/\[\/email\]/gi, '');
-	//[color][/color] tags
-	string = string.replace(/\[color=[^\]]{1,}\]/gi, '');
-	string = string.replace(/\[\/color\]/gi, '');
 	//\n\r, \n, \r 
 	string = string.replace(/(\n\r|\n|\r){1,}/gi,' ');
 	//trim message
