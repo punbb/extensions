@@ -333,7 +333,7 @@ function Reply(tid_param, qid_param, d)
 
 function ParseMessage(string)
 {
-	string = string.replace(/\<\/br\>/ig,'\n');
+	string = string.replace(/\<\/br id=\"pun_quote_tag\"\>/ig,'\n');
 	return string;
 }
 

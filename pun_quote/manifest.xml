@@ -59,7 +59,8 @@
 
 				while ($pun_quote_curr_message = $forum_db->fetch_assoc($pun_quote_result))
 				{
-					$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '</br>', $pun_quote_curr_message['message']);
+					$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '</br id="pun_quote_tag">', $pun_quote_curr_message['message']);
+					$pun_quote_curr_message['message'] = addslashes($pun_quote_curr_message['message']);
 					echo 'pun_quote_posts['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['message'].'";';
 					echo 'pun_quote_authors['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['poster'].'";';
 				}
