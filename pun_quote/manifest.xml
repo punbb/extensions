@@ -41,31 +41,37 @@
 				$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
 		]]></hook>
 
-		<hook id="vt_main_output_start"><![CDATA[
-
-			$pun_quote_query = array(
-				'SELECT'	=> 'id, message, poster',
-				'FROM'		=> 'posts',
-				'WHERE'		=> 'topic_id='.$id
-			);
-
-			$pun_quote_result = $forum_db->query_build($pun_quote_query) or error(__FILE__, __LINE__);
-			
-			if ($forum_db->num_rows($pun_quote_result))
+		<hook id="hd_head"><![CDATA[
+		
+			if (FORUM_PAGE == 'viewtopic')
 			{
-				echo '<script type="text/javascript">';
-				echo 'var pun_quote_posts = new Array();';
-				echo 'var pun_quote_authors = new Array();';
-
-				while ($pun_quote_curr_message = $forum_db->fetch_assoc($pun_quote_result))
+				$pun_quote_query = array(
+					'SELECT'	=> 'id, message, poster',
+					'FROM'		=> 'posts',
+					'WHERE'		=> 'topic_id='.$id
+				);
+	
+				$pun_quote_result = $forum_db->query_build($pun_quote_query) or error(__FILE__, __LINE__);
+				
+				
+				$forum_head['pun_quote_js'] = '';
+				
+				if ($forum_db->num_rows($pun_quote_result))
 				{
-					$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '</br id="pun_quote_tag">', $pun_quote_curr_message['message']);
-					$pun_quote_curr_message['message'] = addslashes($pun_quote_curr_message['message']);
-					echo 'pun_quote_posts['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['message'].'";';
-					echo 'pun_quote_authors['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['poster'].'";';
+					$forum_head['pun_quote_js'] .= '<script type="text/javascript">';
+					$forum_head['pun_quote_js'] .= 'var pun_quote_posts = new Array();';
+					$forum_head['pun_quote_js'] .= 'var pun_quote_authors = new Array();';
+	
+					while ($pun_quote_curr_message = $forum_db->fetch_assoc($pun_quote_result))
+					{
+						$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '</br id="pun_quote_tag">', $pun_quote_curr_message['message']);
+						$pun_quote_curr_message['message'] = addslashes($pun_quote_curr_message['message']);
+						$forum_head['pun_quote_js'] .= 'pun_quote_posts['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['message'].'";';
+						$forum_head['pun_quote_js'] .= 'pun_quote_authors['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['poster'].'";';
+					}
+	
+					$forum_head['pun_quote_js'] .= '</script>';
 				}
-
-				echo '</script>';
 			}
 
 		]]></hook>
