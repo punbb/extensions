@@ -39,9 +39,14 @@ function pagination($fields, $data, $page, $pages, $form_name, $lang)
 				for($i = 0; $i < $pages; $i++ )
 				{
 					if($i != ($page - 1))
-						echo '<a href="'.forum_link($forum_url['admin_management_events'].'&p='.($i + 1)).'">'.strval($i + 1).'</a> | ';
+						echo '<a href="'.forum_link($forum_url['admin_management_events'].'&p='.($i + 1)).'">'.strval($i + 1).'</a>';
 					else
-						echo '<strong>'.strval($page).'</strong> | ';
+						echo '<strong>'.strval($page).'</strong>';
+					
+					if ($pages > 1)
+					{
+						echo ' | ';
+					}
 				}
 				
 				?>
@@ -166,7 +171,7 @@ function pun_events_generate_where()
 	if (isset($_POST['day_from']) && isset($_POST['month_from']) && isset($_POST['year_from']) &&
 		isset($_POST['day_to']) && isset($_POST['month_to']) && isset($_POST['year_to']))
 	{
-		if (($_POST['day_from'] > $_POST['day_to']) || ($_POST['month_from'] > $_POST['month_to']) || ($_POST['year_from'] > $_POST['year_to']))
+		if (($_POST['year_from'] > $_POST['year_to']) || ($_POST['month_from'] > $_POST['month_to']) || ($_POST['day_from'] > $_POST['day_to']))
 		{
 			$event_temp = $_POST['day_from'];
 			$_POST['day_from'] = $_POST['day_to'];
@@ -182,13 +187,37 @@ function pun_events_generate_where()
 		}
 		else if (($_POST['day_from'] == $_POST['day_to']) && ($_POST['month_from'] == $_POST['month_to']) && ($_POST['year_from'] == $_POST['year_to']))
 			$_POST['day_to']++;
+		else if (($_POST['day_from'] != $_POST['day_to']) && ($_POST['month_from'] == $_POST['month_to']) && ($_POST['year_from'] == $_POST['year_to']))
+			$_POST['day_to']++;
 		
-		$result[] = 'date >= STR_TO_DATE(\''.$_POST['day_from'].'/'.$_POST['month_from'].'/'.$_POST['year_from'].'\', \'%d/%m/%Y\')';
-		$result[] = 'date <= STR_TO_DATE(\''.$_POST['day_to'].'/'.$_POST['month_to'].'/'.$_POST['year_to'].'\', \'%d/%m/%Y\')';
+		$result[] = '(date >= STR_TO_DATE(\''.$_POST['day_from'].'/'.$_POST['month_from'].'/'.$_POST['year_from'].'\', \'%d/%m/%Y\'))';
+		$result[] = '(date <= STR_TO_DATE(\''.$_POST['day_to'].'/'.$_POST['month_to'].'/'.$_POST['year_to'].'\', \'%d/%m/%Y\'))';
 	}
 	
-	if(isset($_POST['event_id']) && $_POST['event_id'] != '' && $_POST['event_id'] != 0)
-		$result[] = '(type = "'.$forum_db->escape($_POST['event_id']).'")';
+	if (isset($_POST['event_id']))
+	{
+		$query = array(
+			'SELECT'	=> '*',
+			'FROM'		=> 'pun_admin_events'
+		);
+		$event_res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		$exist = -1;
+		
+		if ($forum_db->num_rows($event_res))
+		{
+			while($row = $forum_db->fetch_assoc($event_res))
+			{
+				if ($row['type'] == $_POST['event_id'])
+				{
+					$exist = 1;
+					break;
+				}
+			}
+		}
+	}
+	
+	if(isset($_POST['event_id']) && $_POST['event_id'] != '' && ($exist == 1))
+		$result[] = '(type like \''.$forum_db->escape($_POST['event_id']).'\')';
 	
 	if(isset($_POST['ip']) && $_POST['ip'] != '*')
 		$result[] = '(ip like \''.str_replace('*', '%', $forum_db->escape($_POST['ip'])).'\')';

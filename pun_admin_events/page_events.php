@@ -92,7 +92,7 @@ ob_start();
 			<div class="sf-set set2">
 				<div class="sf-box select">
 					<label for="fld-day-from">
-						<span>By event:</span>
+						<span>By type:</span>
 					</label>
 					<span class="fld-input">
 						<select id="fld-event-id" name="event_id">
@@ -104,7 +104,7 @@ ob_start();
 
 							$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-							if(isset($_POST['event_id']) && $_POST['event_id'] != '')
+							if(isset($_POST['event_id']) && $_POST['event_id'] != '' && $_POST['event_id'] != 0)
 								echo '<option value="">'.$_POST['event_id'].'</option>';
 							else
 								echo '<option selected="selected" value="0">'.$lang_pun_admin_events['Any'].'</option>';
@@ -164,7 +164,7 @@ ob_start();
 							{
 								echo '<option '.(($_POST['sort_by'] == 'Date') ? 'selected="selected"' : '').' value="Date">'.$lang_pun_admin_events['Date'].'</option>';
 								echo '<option '.(($_POST['sort_by'] == 'Type') ? 'selected="selected"' : '').' value="Type">'.$lang_pun_admin_events['Event'].'</option>'; 
-								echo '<option '.(($_POST['sort_by'] == 'Ip') ? 'selected="selected"' : '').'value="IP">'.$lang_pun_admin_events['IP'].'</option>'; 
+								echo '<option '.(($_POST['sort_by'] == 'IP') ? 'selected="selected"' : '').'value="IP">'.$lang_pun_admin_events['IP'].'</option>'; 
 								echo '<option '.(($_POST['sort_by'] == 'user_name') ? 'selected="selected"' : '').' value="user_name">'.$lang_pun_admin_events['User_Name'].'</option>';
 							}
 							else
@@ -212,10 +212,14 @@ ob_start();
 		
 		//Prepare ORDER clause.
 		$order_by = '';
-		if(isset($_POST['sort_by']))
-			$order_by = $_POST['sort_by'].' '.$_POST['sort_rule'];
-		else
-			$order_by = 'date';
+		
+		if(isset($_POST['sort_rule']))
+		{
+			if(isset($_POST['sort_by']))
+				$order_by = $_POST['sort_by'].' '.$_POST['sort_rule'];
+			else
+				$order_by = 'date'.' '.$_POST['sort_rule'];
+		}
 
 		//Prepare WHERE clause
 		$sql_where = implode(' && ', pun_events_generate_where());
@@ -226,6 +230,7 @@ ob_start();
 			'FROM'		=> 'pun_admin_events',
 			'WHERE'		=> $sql_where,
 		);
+		
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 		$num_rows = $forum_db->result($result);
@@ -241,7 +246,7 @@ ob_start();
 				'ORDER BY'	=> $order_by,
 				'LIMIT'		=> ($event_page ? ((($event_page - 1) * $results_onpage).', '.$results_onpage) : ('0, '.$results_onpage))
 			);
-
+			
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 			while($_tmp = $forum_db->fetch_assoc($result))

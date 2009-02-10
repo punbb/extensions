@@ -7,7 +7,7 @@ require_once FORUM_ROOT.'include/common.php';
 
 function pun_admin_event($type, $comment = '', $search_user = true)
 {
-	global $forum_db, $forum_user;	
+	global $forum_db, $forum_user;
 	$query = array(
 		'INSERT'	=> 'ip, type, comment, date',
 		'INTO'		=> 'pun_admin_events',
