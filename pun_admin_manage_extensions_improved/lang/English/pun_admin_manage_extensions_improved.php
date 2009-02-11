@@ -5,9 +5,9 @@ if (!defined('FORUM')) die();
 $lang_pun_man_ext_improved = array(
     'Reinstall fail'        =>	'You can\'t reinstall this extension, because some other extensions depend from it&nbsp;',
     'Reinstall success'     =>	'The extension was successfully reinstalled, but reported the following notices.',
-    'Reinstall ext'         =>	'Reinstall Extension %s',
+    'Reinstall ext'         =>	'Reinstall \ Refresh hooks Extension %s',
 	'Reinstall'				=>	'Reinstall',
-	'Reinstall with deps'	=>	'<strong>Important!</strong> Extensions %s can function incorrectly, if you reinstall %s extension.',
+	'Reinstall with deps'	=>	'<strong>Important!</strong> Extensions %s can function incorrectly, if you reinstall or refresh hooks %s extension.',
     'Extension reinstalled' =>	'The extension <strong>"%s"</strong> was successfully reinstalled.',
 	'Disable selected'		=>	'Selected extensions was disabled.',
 	'Enable selected'		=>	'Selected extensions was enabled.',

@@ -27,12 +27,12 @@
 <extension engine="1.0">
 	<id>pun_admin_manage_extensions_improved</id>
 	<title>Pun Admin Manage Extensions Improved</title>
-	<version>1.2</version>
+	<version>1.2b</version>
 	<description>This extension allows to choose several extensions to enable/disable/uninstall them</description>
 	<author>PunBB Development Team</author>
 
-	<minversion>1.3</minversion>
-	<maxtestedon>1.3.2</maxtestedon>
+	<minversion>1.3 SVN</minversion>
+	<maxtestedon>1.3 SVN</maxtestedon>
 	
 	<note type="install" timing="pre">If extension "pun_extension_reinstaller" was installed, it will be disabled.</note>
 
@@ -43,7 +43,7 @@
 			'WHERE'		=>	'id = \'pun_extension_reinstaller\' AND disabled = 0'
 		);
 		
-		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);		
+		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		if ($forum_db->num_rows($result))
 		{
 			
@@ -76,7 +76,10 @@
 if (isset($_GET['reinstall']))
 {
 	$id = preg_replace('/[^0-9a-z_]/', '', $_GET['reinstall']);
-
+	
+	echo '<pre>'.$id.'</pre>';
+	
+	//include language file
 	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	else
@@ -102,15 +105,16 @@ if (isset($_GET['reinstall']))
 	
 	if (!isset($_POST['reinstall_continue']))
 	{
-		//Check for dependencies first	
+		//Check for dependencies first
 		$query = array(
 			'SELECT'	=> 'e.id',
 			'FROM'		=> 'extensions AS e',
-			'WHERE'		=> 'e.disabled=0 AND e.dependencies LIKE \'%|'.$forum_db->escape($id).'|%\''
+			'WHERE'		=> 'e.disabled=0 AND e.dependencies LIKE \''.$forum_db->escape($id).'\''
 		);
+		
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	
-		if ($forum_db->num_rows($result) != 0)
+		if ($forum_db->num_rows($result))
 		{
 			$dependency = $forum_db->fetch_assoc($result);
 			$head_notice = sprintf($lang_pun_man_ext_improved['Reinstall ext'], $id);
@@ -120,7 +124,7 @@ if (isset($_GET['reinstall']))
 			$handle = $base_url.'/admin/extensions.php?section=manage&amp;reinstall='.$id;	
 		
 			include  $ext_info['path'].'/continue.php';	
-		}		
+		}
 	}
 
 	// Fetch info about the extension
@@ -148,9 +152,12 @@ if (isset($_GET['reinstall']))
 	$ext_data = xml_to_array($manifest);
 	$errors = validate_manifest($ext_data, $id);
 	
+	//get dependence extensions and check this extension in getting array
+	
+	
 	if (!isset($_POST['reinstall_continue']) && isset($_GET['only_hoks']) && version_compare($ext_data['extension']['version'], $old_ext_data['version'], '>'))
 	{
-		//Show continue page		
+		//Show continue page
 		$important_message = sprintf($lang_pun_man_ext_improved['Update error'], $id);		
 		$head_notice = $lang_pun_man_ext_improved['Ext update'];
 		$form_radboxes = '';
@@ -160,7 +167,7 @@ if (isset($_GET['reinstall']))
 		include $ext_info['path'].'/continue.php';				
 	}
 	if (!empty($errors))
-		message(isset($_GET['install']) ? $lang_common['Bad request'] : $lang_admin['Hotfix download failed']);
+		message(isset($_GET['install']) ? $lang_common['Bad request'] : $lang_admin_common['Hotfix download failed']);
 	
 	// Is there some uninstall code to store in the db?
 	$uninstall_code = (isset($ext_data['extension']['uninstall']) && trim($ext_data['extension']['uninstall']) != '') ? '\''.$forum_db->escape(trim($ext_data['extension']['uninstall'])).'\'' : 'NULL';
@@ -182,7 +189,7 @@ if (isset($_GET['reinstall']))
 	// Now delete the extension and its hooks from the db
 	$query = array(
 		'DELETE'	=> 'extension_hooks',
-		'WHERE'	 => 'extension_id = \''.$forum_db->escape($id).'\''
+		'WHERE'		=> 'extension_id = \''.$forum_db->escape($id).'\''
 	);
 	
 	($hook = get_hook('aex_qr_uninstall_delete_hooks')) ? eval($hook) : null;
@@ -262,14 +269,18 @@ $display_group_buttons = true;
 if (isset($_GET['multy']) && (isset($_POST['disable_selected']) || isset($_POST['enable_selected']) || isset($_POST['uninstall_selected'])) && (!isset($_POST['extens']) || !is_array(array_keys($_POST['extens'])) || array_keys($_POST['extens']) == array()))
 	$no_selected_extensions = true;
 else if (isset($_GET['multy']))
-{	
+{
+	echo '<pre>';
+	var_dump($_POST);
+	echo '</pre>';
+	
 	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	else
 		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		
 	if ( (isset($_GET['disable_sel']) || isset($_GET['enable_sel']) || isset($_GET['uninstall_sel'])) && (!isset($_POST['selected_extens']) || !is_scalar($_POST['selected_extens'])) )
-		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Input error'].' '.$lang_admin['Redirect']);
+		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Input error'].' '.$lang_admin_common['Redirect']);
 		
 	if (!isset($_POST['csrf_token']))
 		csrf_confirm_form();		
@@ -278,85 +289,65 @@ else if (isset($_GET['multy']))
 	
 	//If press button Disable selected
 	if (isset($_POST['disable_selected']))
-	{			
-		//Validate selected extensions			
+	{
+		//Validate selected extensions
 		$sel_extens = validate_ext_list( array_keys($_POST['extens']) );
+		$dep_arr = get_only_dep($sel_extens);
 		
-		$disable_list = get_dependencies_list();
-		
-		//Get enabled extensions
-		$query = array(
-			'SELECT'	=>	'id',
-			'FROM'		=>	'extensions',
-			'WHERE'		=>	'disabled = \'1\''		
-		);		
-		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);			
-		$dis_extens = array();
-		while (list($id) = $forum_db->fetch_row($res))
-			$dis_extens[] = $id;		
-			
-		if (array_diff(array_diff($disable_list, $dis_extens), $sel_extens) != array())
+		if (array_diff($dep_arr, $sel_extens) != array())
 			$continue_page = true;
 		else
-			flip_extensions('1', $sel_extens );						
+			flip_extensions('1', $sel_extens );;
 	}
 	//If press button Enable selected
 	else if (isset($_POST['enable_selected']))
 	{
-		//Validate selected extensions			
-		$sel_extens = validate_ext_list( array_keys($_POST['extens']) );				
-		$enable_list = get_dependencies_list_rev();					
+		//Validate selected extensions
+		$sel_extens = validate_ext_list( array_keys($_POST['extens']) );
+		$dep_arr = get_only_dep($sel_extens);
 		
-		//Get enabled extensions
-		$query = array(
-			'SELECT'	=>	'id',
-			'FROM'		=>	'extensions',
-			'WHERE'		=>	'disabled = \'0\''		
-		);		
-		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);			
-		$en_extens = array();
-		while (list($id) = $forum_db->fetch_row($res))
-			$en_extens[] = $id;	
-		
-		if (array_diff(array_diff($enable_list, $en_extens), $sel_extens) != array())
+		if (array_diff($dep_arr, $sel_extens) != array())
 			$continue_page = true;
 		else
-			flip_extensions('0', $sel_extens );				
+			flip_extensions('0', $sel_extens );
 	}
 	//If press button Uninstall selected
 	else if (isset($_POST['uninstall_selected']))
 	{
-		//Validate selected extensions			
-		$sel_extens = validate_ext_list( array_keys($_POST['extens']) );		
-		if (array_diff(get_dependencies_list(), $sel_extens) != array())
-			$continue_page = true;			
-		else	
-			uninstall_extensions($sel_extens);
+		//Validate selected extensions
+		$sel_extens = validate_ext_list( array_keys($_POST['extens']) );
+		$dep_arr = get_only_dep($sel_extens);
 		
-		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Uninstall selected'].' ');
-	}	
+		if (array_diff($dep_arr, $sel_extens) != array())
+			$continue_page = true;
+		else
+		{
+			uninstall_extensions($sel_extens);
+			redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Uninstall selected'].' ');
+		}
+	}
 	//Continue disable selected
 	else if (isset($_GET['disable_sel']) && isset($_POST['disable_continue']))
-	{		
-		$disable_type = (!isset($_POST['disable_type']) || ($_POST['disable_type'] != 0)) ? (1) : (0);	
-			
-		if (!$disable_type)	
+	{
+		$disable_type = (!isset($_POST['disable_type']) || ($_POST['disable_type'] != 0)) ? (1) : (0);
+		
+		if (!$disable_type)
 			flip_extensions('1', validate_ext_list( explode(',', $_POST['selected_extens']) ));
 		else
-			flip_extensions('1', get_dependencies_list());	
-									
-		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Disable selected'].' '.$lang_admin['Redirect']);
+			flip_extensions('1', get_dependencies_list());
+		
+		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Disable selected'].' '.$lang_admin_common['Redirect']);
 	}
 	//Continue enable selected	
 	else if (isset($_GET['enable_sel']) && isset($_POST['enable_continue']))
 	{
 		$enable_type = (!isset($_POST['enable_type']) || ($_POST['enable_type'] != 0)) ? (1) : (0);
 	
-		//Validate selected extensions			
-		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));		
-									
-		if (!$enable_type)	
-			flip_extensions('0', $sel_extens);				
+		//Validate selected extensions
+		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));
+		
+		if (!$enable_type)
+			flip_extensions('0', $sel_extens);
 		else
 		{
 			$enable_list = get_dependencies_list_rev();
@@ -364,62 +355,56 @@ else if (isset($_GET['multy']))
 			$error_list = array();
 			$dep_list = get_dependencies();
 			$installed_extens = array_keys($dep_list);
+			
 			for ($ext_num = 0; $ext_num < count($sel_extens); $ext_num++)
 				for ($i = 0; $i < count($dep_list[ $sel_extens[$ext_num] ]); $i++)
-				{					
+				{
 					if (!in_array($dep_list[ $sel_extens[$ext_num] ][ $i ], $installed_extens))
 					{
 						if (!isset($error_list[ $sel_extens[$ext_num] ]))
 							$error_list[ $sel_extens[$ext_num] ] = '';
-						$error_list[ $sel_extens[$ext_num] ] .= $dep_list[ $sel_extens[$ext_num] ][ $i ].', ';						
+						$error_list[ $sel_extens[$ext_num] ] .= $dep_list[ $sel_extens[$ext_num] ][ $i ].', ';
 					}
 				}
 
-			if (empty($error_list))				
-				flip_extensions('0', $enable_list);	
-		}	
+			if (empty($error_list))
+				flip_extensions('0', $enable_list);
+		}
 		if (empty($error_list))
-			redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Enable selected'].' '.$lang_admin['Redirect']);						
+			redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Enable selected'].' '.$lang_admin_common['Redirect']);						
 	}
 	//Continue uninstall selected
 	else if (isset($_GET['uninstall_sel']) && isset($_POST['uninstall_continue']))
-	{				
-		//Validate selected extensions			
+	{
+		//Validate selected extensions
 		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));
 		$uninstall_type = (!isset($_POST['uninstall_type']) || !in_array($_POST['uninstall_type'], array(0, 1, 2))) ? ( 0 ) : ( $_POST['uninstall_type'] );		
 			
-		if ($uninstall_type == 0)	
-			uninstall_extensions( $sel_extens );					
-		else if ($uninstall_type == 1)							
+		if ($uninstall_type == 0)
+			uninstall_extensions( $sel_extens );
+		else if ($uninstall_type == 1)
 		{
-			$dependencies = get_dependencies();
-			
-			//Validate selected extensions			
+			//Validate selected extensions
 			$sel_extens = validate_ext_list( explode(',', $_POST['selected_extens']) );
-			
-			$dis_list = array();
-			for ($ext_num = 0; $ext_num < count($sel_extens); $ext_num++)
-				foreach ($dependencies as $ext => $dep_arr)
-					if (in_array($sel_extens[$ext_num], $dep_arr) && !in_array($ext, $sel_extens))
-						$dis_list[] = $ext;			
-			$dis_list = array_unique($dis_list);
+			$dis_list = get_only_dep($sel_extens);
 			
 			flip_extensions('1', $dis_list);
-			uninstall_extensions( $sel_extens );	
-		}
-		else if ($uninstall_type == 2)							
-			uninstall_extensions( get_dependencies_list() );	
 			
-		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Uninstall selected'].' '.$lang_admin['Redirect']);
-	}	
+			uninstall_extensions( $sel_extens );
+		}
+		else if ($uninstall_type == 2)
+			uninstall_extensions( get_dependencies_list() );
+			
+		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Uninstall selected'].' '.$lang_admin_common['Redirect']);
+	}
 	
 	if (isset($continue_page))
-	{			
+	{
 		$display_group_buttons = false;	
 		
 		$important_message = $lang_pun_man_ext_improved['Dependency error'];		
 		if (isset($_POST['disable_selected']))
-		{		
+		{
 			$head_notice = $lang_pun_man_ext_improved['Disable checked'];
 			$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend>
 				<div class="radbox"><label for="fld10"><input type="radio" id="fld10" name="disable_type" value="0" />'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>
@@ -439,13 +424,14 @@ else if (isset($_GET['multy']))
 			$head_notice = $lang_pun_man_ext_improved['Uninstall checked'];
 			$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend>
 				<div class="radbox"><label for="fld10"><input type="radio" id="fld10" name="uninstall_type" value="0" />'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>
-				<div class="radbox"><label for="fld11"><input type="radio" id="fld11" name="uninstall_type" value="1" checked="checked" />'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>
+				<div class="radbox"><label for="fld11"><input type="radio" id="fld11" name="uninstall_type" value="1" />'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>
 				<div class="radbox"><label for="fld11"><input type="radio" id="fld12" name="uninstall_type" value="2" checked="checked" />'.$lang_pun_man_ext_improved['Uninstall all'].'</label></div>';
 			$type = 'uninstall';
-		}	
+		}
+		
 		$handle = $base_url.'/admin/extensions.php?section=manage&amp;multy&amp;'.$type.'_sel';
-			
-		include $ext_info['path'].'/continue.php';	
+		
+		include $ext_info['path'].'/continue.php';
 	}	
 }
 if ($section == 'manage')
@@ -485,7 +471,7 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 		while (($entry = $d->read()) !== false)
 			if ($entry == $id)
 			{	
-				// Parse manifest.xml into an array			
+				// Parse manifest.xml into an array
 				$ext_data = xml_to_array(@file_get_contents(FORUM_ROOT.'extensions/'.$entry.'/manifest.xml'));
 				
 				// Validate manifest
@@ -494,7 +480,7 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 					eval($ext_data['extension']['uninstall']);
 			}
 		$d->close();
-		redirect(forum_link($forum_url['admin_extensions_install']), $lang_pun_man_ext_improved['Force success'].' '.$lang_admin['Redirect']);
+		redirect(forum_link($forum_url['admin_extensions_install']), $lang_pun_man_ext_improved['Force success'].' '.$lang_admin_common['Redirect']);
 	}
 	
 	$num_exts = 0;
@@ -517,7 +503,7 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 			{
 				$rej_flag = in_array($hotfix['attributes']['id'], $rej_hotfixes);
 				
-				$forum_page['ext_item'][] = '<div class="hotfix-item databox">'."\n\t\t\t".'<h3 class="legend"><span>'.forum_htmlencode($hotfix['content']).'</span>'.(($rej_flag) ? ('<span> ( '.'Hotfix rejected.'.' )</span>') : ('')).'</h3>'."\n\t\t\t".'<p><span>'.sprintf($lang_admin['Extension by'], 'PunBB').'</span><br /><span>'.$lang_admin['Hotfix description'].'</span></p>'."\n\t\t\t".'<p class="actions"><a href="'.$base_url.'/admin/extensions.php?install_hotfix='.urlencode($hotfix['attributes']['id']).'">'.$lang_admin['Install hotfix'].'</a>'.((!$rej_flag) ? ('<a href="'.$base_url.'/admin/extensions.php?section=install&reject='.urlencode($hotfix['attributes']['id']).'">'.$lang_admin['Reject hotfix'].'</a>') : ('')).'</p>'."\n\t\t".'</div>';
+				$forum_page['ext_item'][] = '<div class="hotfix-item databox">'."\n\t\t\t".'<h3 class="legend"><span>'.forum_htmlencode($hotfix['content']).'</span>'.(($rej_flag) ? ('<span> ( '.'Hotfix rejected.'.' )</span>') : ('')).'</h3>'."\n\t\t\t".'<p><span>'.sprintf($lang_admin_common['Extension by'], 'PunBB').'</span><br /><span>'.$lang_admin_common['Hotfix description'].'</span></p>'."\n\t\t\t".'<p class="actions"><a href="'.$base_url.'/admin/extensions.php?install_hotfix='.urlencode($hotfix['attributes']['id']).'">'.$lang_admin_common['Install hotfix'].'</a>'.((!$rej_flag) ? ('<a href="'.$base_url.'/admin/extensions.php?section=install&reject='.urlencode($hotfix['attributes']['id']).'">'.$lang_admin_common['Reject hotfix'].'</a>') : ('')).'</p>'."\n\t\t".'</div>';
 				++$num_exts;
 			}
 		}
@@ -531,13 +517,13 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 		{
 			if (preg_match('/[^0-9a-z_]/', $entry))
 			{
-				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin['Illegal ID'].'</p>'."\n\t\t\t".'</div>';
+				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_common['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_common['Illegal ID'].'</p>'."\n\t\t\t".'</div>';
 				++$num_failed;
 				continue;
 			}
 			else if (!file_exists(FORUM_ROOT.'extensions/'.$entry.'/manifest.xml'))
 			{
-				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin['Missing manifest'].'</p>'."\n\t\t\t".'</div>';
+				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_common['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_common['Missing manifest'].'</p>'."\n\t\t\t".'</div>';
 				++$num_failed;
 				continue;
 			}
@@ -546,7 +532,7 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 			$ext_data = xml_to_array(@file_get_contents(FORUM_ROOT.'extensions/'.$entry.'/manifest.xml'));
 			if (empty($ext_data))
 			{
-				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin['Failed parse manifest'].'</p>'."\n\t\t\t".'</div>';
+				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_common['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_common['Failed parse manifest'].'</p>'."\n\t\t\t".'</div>';
 				++$num_failed;
 				continue;
 			}
@@ -555,7 +541,7 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 			$errors = validate_manifest($ext_data, $entry);
 			if (!empty($errors))
 			{
-				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin['Extension loading error'], forum_htmlencode($entry)).'</span></h3>'."\n\t\t\t\t".'<p>'.implode(' ', $errors).'</p>'."\n\t\t\t".'</div>';
+				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_common['Extension loading error'], forum_htmlencode($entry)).'</span></h3>'."\n\t\t\t\t".'<p>'.implode(' ', $errors).'</p>'."\n\t\t\t".'</div>';
 				++$num_failed;
 			}
 			else

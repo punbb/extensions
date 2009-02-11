@@ -1,5 +1,62 @@
 <?php
-
+	
+	function get_active($sel_ext, $active)
+	{
+		global $forum_db;
+		
+		$imp_query = array(
+			'SELECT'	=> 'id, disabled',
+			'FROM'		=> 'extensions',
+			'WHERE'		=> 'id IN ("'.implode('", "', $sel_ext).'")'
+		);
+		
+		$imp_result = $forum_db->query_build($imp_query) or error(__FILE__, __LINE__);
+		
+		$act_ext = array();
+		
+		if ($forum_db->num_rows($imp_result))
+		{
+			while ($row = $forum_db->fetch_assoc($imp_result))
+			{
+				if ($row['disabled'] == $active)
+					$act_ext[] = $row['id'];
+			}
+		}
+	}
+	
+	function get_only_dep($main_ext)
+	{
+		global $forum_db;
+		
+		$query = array(
+			'SELECT'	=> 'id, dependencies',
+			'FROM'		=> 'extensions',
+			'WHERE'		=> 'id IN ("'.implode('", "', $main_ext).'")'
+		);
+		
+		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		
+		$deps = array();
+		
+		while ($cur_ext = $forum_db->fetch_assoc($res))
+		{
+			$deps[ $cur_ext['id'] ] = explode('|', substr($cur_ext['dependencies'], 1, -1));
+			
+			if (empty($deps[ $cur_ext['id'] ][0]))
+				$deps[ $cur_ext['id'] ] = array();
+		}
+		
+		$only_dep = array();
+		
+		foreach ($deps as $key => $text)
+		{
+			if (count($text) > 0)
+				$only_dep = array_values($text);
+		}
+		
+		return $only_dep;
+	}
+	
 	function get_dependencies()
 	{
 		global $forum_db;
@@ -7,13 +64,16 @@
 		$query = array(
 			'SELECT'	=> 'id, dependencies',
 			'FROM'		=> 'extensions'
-		);				
+		);
+		
 		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		
 		$deps = array();
+		
 		while ($cur_ext = $forum_db->fetch_assoc($res))
 		{
 			$deps[ $cur_ext['id'] ] = explode('|', substr($cur_ext['dependencies'], 1, -1));
+			
 			if (empty($deps[ $cur_ext['id'] ][0]))
 				$deps[ $cur_ext['id'] ] = array();
 		}
@@ -23,11 +83,11 @@
 	
 	function get_dependencies_list()
 	{
-		$dependencies = get_dependencies();			
+		$dependencies = get_dependencies();
 		
-		//Get all disable extensions			
+		//Get all disable extensions
 		if (isset($_POST['extens']))
-			$sel_arr = array_keys($_POST['extens']);	
+			$sel_arr = array_keys($_POST['extens']);
 		else
 			$sel_arr = explode(',', $_POST['selected_extens']);	
 		
@@ -38,20 +98,20 @@
 			foreach ($dependencies as $ext => $dep_list)
 				if (in_array($sel_arr[$sel_num], $dep_list))
 					$list[] = $ext;
-		}		
+		}
 		$list = array_unique($list);
 		
-		return $list;	
+		return $list;
 	}	
 
 	function get_dependencies_list_rev()
 	{
-		$dependencies = get_dependencies();			
+		$dependencies = get_dependencies();
 
 		if (isset($_POST['extens']))
-			$sel_arr = array_keys($_POST['extens']);	
+			$sel_arr = array_keys($_POST['extens']);
 		else
-			$sel_arr = explode(',', $_POST['selected_extens']);	
+			$sel_arr = explode(',', $_POST['selected_extens']);
 		
 		$list = array();
 		for ($sel_num = 0; $sel_num < count($sel_arr); $sel_num++)
@@ -59,11 +119,11 @@
 			if ($dependencies[ $sel_arr[$sel_num] ] != array())
 				for ($i = 0; $i < count($dependencies[ $sel_arr[$sel_num] ]); $i++)
 					$list[] = $dependencies[ $sel_arr[$sel_num] ][ $i ];
-			$list[]	= $sel_arr[$sel_num];	
+			$list[] = $sel_arr[$sel_num];
 		}		
-		$list = array_unique($list);		
+		$list = array_unique($list);
 		
-		return $list;	
+		return $list;
 	}	
 	
 	function uninstall_extensions( $uninst_list )

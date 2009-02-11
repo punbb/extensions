@@ -11,27 +11,25 @@ else
 // Setup breadcrumbs
 $forum_page['crumbs'] = array(
 	array($forum_config['o_board_title'], forum_link($forum_url['index'])),
-	array($lang_admin['Forum administration'], forum_link($forum_url['admin_index'])),
+	array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
 	$head_notice
-);		
-require FORUM_ROOT.'header.php';	
-		
+);
+
+require FORUM_ROOT.'header.php';
+
 // START SUBST - <!-- forum_main -->
 ob_start();
 
 ?>
-<div id="brd-main" class="main sectioned admin">
 
-<?php echo generate_admin_menu(); ?>
-
-	<div class="main-head">
-		<h1><span>{ <?php echo end($forum_page['crumbs']) ?> }</span></h1>
-	</div>
-	<div class="main-content frm">
-		<div class="frm-head">
-			<h2><span><?php echo $lang_pun_man_ext_improved['Extension title'].'. '.$head_notice; ?></span></h2>
-		</div>
-		<div class="frm-info">
+<div class="main-subhead">
+	<h3 class="hn">
+		<span><?php echo $head_notice; ?></span>
+	</h3>
+</div>
+<div id="pun-main" class="main sectioned admin">
+	<div class="main-content main-frm">
+		<div class="ct-box">
 			<p class="warn"><?php echo $important_message; ?></p>
 		</div>
 		<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $handle; ?>">
@@ -45,25 +43,31 @@ ob_start();
 				?>
 			</div>
 			
-			<fieldset class="frm-group">
-				<?php echo $form_radboxes; ?>
+			<fieldset class="frm-group group1">
+				<div class="sf-set set1">
+					<div class="sf-box select">
+						<?php echo $form_radboxes; ?>
+					</div>
+				</div>
 			</fieldset>
 			
 			<div class="frm-buttons">
-				<span class="submit"><input type="submit" name="<?php echo $type; ?>_continue" value="Continue" /></span>
-				<span class="cancel"><input type="submit" name="<?php echo $type; ?>_cancel" value="Cancel" /></span>
+				<span class="submit">
+					<input type="submit" name="<?php echo $type; ?>_continue" value="Continue" />
+				</span>
+				<span class="cancel">
+					<input type="submit" name="<?php echo $type; ?>_cancel" value="Cancel" />
+				</span>
 			</div>
-	 	</form>	
-	</div>
+	 	</form>
 
-</div>		
-<?php		
+<?php
 
-		$tpl_temp = trim(ob_get_contents());
-		$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
-		ob_end_clean();
-	
-		require FORUM_ROOT.'footer.php';
+$tpl_temp = trim(ob_get_contents());
+$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+ob_end_clean();
+
+require FORUM_ROOT.'footer.php';
 
 ?>
 
