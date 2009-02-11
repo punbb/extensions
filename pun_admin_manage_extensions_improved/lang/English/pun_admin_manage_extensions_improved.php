@@ -1,14 +1,22 @@
 <?php
 
+/**
+ * Lang file for pun_admin_manage_extensions_improved
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_manage_extensions_improved
+ */
+
 if (!defined('FORUM')) die();
 
 $lang_pun_man_ext_improved = array(
-    'Reinstall fail'        =>	'You can\'t reinstall this extension, because some other extensions depend from it&nbsp;',
-    'Reinstall success'     =>	'The extension was successfully reinstalled, but reported the following notices.',
-    'Reinstall ext'         =>	'Reinstall \ Refresh hooks Extension %s',
+	'Reinstall fail'		=>	'You can\'t reinstall this extension, because some other extensions depend from it&nbsp;',
+	'Reinstall success'		=>	'The extension was successfully reinstalled, but reported the following notices.',
+	'Reinstall ext'			=>	'Reinstall \ Refresh hooks Extension %s',
 	'Reinstall'				=>	'Reinstall',
 	'Reinstall with deps'	=>	'<strong>Important!</strong> Extensions %s can function incorrectly, if you reinstall or refresh hooks %s extension.',
-    'Extension reinstalled' =>	'The extension <strong>"%s"</strong> was successfully reinstalled.',
+	'Extension reinstalled' =>	'The extension <strong>"%s"</strong> was successfully reinstalled.',
 	'Disable selected'		=>	'Selected extensions was disabled.',
 	'Enable selected'		=>	'Selected extensions was enabled.',
 	'Uninstall selected'	=>	'Selected extensions was uninstalled.',

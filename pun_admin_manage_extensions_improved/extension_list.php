@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * pun_admin_manage_extensions_improved: page with list of extensions
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_manage_extensions_improved
+ */
+
 // Generate an array of installed extensions
 $inst_exts = array();
 $query = array(

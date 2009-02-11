@@ -1,5 +1,15 @@
 <?php
-	
+
+/**
+ * pun_admin_manage_extensions_improved functions
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_manage_extensions_improved
+ */
+
+if (!defined('FORUM')) die();
+
 	function get_active($sel_ext, $active)
 	{
 		global $forum_db;

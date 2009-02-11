@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * pun_admin_manage_extensions_improved: continue page
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_manage_extensions_improved
+ */
+
 define('FORUM_PAGE_SECTION', 'extensions');
 define('FORUM_PAGE', 'admin-extensions-manage');
 
