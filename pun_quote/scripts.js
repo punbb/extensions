@@ -185,8 +185,7 @@ function QuickQuote(tid_param, qid_param, d)
 		
 		try
 		{
-			post_blocks = document.getElementsByClassName('postbody online');
-			post_blocks2 = document.getElementsByClassName('postbody');
+			post_blocks = document.getElementsByClassName('postbody');
 		}
 		catch(err)
 		{
@@ -199,13 +198,9 @@ function QuickQuote(tid_param, qid_param, d)
 					post_blocks.push(divList[i]);
 					
 				if (divList[i].className == 'postbody')
-					post_blocks2.push(divList[i]);
+					post_blocks.push(divList[i]);
 			}
-			
 		}
-		
-		if (post_blocks.length == 0)
-			post_blocks = post_blocks2;
 
 		thisNode = selNode;
 		if (thisNode != null)
@@ -237,7 +232,7 @@ function QuickQuote(tid_param, qid_param, d)
 				}
 				
 			}
-			
+
 			children = children[0];
 			if ((thisNode == children) && (changedContent.indexOf(changedSelected) != -1))
 			{
@@ -273,8 +268,7 @@ function Reply(tid_param, qid_param, d)
 		
 		try
 		{
-			post_blocks = document.getElementsByClassName('postbody online');
-			post_blocks2 = document.getElementsByClassName('postbody');
+			post_blocks = document.getElementsByClassName('postbody');
 		}
 		catch(err)
 		{
@@ -287,13 +281,9 @@ function Reply(tid_param, qid_param, d)
 					post_blocks.push(divList[i]);
 					
 				if (divList[i].className == 'postbody')
-					post_blocks2.push(divList[i]);
+					post_blocks.push(divList[i]);
 			}
-			
 		}
-		
-		if (post_blocks.length == 0)
-			post_blocks = post_blocks2;
 		
 		thisNode = selNode;
 	
