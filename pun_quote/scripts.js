@@ -16,17 +16,25 @@ function turnOnLinks()
 
 	var tmp_k = 0;
 
-	for (var k=0; k < p.length; k++ )
+	for (var k = 0; k < p.length; k++ )
 	{
 		if (p[k].className.match(/post-actions/))
 		{
 			var span = p[k].getElementsByTagName('span');
+			var last_span = span[span.length-1];
+			var last_span2 = span[span.length-2];
+			var prev_span = span[span.length-4];
+			
+			prev_span.style.display = "";
+			var a = last_span2.getElementsByTagName('a');
+			a[0].href = "javascript: QuickQuote()";
 	
+			/*
 			if (tmp_k == 0)
 			{
-				span[5].style.display = "";
+				prev_span.style.display = "";
 				tmp_k = 1;
-				var a = span[7].getElementsByTagName('a');
+				var a = last_span.getElementsByTagName('a');
 
 				if (a.length == 0)
 				{
@@ -38,10 +46,11 @@ function turnOnLinks()
 			}
 			else
 			{
-				span[6].style.display = "";
-				var a = span[8].getElementsByTagName('a');
+				prev_span.style.display = "";
+				var a = last_span.getElementsByTagName('a');
 				a[0].href = "javascript: QuickQuote()";
 			}
+			*/
 		}
 	}
 }
@@ -171,18 +180,17 @@ function QuickQuote(tid_param, qid_param, d)
 	{
 		selected_text = selected_text.toString(); //for Google Chrome & Safari
 		var changedSelected = ContentCleaning(selected_text);
-
 		var post_blocks = new Array();
 		var post_blocks2 = new Array();
 		
-		if (this.getElementsByClassName)
+		try
 		{
 			post_blocks = document.getElementsByClassName('postbody online');
-			post_blocks2 = document.getElementsByClassName('posthead');
+			post_blocks2 = document.getElementsByClassName('postbody');
 		}
-		else
+		catch(err)
 		{
-			var tempDiv = document.getElementById('forum1');
+			var tempDiv = document.getElementById('brd-main');
 			var divList = tempDiv.getElementsByTagName('div');
 			
 			for(i = 0; i < divList.length; i++)
@@ -190,11 +198,14 @@ function QuickQuote(tid_param, qid_param, d)
 				if (divList[i].className == 'postbody online')
 					post_blocks.push(divList[i]);
 					
-				if (divList[i].className == 'posthead')
+				if (divList[i].className == 'postbody')
 					post_blocks2.push(divList[i]);
 			}
 			
 		}
+		
+		if (post_blocks.length == 0)
+			post_blocks = post_blocks2;
 
 		thisNode = selNode;
 		if (thisNode != null)
@@ -208,11 +219,11 @@ function QuickQuote(tid_param, qid_param, d)
 			var curr_block = post_blocks[i];
 			var children = new Array();
 
-			if (this.getElementsByClassName)
+			try
 			{
 				children = curr_block.getElementsByClassName('entry-content');
 			}
-			else
+			catch(err)
 			{
 				divList = new Array();
 				var divList = curr_block.getElementsByTagName('div');
@@ -225,10 +236,9 @@ function QuickQuote(tid_param, qid_param, d)
 					}
 				}
 				
-			}			
+			}
 			
 			children = children[0];
-			
 			if ((thisNode == children) && (changedContent.indexOf(changedSelected) != -1))
 			{
 				element.value += '[quote=' + author + ']' + selected_text + '[/quote]';
@@ -261,14 +271,14 @@ function Reply(tid_param, qid_param, d)
 		var post_blocks = new Array();
 		var post_blocks2 = new Array();
 		
-		if (this.getElementsByClassName)
+		try
 		{
 			post_blocks = document.getElementsByClassName('postbody online');
-			post_blocks2 = document.getElementsByClassName('posthead');
+			post_blocks2 = document.getElementsByClassName('postbody');
 		}
-		else
+		catch(err)
 		{
-			var tempDiv = document.getElementById('forum1');
+			var tempDiv = document.getElementById('brd-main');
 			var divList = tempDiv.getElementsByTagName('div');
 			
 			for(i = 0; i < divList.length; i++)
@@ -276,11 +286,14 @@ function Reply(tid_param, qid_param, d)
 				if (divList[i].className == 'postbody online')
 					post_blocks.push(divList[i]);
 					
-				if (divList[i].className == 'posthead')
+				if (divList[i].className == 'postbody')
 					post_blocks2.push(divList[i]);
 			}
 			
 		}
+		
+		if (post_blocks.length == 0)
+			post_blocks = post_blocks2;
 		
 		thisNode = selNode;
 	
@@ -295,11 +308,11 @@ function Reply(tid_param, qid_param, d)
 			var curr_block = post_blocks[i];
 			var children = new Array();
 
-			if (this.getElementsByClassName)
+			try
 			{
 				children = curr_block.getElementsByClassName('entry-content');
 			}
-			else
+			catch(err)
 			{
 				divList = new Array();
 				var divList = curr_block.getElementsByTagName('div');
