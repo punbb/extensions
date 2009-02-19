@@ -21,11 +21,11 @@
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.2</maxtestedon>
 
-	<note type="install" timing="pre">Tested in Internet Explorer 7, FireFox 3, Opera 9.63 and Google Chrome 0.2.</note>
+	<note type="install" timing="pre">Tested in Internet Explorer 7, FireFox 3, Opera 9.63 and Google Chrome 1.0.</note>
 
 	<hooks>
 		<hook id="vt_end"><![CDATA[
-			?>			
+			?>
 			<form id="pun_quote_form" action="post.php" method="post">
 				<div class="hidden">
 					<input type="hidden" value="" id="post_msg" name="post_msg"/>
