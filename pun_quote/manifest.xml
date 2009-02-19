@@ -45,7 +45,7 @@
 		]]></hook>
 
 		<hook id="vt_row_new_post_entry_data"><![CDATA[
-			$pun_quote_js_arrays .= 'pun_quote_posts['.$cur_post['id'].'] = "'.str_replace("\n", '\n', htmlspecialchars($cur_post['message'])).'";';
+			$pun_quote_js_arrays .= 'pun_quote_posts['.$cur_post['id'].'] = "'.str_replace("\n", '\n', forum_htmlencode($cur_post['message'])).'";';
 			$pun_quote_js_arrays .= ' pun_quote_authors['.$cur_post['id'].'] = "'.$cur_post['username'].'";'."\n";
 		]]></hook>
 
