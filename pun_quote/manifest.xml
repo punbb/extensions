@@ -25,8 +25,7 @@
 
 	<hooks>
 		<hook id="vt_end"><![CDATA[
-			?>
-			<script type="text/javascript" src="<?php echo $ext_info['url'] ?>/scripts.js"></script>
+			?>			
 			<form id="pun_quote_form" action="post.php" method="post">
 				<div class="hidden">
 					<input type="hidden" value="" id="post_msg" name="post_msg"/>
@@ -41,39 +40,23 @@
 				$query['SELECT'] = 'p.poster, \''.$forum_db->escape($_POST['post_msg']).'\'';
 		]]></hook>
 
-		<hook id="hd_head"><![CDATA[
-		
-			if (FORUM_PAGE == 'viewtopic')
-			{
-				$pun_quote_query = array(
-					'SELECT'	=> 'id, message, poster',
-					'FROM'		=> 'posts',
-					'WHERE'		=> 'topic_id='.$id
-				);
-	
-				$pun_quote_result = $forum_db->query_build($pun_quote_query) or error(__FILE__, __LINE__);
-				
-				
-				$forum_head['pun_quote_js'] = '';
-				
-				if ($forum_db->num_rows($pun_quote_result))
-				{
-					$forum_head['pun_quote_js'] .= '<script type="text/javascript">';
-					$forum_head['pun_quote_js'] .= 'var pun_quote_posts = new Array();';
-					$forum_head['pun_quote_js'] .= 'var pun_quote_authors = new Array();';
-	
-					while ($pun_quote_curr_message = $forum_db->fetch_assoc($pun_quote_result))
-					{
-						$pun_quote_curr_message['message'] = preg_replace('/\n\r|\n|\r/', '\xc2\xad', $pun_quote_curr_message['message']);
-						$pun_quote_curr_message['message'] = addslashes(str_replace('<!--', "<!--\0",$pun_quote_curr_message['message']));
-						$forum_head['pun_quote_js'] .= 'pun_quote_posts['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['message'].'";';
-						$forum_head['pun_quote_js'] .= 'pun_quote_authors['.$pun_quote_curr_message['id'].'] = "'.$pun_quote_curr_message['poster'].'";';
-					}
-	
-					$forum_head['pun_quote_js'] .= '</script>';
-				}
-			}
+		<hook id="vt_qr_get_posts"><![CDATA[
+			$pun_quote_js_arrays = '';
+		]]></hook>
 
+		<hook id="vt_row_new_post_entry_data"><![CDATA[
+			$pun_quote_js_arrays .= 'pun_quote_posts['.$cur_post['id'].'] = "'.str_replace("\n", '\n', htmlspecialchars($cur_post['message'])).'";';
+			$pun_quote_js_arrays .= ' pun_quote_authors['.$cur_post['id'].'] = "'.$cur_post['username'].'";'."\n";
+		]]></hook>
+
+		<hook id="ft_about_pre_copyright"><![CDATA[
+			if (FORUM_PAGE == 'viewtopic' && !empty($pun_quote_js_arrays))
+				echo '<script type="text/javascript"><!--'."\n".'var pun_quote_posts = new Array('.$forum_page['item_count'].');'."\n".'var pun_quote_authors = new Array('.$forum_page['item_count'].');'."\n".$pun_quote_js_arrays.'--></script>'."\n";
+		]]></hook>
+
+		<hook id="hd_head"><![CDATA[
+			if (FORUM_PAGE == 'viewtopic')
+				$forum_head['quote_js'] = '<script type="text/javascript" src="'.$ext_info['url'].'/scripts.js"></script>';
 		]]></hook>
 
 		<hook id="vt_row_pre_post_actions_merge"><![CDATA[
@@ -81,15 +64,20 @@
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-		
+
 			if (!$forum_user['is_guest'])
 			{
-				$forum_page['post_actions']['reply'] = '<span class="edit-post first-item" style="display: none"><a href="#" onclick="Reply('.$id. ','.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-				unset($forum_page['post_actions']['quote']);
-				$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'" onclick="QuickQuote('.$id. ','.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+				$quote_link = forum_link($forum_url['quote'], array($id, $cur_post['id']));
+				$forum_page['post_actions']['reply'] = '<span class="edit-post first-item"><a href="'.$quote_link.'" onclick="Reply('.$cur_post['id'].', this); return false;">'.$lang_pun_quote['Reply'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+				//If quick post is enabled generate Quick Quote link
+				if ($forum_config['o_quickpost'] == '1')
+				{
+					unset($forum_page['post_actions']['quote']);
+					$forum_page['post_actions']['quote'] = '<span class="edit-post first-item"><a href="'.$quote_link.'" onclick="QuickQuote('.$cur_post['id'].'); return false;">'.$lang_pun_quote['Quote'].'<span>&#160;'.$lang_topic['Post'].' '.($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
+				}
+				unset($quote_link);
 			}
 		]]></hook>
-
 
 		<hook id="co_common"><![CDATA[
 			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));

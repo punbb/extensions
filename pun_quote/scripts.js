@@ -8,59 +8,11 @@
 
 var selNode = null;
 
-turnOnLinks();
-
-function turnOnLinks()
-{
-	var p = document.getElementsByTagName('p');
-
-	var tmp_k = 0;
-
-	for (var k = 0; k < p.length; k++ )
-	{
-		if (p[k].className.match(/post-actions/))
-		{
-			var span = p[k].getElementsByTagName('span');
-			var last_span = span[span.length-1];
-			var last_span2 = span[span.length-2];
-			var prev_span = span[span.length-4];
-			
-			prev_span.style.display = "";
-			var a = last_span2.getElementsByTagName('a');
-			a[0].href = "javascript: QuickQuote()";
-	
-			/*
-			if (tmp_k == 0)
-			{
-				prev_span.style.display = "";
-				tmp_k = 1;
-				var a = last_span.getElementsByTagName('a');
-
-				if (a.length == 0)
-				{
-					tmp_k = 1;
-					k = 0;
-				}
-				else
-					a[0].href = "javascript: QuickQuote()";
-			}
-			else
-			{
-				prev_span.style.display = "";
-				var a = last_span.getElementsByTagName('a');
-				a[0].href = "javascript: QuickQuote()";
-			}
-			*/
-		}
-	}
-}
-
 function getSelectedText()
 {
 	try
 	{
 		var result = undefined;
-		
 		if (document.selection) //IE & Opera
 		{
 			selNode = document.selection.createRange().parentElement();
@@ -75,11 +27,11 @@ function getSelectedText()
 				else if ((testNode.parentNode.nodeName == 'LI'))
 					testNode = testNode.parentNode;
 				else if ((testNode.parentNode.nodeName == 'UL'))
-					testNode = testNode.parentNode;					
+					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'CODE'))
 					testNode = testNode.parentNode.parentNode;
 				else if ((testNode.nodeName == 'CITE'))
-					testNode = testNode.parentNode;						
+					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'EM'))
 					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'STRONG'))
@@ -89,17 +41,17 @@ function getSelectedText()
 				else
 					flag = 0;
 			}
-			
+
 			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
 				result = document.selection.createRange().text;
 		}
 		else if (document.getSelection) //FF
 		{
 			selNode = window.getSelection().anchorNode.parentNode;
-			
+
 			var testNode = selNode;
 			var flag = 1;
-			
+
 			while(flag == 1)
 			{
 				if ((testNode.parentNode.nodeName == 'BLOCKQUOTE'))
@@ -115,15 +67,15 @@ function getSelectedText()
 				else if ((testNode.nodeName == 'EM'))
 					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'STRONG'))
-					testNode = testNode.parentNode;													
+					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'SPAN'))
-					testNode = testNode.parentNode;											
+					testNode = testNode.parentNode;
 				else
 					flag = 0;
 			}
 			
 			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
-				result = document.getSelection();		
+				result = document.getSelection();
 		}
 		else if (window.getSelection) //Google Chrome & Safari
 		{
@@ -139,21 +91,21 @@ function getSelectedText()
 				else if ((testNode.parentNode.nodeName == 'LI'))
 					testNode = testNode.parentNode;
 				else if ((testNode.parentNode.nodeName == 'UL'))
-					testNode = testNode.parentNode;					
+					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'CODE'))
 					testNode = testNode.parentNode.parentNode;
 				else if ((testNode.nodeName == 'CITE'))
-					testNode = testNode.parentNode;						
+					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'EM'))
 					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'STRONG'))
-					testNode = testNode.parentNode;		
+					testNode = testNode.parentNode;
 				else if ((testNode.nodeName == 'SPAN'))
-					testNode = testNode.parentNode;																					
+					testNode = testNode.parentNode;
 				else
 					flag = 0;
 			}
-			
+
 			if ((testNode.parentNode.className == 'entry-content') && (testNode.className != 'sig-content'))
 				result = window.getSelection();
 		}
@@ -168,176 +120,53 @@ function getSelectedText()
 	return result;
 }
 
-function QuickQuote(tid_param, qid_param, d)
+function QuickQuote(qid_param)
 {
 	var selected_text = getSelectedText();
-	var author = pun_quote_authors[qid_param];
-	var post_content = ParseMessage(pun_quote_posts[qid_param]);
-	var changedContent = ContentCleaning(post_content);
-	var element = document.getElementById('fld1');
-
-	if (selected_text != undefined && selected_text != '')
+	var quick_post_value = document.getElementsByName('req_message');
+	if (selected_text == undefined || selected_text == '')
+		quick_post_value[0].value += '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]';
+	else
 	{
-		selected_text = selected_text.toString(); //for Google Chrome & Safari
-		var changedSelected = ContentCleaning(selected_text);
-		var post_blocks = new Array();
-		var post_blocks2 = new Array();
-		
-		try
-		{
-			post_blocks = document.getElementsByClassName('postbody');
-		}
-		catch(err)
-		{
-			var tempDiv = document.getElementById('brd-main');
-			var divList = tempDiv.getElementsByTagName('div');
-			
-			for(i = 0; i < divList.length; i++)
-			{
-				if (divList[i].className == 'postbody online')
-					post_blocks.push(divList[i]);
-					
-				if (divList[i].className == 'postbody')
-					post_blocks.push(divList[i]);
-			}
-		}
-
-		thisNode = selNode;
-		if (thisNode != null)
-		{
-			while (thisNode.nodeType != 'div' && thisNode.className != 'entry-content')
-				thisNode = thisNode.parentNode;	
-		}
-		
-		for (i = 0; i < post_blocks.length; i++)
-		{
-			var curr_block = post_blocks[i];
-			var children = new Array();
-
-			try
-			{
-				children = curr_block.getElementsByClassName('entry-content');
-			}
-			catch(err)
-			{
-				divList = new Array();
-				var divList = curr_block.getElementsByTagName('div');
-				for(j = 0; j < divList.length; j++)
-				{
-					if (divList[j].className == 'entry-content')
-					{
-						children.push(divList[j]);
-						break;
-					}
-				}
-				
-			}
-
-			children = children[0];
-			if ((thisNode == children) && (changedContent.indexOf(changedSelected) != -1))
-			{
-				element.value += '[quote=' + author + ']' + selected_text + '[/quote]';
-				return;
-			}
-				
-		}
+		var post_content = ContentCleaning(ParseMessage(pun_quote_posts[qid_param]));
+		var clean_selected_text = ContentCleaning(selected_text.toString());
+		if (post_content.indexOf(clean_selected_text) != -1)
+			quick_post_value[0].value += '[quote=' + pun_quote_authors[qid_param] + ']' + selected_text + '[/quote]';
+		else
+			quick_post_value[0].value += '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]';
 	}
-
-	element.value += '[quote=' + author + ']' + post_content + '[/quote]';
 }
 
-function Reply(tid_param, qid_param, d)
+function Reply(qid_param, quote_link)
 {
-	var selected_text = getSelectedText();
-	var post_content = pun_quote_posts[qid_param];
-	var changedContent = ContentCleaning(post_content);
-	var element = document.getElementById('post_msg');
-	element.value = '';
-	
-	var form = document.getElementById('pun_quote_form');
-	var reply_url = document.getElementById('pun_quote_url').value;
-	replace_url = reply_url.replace('$2',qid_param.toString());
-	form.action = replace_url.toString();
-	
-	if (selected_text != undefined && selected_text != '')
-	{
-		selected_text = selected_text.toString(); //for Google Chrome & Safari
-		var changedSelected = ContentCleaning(selected_text);
-		var post_blocks = new Array();
-		var post_blocks2 = new Array();
-		
-		try
-		{
-			post_blocks = document.getElementsByClassName('postbody');
-		}
-		catch(err)
-		{
-			var tempDiv = document.getElementById('brd-main');
-			var divList = tempDiv.getElementsByTagName('div');
-			
-			for(i = 0; i < divList.length; i++)
-			{
-				if (divList[i].className == 'postbody online')
-					post_blocks.push(divList[i]);
-					
-				if (divList[i].className == 'postbody')
-					post_blocks.push(divList[i]);
-			}
-		}
-		
-		thisNode = selNode;
-	
-		if (thisNode != null)
-		{
-			while (thisNode.nodeType != 'div' && thisNode.className != 'entry-content')
-				thisNode = thisNode.parentNode;	
-		}
-		
-		for (i = 0; i < post_blocks.length; i++)
-		{
-			var curr_block = post_blocks[i];
-			var children = new Array();
+	var selected_text = getSelectedText().toString();
+	if (selected_text == undefined || selected_text == '')
+		return;
 
-			try
-			{
-				children = curr_block.getElementsByClassName('entry-content');
-			}
-			catch(err)
-			{
-				divList = new Array();
-				var divList = curr_block.getElementsByTagName('div');
-				for(j = 0; j < divList.length; j++)
-				{
-					if (divList[j].className == 'entry-content')
-					{
-						children.push(divList[j]);
-						break;
-					}
-				}
-				
-			}
-			
-			children = children[0];
-			
-			if ((thisNode == children) && (changedContent.indexOf(changedSelected) != -1))
-			{
-				element.value += selected_text;
-				form.submit();
-				return;
-			}
-				
-		}
+	var post_content = ContentCleaning(ParseMessage(pun_quote_posts[qid_param]));
+	var clean_selected_text = ContentCleaning(selected_text);
+
+	//Get Quote form
+	var pun_quote_form = document.getElementById('pun_quote_form');
+	if (post_content.indexOf(clean_selected_text) != -1)
+	{	
+		//Change quote message
+		document.getElementById('post_msg').value = selected_text;
+		//Change URL
+		pun_quote_form.action = document.getElementById('pun_quote_url').value.replace('$2', qid_param.toString());
+		pun_quote_form.submit();
 	}
-
-	element.value += ParseMessage(post_content);
-	form.submit();
-	return;
+	else
+		location = quote_link.href;	
 }
 
 function ParseMessage(string)
 {
-	string = string.replace(/\\xc2\\xad/ig,'\n');
-	string = string.replace('\0','');
+	var search_arr = new Array(/&amp;/g, /&quot;/g, /&#039;/g, /&lt;/g, /&gt;/g);
+	var replace_arr = new Array('&', '"', '\'', '<', '>');
+	for (var replace_num = 0; replace_num < search_arr.length; replace_num++)
+		string = string.replace(search_arr[replace_num], replace_arr[replace_num]);
+
 	return string;
 }
 
@@ -351,5 +180,3 @@ function ContentCleaning(string)
 	string = string.replace(/\s{1,}/gi, ' ');
 	return string;
 }
-
-
