@@ -34,9 +34,12 @@ if ($section == 'hotfixes')
 	);
 
 	($hook = get_hook('aex_section_hotfixes_pre_header_load')) ? eval($hook) : null;
-
-	define('FORUM_PAGE_SECTION', 'extensions');
-	define('FORUM_PAGE', 'admin-extensions-hotfixes');
+	
+	if (!defined('FORUM_PAGE_SECTION'))
+		define('FORUM_PAGE_SECTION', 'extensions');
+	if (!defined('FORUM_PAGE'))
+		define('FORUM_PAGE', 'admin-extensions-hotfixes');
+	
 	require FORUM_ROOT.'header.php';
 
 	// START SUBST - <!-- forum_main -->
@@ -205,11 +208,13 @@ else
 	);
 
 	($hook = get_hook('aex_section_manage_pre_header_load')) ? eval($hook) : null;
-
-	define('FORUM_PAGE_SECTION', 'extensions');
-	define('FORUM_PAGE', 'admin-extensions-manage');
+	
+	if (!defined('FORUM_PAGE_SECTION'))
+		define('FORUM_PAGE_SECTION', 'extensions');
+	if (!defined('FORUM_PAGE'))
+		define('FORUM_PAGE', 'admin-extensions-manage');
 	require FORUM_ROOT.'header.php';
-
+	
 	// START SUBST - <!-- forum_main -->
 	ob_start();
 
@@ -265,7 +270,7 @@ else
 			}
 			else
 			{
-				if (!array_key_exists($entry, $inst_exts) || version_compare($inst_exts[$entry]['version'], $ext_data['extension']['version'], '!='))
+				if (!array_key_exists($entry, $inst_exts) || (version_compare($inst_exts[$entry]['version'], $ext_data['extension']['version'], '!=') && array_key_exists($entry, $inst_exts)))
 				{
 					$forum_page['ext_item'][] = '
 						<div class="ct-box info-box extension available">
@@ -341,11 +346,12 @@ else
 	($hook = get_hook('aex_section_manage_output_start')) ? eval($hook) : null;
 
 ?>
-
-	<div class="main-subhead2" id="ext_instal">
+	</div>
+	
+	<div class="main-subhead" id="ext_instal">
 		<h2 class="hn"><span><?php echo $lang_admin_ext['Installed extensions'] ?></span></h2>
 	</div>
-	<div class="main-content main-frm main-extensions2" id="ext_instal">
+	<div class="main-content main-frm main-extensions" id="ext_instal">
 		<form method="post" accept-charset="utf-8" action="<?php echo $base_url ?>/admin/extensions.php?section=manage&amp;multy">
 	
 <?php
@@ -455,11 +461,13 @@ else
 
 	}
 
-	$tpl_temp = trim(ob_get_contents());
+	($hook = get_hook('aex_section_manage_end')) ? eval($hook) : null;
+
+	$tpl_temp = forum_trim(ob_get_contents());
 	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
 	ob_end_clean();
 	// END SUBST - <!-- forum_main -->
-	
+
 	require FORUM_ROOT.'footer.php';
 }
 

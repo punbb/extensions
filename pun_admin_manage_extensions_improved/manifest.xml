@@ -64,8 +64,6 @@ if (isset($_GET['reinstall']))
 {
 	$id = preg_replace('/[^0-9a-z_]/', '', $_GET['reinstall']);
 	
-	echo '<pre>'.$id.'</pre>';
-	
 	//include language file
 	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -151,7 +149,7 @@ if (isset($_GET['reinstall']))
 		$type = 'reinstall';
 		$handle = $base_url.'/admin/extensions.php?section=manage&amp;multy&amp;only_hoks&amp;reinstall='.$id;			
 		
-		include $ext_info['path'].'/continue.php';				
+		include $ext_info['path'].'/continue.php';
 	}
 	if (!empty($errors))
 		message(isset($_GET['install']) ? $lang_common['Bad request'] : $lang_admin_common['Hotfix download failed']);
@@ -257,10 +255,6 @@ if (isset($_GET['multy']) && (isset($_POST['disable_selected']) || isset($_POST[
 	$no_selected_extensions = true;
 else if (isset($_GET['multy']))
 {
-	echo '<pre>';
-	var_dump($_POST);
-	echo '</pre>';
-	
 	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	else
