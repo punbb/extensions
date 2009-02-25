@@ -33,7 +33,7 @@ ob_start();
 <div class="main-subhead">
 	<h2 class="hn"><span><?php echo $head_notice; ?></span></h2>
 </div>
-<divclass="main-content">
+
 	<div class="main-content main-frm">
 		<div class="ct-box">
 			<p class="warn"><?php echo $important_message; ?></p>
@@ -48,15 +48,11 @@ ob_start();
 
 				?>
 			</div>
-			
 			<fieldset class="frm-group group1">
-				<div class="sf-set set1">
-					<div class="sf-box select">
-						<?php echo $form_radboxes; ?>
-					</div>
-				</div>
+				<fieldset class="mf-set set1">
+					<?php echo $form_radboxes; ?>
+				</fieldset>
 			</fieldset>
-			
 			<div class="frm-buttons">
 				<span class="submit">
 					<input type="submit" name="<?php echo $type; ?>_continue" value="Continue" />
@@ -66,6 +62,7 @@ ob_start();
 				</span>
 			</div>
 		</form>
+	</div>
 
 <?php
 
@@ -76,4 +73,3 @@ ob_end_clean();
 require FORUM_ROOT.'footer.php';
 
 ?>
-

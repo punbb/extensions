@@ -59,7 +59,7 @@
 		]]></hook>
 		
 		<hook id="aex_new_action"><![CDATA[
-		
+
 if (isset($_GET['reinstall']))
 {
 	$id = preg_replace('/[^0-9a-z_]/', '', $_GET['reinstall']);
@@ -84,10 +84,10 @@ if (isset($_GET['reinstall']))
 
 	if (isset($_POST['reinstall_cancel']))
 	{
-		$display_group_buttons = true;   		
+		$display_group_buttons = true;
 		include $ext_info['path'].'/extension_list.php';
 	}
-	
+
 	if (!isset($_POST['reinstall_continue']))
 	{
 		//Check for dependencies first
@@ -96,9 +96,9 @@ if (isset($_GET['reinstall']))
 			'FROM'		=> 'extensions AS e',
 			'WHERE'		=> 'e.disabled=0 AND e.dependencies LIKE \''.$forum_db->escape($id).'\''
 		);
-		
+
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	
+
 		if ($forum_db->num_rows($result))
 		{
 			$dependency = $forum_db->fetch_assoc($result);
@@ -242,9 +242,9 @@ if (isset($_GET['reinstall']))
 	// Regenerate the hooks cache
 	require_once FORUM_ROOT.'include/cache.php';
 	generate_config_cache();
-	generate_hooks_cache();	
-   
-   	$display_group_buttons = true;   
+	generate_hooks_cache();
+
+	$display_group_buttons = true;
 
 	include $ext_info['path'].'/extension_list.php';
 }
@@ -352,14 +352,14 @@ else if (isset($_GET['multy']))
 				flip_extensions('0', $enable_list);
 		}
 		if (empty($error_list))
-			redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Enable selected'].' '.$lang_admin_common['Redirect']);						
+			redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Enable selected'].' '.$lang_admin_common['Redirect']);
 	}
 	//Continue uninstall selected
 	else if (isset($_GET['uninstall_sel']) && isset($_POST['uninstall_continue']))
 	{
 		//Validate selected extensions
 		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));
-		$uninstall_type = (!isset($_POST['uninstall_type']) || !in_array($_POST['uninstall_type'], array(0, 1, 2))) ? ( 0 ) : ( $_POST['uninstall_type'] );		
+		$uninstall_type = (!isset($_POST['uninstall_type']) || !in_array($_POST['uninstall_type'], array(0, 1, 2))) ? ( 0 ) : ( $_POST['uninstall_type'] );
 			
 		if ($uninstall_type == 0)
 			uninstall_extensions( $sel_extens );
@@ -383,37 +383,36 @@ else if (isset($_GET['multy']))
 	{
 		$display_group_buttons = false;	
 		
-		$important_message = $lang_pun_man_ext_improved['Dependency error'];		
+		$important_message = $lang_pun_man_ext_improved['Dependency error'];
 		if (isset($_POST['disable_selected']))
 		{
 			$head_notice = $lang_pun_man_ext_improved['Disable checked'];
-			$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend>
-				<div class="radbox"><label for="fld10"><input type="radio" id="fld10" name="disable_type" value="0" />'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>
-				<div class="radbox"><label for="fld11"><input type="radio" id="fld11" name="disable_type" value="1" checked="checked" />'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>';
+			$form_radboxes = '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld10" name="disable_type" value="0" /></span><label>'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>';
+			$form_radboxes .= '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld11" name="disable_type" value="1" checked="checked"/></span><label>'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>';
+
 			$type = 'disable';
 		}
 		else if (isset($_POST['enable_selected']))
 		{
 			$head_notice = $lang_pun_man_ext_improved['Enable checked'];
-			$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend>
-				<div class="radbox"><label for="fld10"><input type="radio" id="fld10" name="enable_type" value="0" />'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>
-				<div class="radbox"><label for="fld11"><input type="radio" id="fld11" name="enable_type" value="1" checked="checked" />'.$lang_pun_man_ext_improved['Enable main'].'</label></div>';
+			$form_radboxes = '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld10" name="enable_type" value="0" /></span><label>'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>';
+			$form_radboxes .= '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld11" name="enable_type" value="1" checked="checked"/></span><label>'.$lang_pun_man_ext_improved['Enable main'].'</label></div>';
 			$type = 'enable';
 		}
 		else if (isset($_POST['uninstall_selected']))
 		{
 			$head_notice = $lang_pun_man_ext_improved['Uninstall checked'];
-			$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend>
-				<div class="radbox"><label for="fld10"><input type="radio" id="fld10" name="uninstall_type" value="0" />'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>
-				<div class="radbox"><label for="fld11"><input type="radio" id="fld11" name="uninstall_type" value="1" />'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>
-				<div class="radbox"><label for="fld11"><input type="radio" id="fld12" name="uninstall_type" value="2" checked="checked" />'.$lang_pun_man_ext_improved['Uninstall all'].'</label></div>';
+			$form_radboxes = '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld10" name="uninstall_type" value="0" /></span><label>'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>';
+			$form_radboxes .= '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld11" name="uninstall_type" value="1"/></span><label>'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>';
+			$form_radboxes .= '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld12" name="uninstall_type" value="2"/></span><label>'.$lang_pun_man_ext_improved['Uninstall all'].'</label></div>';
 			$type = 'uninstall';
 		}
-		
+		$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend><div class="mf-box">'.$form_radboxes.'</div>';
+
 		$handle = $base_url.'/admin/extensions.php?section=manage&amp;multy&amp;'.$type.'_sel';
 		
 		include $ext_info['path'].'/continue.php';
-	}	
+	}
 }
 if ($section == 'manage')
 	include $ext_info['path'].'/extension_list.php';
