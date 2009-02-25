@@ -31,11 +31,9 @@ ob_start();
 ?>
 
 <div class="main-subhead">
-	<h3 class="hn">
-		<span><?php echo $head_notice; ?></span>
-	</h3>
+	<h2 class="hn"><span><?php echo $head_notice; ?></span></h2>
 </div>
-<div id="pun-main" class="main sectioned admin">
+<divclass="main-content">
 	<div class="main-content main-frm">
 		<div class="ct-box">
 			<p class="warn"><?php echo $important_message; ?></p>
@@ -44,10 +42,10 @@ ob_start();
 			<div class="hidden">
 				<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($handle);  ?>" />
 				<?php 
-				
+
 				if (isset($_POST['extens']))
 					echo '<input type="hidden" name="selected_extens" value="'.implode(',', array_keys($_POST['extens'])).'"/>';
-					
+
 				?>
 			</div>
 			
@@ -67,7 +65,7 @@ ob_start();
 					<input type="submit" name="<?php echo $type; ?>_cancel" value="Cancel" />
 				</span>
 			</div>
-	 	</form>
+		</form>
 
 <?php
 

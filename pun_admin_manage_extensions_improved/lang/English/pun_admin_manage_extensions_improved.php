@@ -40,8 +40,6 @@ $lang_pun_man_ext_improved = array(
 	'Button enable'			=>	'Enable selected',
 	'Button uninstall'		=>	'Uninstall selected',
 	'Only hooks'			=>	'Refresh hooks',
-	'Force ext'				=>	'Force uninstall',
-	'Force success'			=>	'Extension was forced',
 	'Extension title'		=>	'Pun Manage Extensions Improved',
 	'Ext note'				=>	'When there are dependencies between extensions, you will see an alert. Use refresh hooks action to remove extension hooks from database and fetch them again from manifest.xml. No install/uninstall code will be executed. Useful to keep extensions\' data untouched while debugging.'
 );

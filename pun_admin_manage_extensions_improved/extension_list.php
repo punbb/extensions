@@ -221,10 +221,10 @@ else
 	($hook = get_hook('aex_section_install_output_start')) ? eval($hook) : null;
 
 ?>
-	<div class="main-subhead" id="ext_avail">
+	<div class="main-subhead">
 		<h2 class="hn"><span><?php echo $lang_admin_ext['Extensions available'] ?></span></h2>
 	</div>
-	<div class="main-content main-frm main-extensions" id="ext_avail">
+	<div class="main-content main-frm main-extensions">
 
 <?php
 
@@ -312,7 +312,7 @@ else
 	}
 	$d->close();
 
-	($hook = get_hook('aex_section_install_pre_display_ext_list')) ? eval($hook) : null;
+	($hook = get_hook('aex_section_install_pre_display_available_ext_list')) ? eval($hook) : null;
 
 	if ($num_exts)
 		echo "\t\t".implode("\n\t\t", $forum_page['ext_item'])."\n";
