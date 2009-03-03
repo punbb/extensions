@@ -4,14 +4,14 @@ if (!defined('FORUM')) die();
 
 // Language definitions used in profile, users, options, moderate, register, groups
 $lang_app_post = array(
-	'No posts'	=>	'There are no unaproved posts since your last visit.',
-	'Unp posts'	=>	'Unapproved posts',
-	'Unp topics'	=>	'Unapproved topics',
-	'Title'		=>	'Post approval',
-	'Approve'	=>	'Approve post',
-	'Remove'		=>	'Remove post',
-	'Sel post'		=>	'Select post',
-	'Topic warning'	=>	'Your topic should be approved(moderated)',
+	'No posts'				=> 'There are no unaproved posts since your last visit.',
+	'Unp posts'				=> 'Unapproved posts',
+	'Unp topics'			=> 'Unapproved topics',
+	'Title'					=> 'Post approval',
+	'Approve'				=> 'Approve post',
+	'Remove'				=> 'Remove post',
+	'Sel post'				=> 'Select post',
+	'Topic warning'			=> 'Your topic should be approved(moderated)',
 //viewtopic.php
 	'time app'				=> 'Post was approved by %s',
 //part features
@@ -26,7 +26,7 @@ $lang_app_post = array(
 	'time to day'			=> 'Time to day',
 	'time to week'			=> 'Time to week',
 //forums.php
-	'forum head'			=> '<strong>%s.</strong> Posts approval',
+	'forum head'			=> 'Edit Post approval settings',
 	'forum check'			=> 'Enable posts approval to this forum',
 	'forum info'			=> 'This option will allow you to determine whether posts will be aproved or not.',
 	'name check'			=> 'Posts approval',
