@@ -12,6 +12,7 @@ $lang_app_post = array(
 	'Remove'				=> 'Remove post',
 	'Sel post'				=> 'Select post',
 	'Topic warning'			=> 'Your topic should be approved(moderated)',
+	'warn'					=> 'This is section of unapproved posts.',
 //viewtopic.php
 	'time app'				=> 'Post was approved by %s',
 //part features
