@@ -33,7 +33,7 @@ if (isset($_GET['section']) && $_GET['section'] == 'unp_posts')
 			'DELETE'	=>	'post_approval_posts',	
 			'WHERE'		=>	'id = '.$rem_id
 		);	
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);		
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
 	else if (isset($_GET['app']))
 	{
@@ -41,14 +41,14 @@ if (isset($_GET['section']) && $_GET['section'] == 'unp_posts')
 		if ($app_id < 1)
 			message($lang_common['Bad request']);
 			
-		add_message($app_id);		
+		add_message($app_id);
 		$query = array(
-			'DELETE'	=>	'post_approval_posts',	
+			'DELETE'	=>	'post_approval_posts',
 			'WHERE'		=>	'id = '.$app_id
 		);
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);		
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
-	else if (isset($_POST['sel_posts']) && !isset($_POST['app_all']))	
+	else if (isset($_POST['sel_posts']) && !isset($_POST['app_all']))
 	{	
 		if (@preg_match('/[^0-9,]/', $_POST['sel_posts']))
 			message($lang_common['Bad request']);

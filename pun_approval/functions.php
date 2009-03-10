@@ -23,7 +23,8 @@ function add_message( $app_id )
 		'hide_smilies'	=> $row['hide_smilies'],
 		'posted'		=> $row['posted'],
 		'topic_id'		=> $row['topic_id'],
-		'subscr_action'	=> 0
+		'subscr_action'	=> 0,
+		'approve'		=> $app_id
 	);
 	$query = array(
 		'SELECT'	=> 'forum_id',
@@ -308,9 +309,9 @@ function show_unapproved_posts()
 					$count_replies++;
 					
 					$query_app_post = array(
-						'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_user_name',
+						'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
 						'INTO'		=> 'posts',
-						'VALUES'	=> '\''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', '.$forum_user['username']
+						'VALUES'	=> '\''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
 					);
 					
 					$arr_val_app[$count_replies] = $row;
@@ -436,7 +437,7 @@ function show_unapproved_posts()
 				++$count_replies;
 				
 				$query_app_post = array(
-					'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_user_name',
+					'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
 					'INTO'		=> 'posts',
 					'VALUES'	=> '\''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', '.$forum_user['username']
 				);
@@ -551,7 +552,7 @@ function show_unapproved_posts()
 		<div class="main-content main-frm">
 			<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo forum_link($post_app_url['Section']) ?>">
 				<div class="hidden">
-					<input type="hidden" name="csrf_token" value="<?php echo forum_link($post_app_url['Posts section']); ?>" />
+					<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($post_app_url['Posts section'])) ?>" />
 				</div>
 				<div class="ct-box warn-box">
 					<p class="warn"><?php echo $lang_app_post['warn'] ?></p>
@@ -608,41 +609,37 @@ function show_unapproved_posts()
 					<div class="postbody">
 						<div class="user">
 							<h4 class="user-ident"><?php echo implode(' ', $forum_page['user_ident']) ?></h4>
-                            <ul class="user-info">
+							<ul class="user-info">
 								<?php echo implode("\n\t\t\t\t\t\t\t", $forum_page['user_info'])."\n" ?>
 							</ul>
 						</div>
 						<div class="post-entry">
 							<h4 class="entry-title"><?php echo $forum_page['item_subject'] ?></h4>
 								<div class="entry-content">
-                        			<p>
+									<p>
 										<?php echo $cur_post['unp_message']."\n" ?>
-                            		</p>
+									</p>
 								</div>
 						</div>
-                    </div>
-                    <div class="postfoot">
+					</div>
+					<div class="postfoot">
 						<div class="post-options">
 						<?php echo implode(' ', $forum_page['post_options'])."\n" ?>
-                        
 						</div>
-					</div>			
-				</div>	
+					</div>
+				</div>
 			</div> 
-                       
+
 <?php
 
 		}
 
 ?>
-			<div class="paged-foot">
-				<p class="submitting">
-					<span class="submit"><input type="submit" name="app_sev" value="Approve selected" /></span>
-					<span class="submit"><input type="submit" name="del_sev" value="Remove selected" /></span>
-					<span class="submit"><input type="submit" name="app_all" value="Approve all" /></span>
-				</p>
-				<p class="paging"> <?php echo $forum_page['page_post']['paging']; ?></p>
-			</div>
+				<div class="frm-buttons">
+						<span class="submit"><input type="submit" name="app_sev" value="Approve selected" /></span>
+						<span class="submit"><input type="submit" name="del_sev" value="Remove selected" /></span>
+						<span class="submit"><input type="submit" name="app_all" value="Approve all" /></span>
+				</div>
 
 			</form>
 		</div>

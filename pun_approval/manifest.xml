@@ -38,66 +38,66 @@
 		if (!$forum_db->table_exists('post_approval_posts'))
 		{
 			$schema = array(
-			'FIELDS'		=> array(
-				'id'			=> array(
-					'datatype'		=> 'SERIAL',
-					'allow_null'	=> false
+				'FIELDS'		=> array(
+					'id'			=> array(
+						'datatype'		=> 'SERIAL',
+						'allow_null'	=> false
+					),
+					'poster'		=> array(
+						'datatype'		=> 'VARCHAR(200)',
+						'allow_null'	=> false,
+						'default'		=> '\'\''
+					),
+					'poster_id'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '1'
+					),
+					'poster_ip'		=> array(
+						'datatype'		=> 'VARCHAR(39)',
+						'allow_null'	=> true
+					),
+					'poster_email'	=> array(
+						'datatype'		=> 'VARCHAR(80)',
+						'allow_null'	=> true
+					),
+					'message'		=> array(
+						'datatype'		=> 'TEXT',
+						'allow_null'	=> true
+					),
+					'hide_smilies'	=> array(
+						'datatype'		=> 'TINYINT(1)',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'posted'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'edited'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> true
+					),
+					'edited_by'		=> array(
+						'datatype'		=> 'VARCHAR(200)',
+						'allow_null'	=> true
+					),
+					'topic_id'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					)
 				),
-				'poster'		=> array(
-					'datatype'		=> 'VARCHAR(200)',
-					'allow_null'	=> false,
-					'default'		=> '\'\''
-				),
-				'poster_id'		=> array(
-					'datatype'		=> 'INT(10) UNSIGNED',
-					'allow_null'	=> false,
-					'default'		=> '1'
-				),
-				'poster_ip'		=> array(
-					'datatype'		=> 'VARCHAR(39)',
-					'allow_null'	=> true
-				),
-				'poster_email'	=> array(
-					'datatype'		=> 'VARCHAR(80)',
-					'allow_null'	=> true
-				),
-				'message'		=> array(
-					'datatype'		=> 'TEXT',
-					'allow_null'	=> true
-				),
-				'hide_smilies'	=> array(
-					'datatype'		=> 'TINYINT(1)',
-					'allow_null'	=> false,
-					'default'		=> '0'
-				),
-				'posted'		=> array(
-					'datatype'		=> 'INT(10) UNSIGNED',
-					'allow_null'	=> false,
-					'default'		=> '0'
-				),
-				'edited'		=> array(
-					'datatype'		=> 'INT(10) UNSIGNED',
-					'allow_null'	=> true
-				),
-				'edited_by'		=> array(
-					'datatype'		=> 'VARCHAR(200)',
-					'allow_null'	=> true
-				),
-				'topic_id'		=> array(
-					'datatype'		=> 'INT(10) UNSIGNED',
-					'allow_null'	=> false,
-					'default'		=> '0'
+				'PRIMARY KEY'	=> array('id'),
+				'INDEXES'		=> array(
+					'topic_id_idx'	=> array('topic_id'),
+					'multi_idx'		=> array('poster_id', 'topic_id')
 				)
-			),
-			'PRIMARY KEY'	=> array('id'),
-			'INDEXES'		=> array(
-				'topic_id_idx'	=> array('topic_id'),
-				'multi_idx'		=> array('poster_id', 'topic_id')
-			)
-		);
-		
-		$forum_db->create_table('post_approval_posts', $schema);
-	}
+			);
+			
+			$forum_db->create_table('post_approval_posts', $schema);
+		}
 
 	if (!$forum_db->table_exists('post_approval_topics'))
 	{
@@ -295,7 +295,7 @@
 			{
 				$query = array(
 					'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
-					'INTO'		=> 'post_approval_posts',
+					'INTO'		=> 'posts',
 					'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.get_remote_address().'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
 				);
 		
@@ -308,7 +308,28 @@
 				$forum_db->query_build($query) or error(__FILE__, __LINE__);
 				$approve = true;
 				$new_pid = 0;
+				
+				$new_app_pid = $forum_db->insert_id();
+				
+				$query_app = 'INSERT INTO post_approval_posts (id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id) 
+					SELECT p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id 
+					FROM posts AS p 
+					WHERE id='.$new_app_pid;
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				
+				$query_app = 'DELETE FROM posts WHERE id='.$new_app_pid;
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
 			}
+		]]></hook>
+		
+		<hook id="fn_add_post_qr_add_post"><![CDATA[
+			
+			if (isset($post_info['approve']))
+			{
+				$query['INSERT'] .= ', id';
+				$query['VALUES'] .= ', '.$post_info['approve'];
+			}
+			
 		]]></hook>
 		
 		<hook id="fn_add_post_start"><![CDATA[
