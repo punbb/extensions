@@ -322,16 +322,6 @@
 			}
 		]]></hook>
 		
-		<hook id="fn_add_post_qr_add_post"><![CDATA[
-			
-			if (isset($post_info['approve']))
-			{
-				$query['INSERT'] .= ', id';
-				$query['VALUES'] .= ', '.$post_info['approve'];
-			}
-			
-		]]></hook>
-		
 		<hook id="fn_add_post_start"><![CDATA[
 			//If no need to approve posts of this topic or user can post without approval
 			global $cur_posting, $forum_user;

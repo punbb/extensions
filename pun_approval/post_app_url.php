@@ -3,6 +3,7 @@
 $post_app_url = array(
 	'Section'						=> 'admin/extensions.php?section=approvalpost',
 	'Posts section'					=> 'admin/extensions.php?section=approvalpost&all_post=1',
+	'Topics section'				=> 'admin/extensions.php?section=approvalpost&topics=1',
 	'Permalink topic'				=> 'admin/extensions.php?section=approvalpost&aptid=$1',
 	'topic_new_posts'				=> 'admin/extensions.php?section=approvalpost&aptid=$1&amp;action=new',
 	'Permalink post'				=> 'admin/extensions.php?section=approvalpost&appid=$1#p$1',
