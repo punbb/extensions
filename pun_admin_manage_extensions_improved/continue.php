@@ -40,14 +40,20 @@ ob_start();
 		</div>
 		<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $handle; ?>">
 			<div class="hidden">
-				<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($handle);  ?>" />
-				<?php 
+				<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($handle); ?>" />
+				<?php
 
 				if (isset($_POST['extens']))
 					echo '<input type="hidden" name="selected_extens" value="'.implode(',', array_keys($_POST['extens'])).'"/>';
 
 				?>
 			</div>
+			<?php
+
+				if (!empty($dependencies_error_message))
+					echo $dependencies_error_message;
+
+			?>
 			<fieldset class="frm-group group1">
 				<fieldset class="mf-set set1">
 					<?php echo $form_radboxes; ?>

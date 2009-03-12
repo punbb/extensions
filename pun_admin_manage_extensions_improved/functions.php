@@ -10,30 +10,72 @@
 
 if (!defined('FORUM')) die();
 
-	function get_active($sel_ext, $active)
+	function get_dependencies_error($sel_extens)
+	{
+		global $forum_db;
+
+		$query = array(
+			'SELECT'	=> 'id, dependencies',
+			'FROM'		=> 'extensions',
+			'WHERE'		=> 'disabled = 0'
+		);
+		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		$ext_dependencies = array();
+		if ($forum_db->num_rows($res) > 0)
+			while ($cur_ext = $forum_db->fetch_assoc($res))
+			{
+				$deps = explode('|', substr($cur_ext['dependencies'], 1, -1));
+				$ext_dependencies[$cur_ext['id']] = empty($deps[0]) ? null : $deps;
+			}
+
+		$dependencies_error = array();
+		if (!empty($ext_dependencies))
+		{
+			foreach ($ext_dependencies as $dep_ext => $main_exts)
+			{
+				if ($main_exts == null)
+					continue;
+				foreach ($main_exts as $cur_main_ext)
+				{
+					//If we want to disable main extension, added dependend extension to error list
+					if (in_array($cur_main_ext, $sel_extens))
+					{
+						if (empty($dependencies_error[$dep_ext]))
+							$dependencies_error[$dep_ext] = array();
+						$dependencies_error[$dep_ext][] = $cur_main_ext;
+					}
+				}
+			}
+		}
+
+		return $dependencies_error;
+	}
+
+	function get_main_extensions($main_ext)
 	{
 		global $forum_db;
 		
-		$imp_query = array(
-			'SELECT'	=> 'id, disabled',
+		$query = array(
+			'SELECT'	=> 'dependencies',
 			'FROM'		=> 'extensions',
-			'WHERE'		=> 'id IN ("'.implode('", "', $sel_ext).'")'
+			'WHERE'		=> 'id IN ("'.implode('", "', $main_ext).'")'
 		);
-		
-		$imp_result = $forum_db->query_build($imp_query) or error(__FILE__, __LINE__);
-		
-		$act_ext = array();
-		
-		if ($forum_db->num_rows($imp_result))
+		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		$dependencies = array();
+		while ($cur_dep = $forum_db->fetch_assoc($res))
 		{
-			while ($row = $forum_db->fetch_assoc($imp_result))
+			$depend_extensions = explode('|', substr($cur_dep['dependencies'], 1, -1));
+			if (!empty($depend_extensions))
 			{
-				if ($row['disabled'] == $active)
-					$act_ext[] = $row['id'];
+				foreach ($depend_extensions as $dep)
+					$dependencies[] = $dep;
 			}
 		}
+		return array_unique($dependencies);
 	}
-	
+
 	function get_only_dep($main_ext)
 	{
 		global $forum_db;
@@ -43,7 +85,7 @@ if (!defined('FORUM')) die();
 			'FROM'		=> 'extensions',
 			'WHERE'		=> 'id IN ("'.implode('", "', $main_ext).'")'
 		);
-		
+
 		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		
 		$deps = array();
@@ -51,35 +93,33 @@ if (!defined('FORUM')) die();
 		while ($cur_ext = $forum_db->fetch_assoc($res))
 		{
 			$deps[ $cur_ext['id'] ] = explode('|', substr($cur_ext['dependencies'], 1, -1));
-			
+
 			if (empty($deps[ $cur_ext['id'] ][0]))
 				$deps[ $cur_ext['id'] ] = array();
 		}
-		
-		$only_dep = array();
-		
+
 		foreach ($deps as $key => $text)
 		{
 			if (count($text) > 0)
 				$only_dep = array_values($text);
 		}
-		
+
 		return $only_dep;
 	}
-	
+
 	function get_dependencies()
 	{
 		global $forum_db;
-		
+
 		$query = array(
 			'SELECT'	=> 'id, dependencies',
 			'FROM'		=> 'extensions'
 		);
-		
+
 		$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-		
+
 		$deps = array();
-		
+
 		while ($cur_ext = $forum_db->fetch_assoc($res))
 		{
 			$deps[ $cur_ext['id'] ] = explode('|', substr($cur_ext['dependencies'], 1, -1));
@@ -90,17 +130,17 @@ if (!defined('FORUM')) die();
 		
 		return $deps;
 	}
-	
+
 	function get_dependencies_list()
 	{
 		$dependencies = get_dependencies();
-		
+
 		//Get all disable extensions
 		if (isset($_POST['extens']))
 			$sel_arr = array_keys($_POST['extens']);
 		else
 			$sel_arr = explode(',', $_POST['selected_extens']);	
-		
+
 		$list = array();
 		for ($sel_num = 0; $sel_num < count($sel_arr); $sel_num++)
 		{
@@ -110,7 +150,7 @@ if (!defined('FORUM')) die();
 					$list[] = $ext;
 		}
 		$list = array_unique($list);
-		
+
 		return $list;
 	}	
 
@@ -122,7 +162,7 @@ if (!defined('FORUM')) die();
 			$sel_arr = array_keys($_POST['extens']);
 		else
 			$sel_arr = explode(',', $_POST['selected_extens']);
-		
+
 		$list = array();
 		for ($sel_num = 0; $sel_num < count($sel_arr); $sel_num++)
 		{
@@ -132,14 +172,14 @@ if (!defined('FORUM')) die();
 			$list[] = $sel_arr[$sel_num];
 		}		
 		$list = array_unique($list);
-		
+
 		return $list;
-	}	
-	
+	}
+
 	function uninstall_extensions( $uninst_list )
 	{
 		global $forum_db;
-	
+
 		for ($ext_num = 0; $ext_num < count($uninst_list); $ext_num++)	
 		{			
 			// Fetch info about the extension
@@ -153,7 +193,7 @@ if (!defined('FORUM')) die();
 			if ( !$forum_db->num_rows($res) )
 				continue;
 
-			$ext_data = $forum_db->fetch_assoc($res);				
+			$ext_data = $forum_db->fetch_assoc($res);
 			eval($ext_data['uninstall']);
 
 			// Now delete the extension and its hooks from the db
@@ -171,14 +211,14 @@ if (!defined('FORUM')) die();
 			);
 
 			($hook = get_hook('aex_qr_delete_extension')) ? eval($hook) : null;
-			$forum_db->query_build($query) or error(__FILE__, __LINE__);				
-				
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
 			// Empty the PHP cache
 			forum_clear_cache();
 
 			// Regenerate the hooks cache
 			require_once FORUM_ROOT.'include/cache.php';
-			generate_hooks_cache();			
+			generate_hooks_cache();
 		}
 		
 		// Empty the PHP cache
@@ -188,23 +228,23 @@ if (!defined('FORUM')) die();
 		require_once FORUM_ROOT.'include/cache.php';
 		generate_hooks_cache();
 	}
-	
+
 	function flip_extensions($type, $extensions)
 	{
 		global $forum_db;
-		
+
 		//First disable dependend extensions
 		$query  = array(
 			'UPDATE' => 'extensions',
 			'SET'	=>	'disabled = \''.$type.'\'',
 			'WHERE'	=>	'id IN (\''.implode('\',\'', $extensions).'\')'
 		);
-			
+
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);	
-			
+
 		// Regenerate the hooks cache
 		require_once FORUM_ROOT.'include/cache.php';
-		generate_hooks_cache();		
+		generate_hooks_cache();
 	}
 
 	function validate_ext_list( $extensions )
@@ -212,14 +252,14 @@ if (!defined('FORUM')) die();
 		$sel_extens = array();
 		for ($sel_num = 0; $sel_num < count($extensions); $sel_num++)
 			$sel_extens[$sel_num] = preg_replace('/[^0-9a-z_]/', '', $extensions[$sel_num]);
-			
+
 		return $sel_extens;
 	}
-	
+
 	function regenerate_glob_vars()
 	{
 		global $forum_db, $forum_config, $forum_hooks;
-	
+
 		// Empty the PHP cache
 		forum_clear_cache();
 
@@ -228,7 +268,7 @@ if (!defined('FORUM')) die();
 		// Get the forum config from the DB
 		$query = array(
 			'SELECT'		=> 'c.*',
-			'FROM'		  => 'config AS c'
+			'FROM'			=> 'config AS c'
 		);
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
@@ -240,15 +280,15 @@ if (!defined('FORUM')) die();
 		// Get hooks from the DB
 		$query = array(
 			'SELECT'		=> 'eh.id, eh.code, eh.extension_id',
-			'FROM'		  => 'extension_hooks AS eh',
-			'JOINS'		 => array(
+			'FROM'			=> 'extension_hooks AS eh',
+			'JOINS'			=> array(
 				array(
 					'INNER JOIN'	=> 'extensions AS e',
 					'ON'			=> 'e.id=eh.extension_id'
 				)
 			),
-			'WHERE'		 => 'e.disabled=0',
-			'ORDER BY'	  => 'eh.priority, eh.installed'
+			'WHERE'			=> 'e.disabled=0',
+			'ORDER BY'		=> 'eh.priority, eh.installed'
 		);
 
 		($hook = get_hook('ch_qr_get_hooks')) ? eval($hook) : null;

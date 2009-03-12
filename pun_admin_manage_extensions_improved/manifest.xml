@@ -47,17 +47,15 @@
 		}
 	</install>
 	<hooks>
-		<hook id="aex_section_manage_pre_ext_actions"><![CDATA[		
-	
+		<hook id="aex_section_manage_pre_ext_actions"><![CDATA[
+
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 			$forum_page['ext_actions'][] = '<span><a href="'.$base_url.'/admin/extensions.php?section=manage&amp;reinstall='.$id.'&amp;csrf_token='.generate_form_token('reinstall'.$id).'">'.$lang_pun_man_ext_improved['Reinstall'].'</a></span>';
 			$forum_page['ext_actions'][] = '<span><a href="'.$base_url.'/admin/extensions.php?section=manage&amp;only_hoks&amp;reinstall='.$id.'&amp;csrf_token='.generate_form_token('reinstall'.$id).'">'.$lang_pun_man_ext_improved['Only hooks'].'</a></span>';
-			  
 		]]></hook>
-		
 		<hook id="aex_new_action"><![CDATA[
 
 if (isset($_GET['reinstall']))
@@ -118,13 +116,13 @@ if (isset($_GET['reinstall']))
 		'FROM'		=> 'extensions AS e',
 		'WHERE'		=> 'e.id=\''.$forum_db->escape($id).'\''
 	);
-	
+
 	($hook = get_hook('aex_qr_get_extension')) ? eval($hook) : null;
-	
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	if (!$forum_db->num_rows($result))
 		message($lang_common['Bad request']);
-		
+
 	$old_ext_data = $forum_db->fetch_assoc($result);
 
 	// Load manifest (either locally or from punbb.informer.com updates service)
@@ -136,24 +134,23 @@ if (isset($_GET['reinstall']))
 	// Parse manifest.xml into an array and validate it
 	$ext_data = xml_to_array($manifest);
 	$errors = validate_manifest($ext_data, $id);
-	
+
 	//get dependence extensions and check this extension in getting array
-	
-	
+
 	if (!isset($_POST['reinstall_continue']) && isset($_GET['only_hoks']) && version_compare($ext_data['extension']['version'], $old_ext_data['version'], '>'))
 	{
 		//Show continue page
-		$important_message = sprintf($lang_pun_man_ext_improved['Update error'], $id);		
+		$important_message = sprintf($lang_pun_man_ext_improved['Update error'], $id);
 		$head_notice = $lang_pun_man_ext_improved['Ext update'];
 		$form_radboxes = '';
 		$type = 'reinstall';
-		$handle = $base_url.'/admin/extensions.php?section=manage&amp;multy&amp;only_hoks&amp;reinstall='.$id;			
-		
+		$handle = $base_url.'/admin/extensions.php?section=manage&amp;multy&amp;only_hoks&amp;reinstall='.$id;
+
 		include $ext_info['path'].'/continue.php';
 	}
 	if (!empty($errors))
 		message(isset($_GET['install']) ? $lang_common['Bad request'] : $lang_admin_common['Hotfix download failed']);
-	
+
 	// Is there some uninstall code to store in the db?
 	$uninstall_code = (isset($ext_data['extension']['uninstall']) && trim($ext_data['extension']['uninstall']) != '') ? '\''.$forum_db->escape(trim($ext_data['extension']['uninstall'])).'\'' : 'NULL';
 
@@ -185,11 +182,11 @@ if (isset($_GET['reinstall']))
 		'DELETE'	=> 'extensions',
 		'WHERE'	 => 'id = \''.$forum_db->escape($id).'\''
 	);
-	
+
 	($hook = get_hook('aex_qr_delete_extension')) ? eval($hook) : null;
-	
+
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
-	
+
 	require_once $ext_info['path'].'/functions.php';
 
 	regenerate_glob_vars();
@@ -259,26 +256,33 @@ else if (isset($_GET['multy']))
 		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	else
 		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-		
+
 	if ( (isset($_GET['disable_sel']) || isset($_GET['enable_sel']) || isset($_GET['uninstall_sel'])) && (!isset($_POST['selected_extens']) || !is_scalar($_POST['selected_extens'])) )
 		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Input error'].' '.$lang_admin_common['Redirect']);
-		
+
 	if (!isset($_POST['csrf_token']))
-		csrf_confirm_form();		
-		
+		csrf_confirm_form();
+
 	include $ext_info['path'].'/functions.php';
-	
 	//If press button Disable selected
 	if (isset($_POST['disable_selected']))
 	{
 		//Validate selected extensions
-		$sel_extens = validate_ext_list( array_keys($_POST['extens']) );
-		$dep_arr = get_only_dep($sel_extens);
-		
-		if (array_diff($dep_arr, $sel_extens) != array())
+		$sel_extens = validate_ext_list(array_keys($_POST['extens']));
+		$dependencies_error = get_dependencies_error($sel_extens);
+
+		//If dependened extension in selected list, we remove error
+		if (!empty($dependencies_error))
+		{
+			foreach ($sel_extens as $ext)
+				if (in_array($ext, array_keys($dependencies_error)))
+					unset($dependencies_error[$ext]);
+		}
+
+		if (!empty($dependencies_error))
 			$continue_page = true;
 		else
-			flip_extensions('1', $sel_extens );;
+			flip_extensions('1', $sel_extens);
 	}
 	//If press button Enable selected
 	else if (isset($_POST['enable_selected']))
@@ -310,24 +314,40 @@ else if (isset($_GET['multy']))
 	//Continue disable selected
 	else if (isset($_GET['disable_sel']) && isset($_POST['disable_continue']))
 	{
-		$disable_type = (!isset($_POST['disable_type']) || ($_POST['disable_type'] != 0)) ? (1) : (0);
-		
-		if (!$disable_type)
-			flip_extensions('1', validate_ext_list( explode(',', $_POST['selected_extens']) ));
+		if (!isset($_POST['disable_type']) || ($_POST['disable_type'] != 0 && $_POST['disable_type'] != 1))
+			message($lang_common['Bad request']);
+		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));
+
+		if ($_POST['disable_type'] == 0)
+			flip_extensions('1', $sel_extens);
 		else
-			flip_extensions('1', get_dependencies_list());
-		
+		{
+			$dependencies_error = get_dependencies_error($sel_extens);
+			flip_extensions('1', $sel_extens);
+			if (!empty($dependencies_error))
+			{
+				$disable_dep_exts = array();
+				foreach ($dependencies_error as $dep_ext => $main_exts)
+				{
+					if (!in_array($dep_ext, $sel_extens) && array_intersect($main_exts, $sel_extens) != array())
+						$disable_dep_exts[] = $dep_ext;
+				}
+				flip_extensions('1', $disable_dep_exts);
+			}
+		}
+
 		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Disable selected'].' '.$lang_admin_common['Redirect']);
 	}
 	//Continue enable selected	
 	else if (isset($_GET['enable_sel']) && isset($_POST['enable_continue']))
 	{
-		$enable_type = (!isset($_POST['enable_type']) || ($_POST['enable_type'] != 0)) ? (1) : (0);
-	
+		if (!isset($_POST['enable_type']) || ($_POST['enable_type'] != 0 && $_POST['enable_type'] != 1))
+			message($lang_common['Bad request']);
+
 		//Validate selected extensions
 		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));
-		
-		if (!$enable_type)
+
+		if (!$_POST['enable_type'])
 			flip_extensions('0', $sel_extens);
 		else
 		{
@@ -357,39 +377,47 @@ else if (isset($_GET['multy']))
 	//Continue uninstall selected
 	else if (isset($_GET['uninstall_sel']) && isset($_POST['uninstall_continue']))
 	{
+		if (!isset($_POST['uninstall_type']) || !in_array($_POST['uninstall_type'], array(0, 1, 2)))
+			message($lang_common['Bad request']);
+
 		//Validate selected extensions
 		$sel_extens = validate_ext_list(explode(',', $_POST['selected_extens']));
-		$uninstall_type = (!isset($_POST['uninstall_type']) || !in_array($_POST['uninstall_type'], array(0, 1, 2))) ? ( 0 ) : ( $_POST['uninstall_type'] );
-			
-		if ($uninstall_type == 0)
+
+		if ($_POST['uninstall_type'] == 0)
 			uninstall_extensions( $sel_extens );
-		else if ($uninstall_type == 1)
+		else if ($_POST['uninstall_type'] == 1)
 		{
 			//Validate selected extensions
 			$sel_extens = validate_ext_list( explode(',', $_POST['selected_extens']) );
 			$dis_list = get_only_dep($sel_extens);
-			
+
 			flip_extensions('1', $dis_list);
-			
+
 			uninstall_extensions( $sel_extens );
 		}
-		else if ($uninstall_type == 2)
+		else if ($_POST['uninstall_type'] == 2)
 			uninstall_extensions( get_dependencies_list() );
-			
 		redirect(forum_link($forum_url['admin_extensions_manage']), $lang_pun_man_ext_improved['Uninstall selected'].' '.$lang_admin_common['Redirect']);
 	}
-	
 	if (isset($continue_page))
 	{
 		$display_group_buttons = false;	
-		
+
 		$important_message = $lang_pun_man_ext_improved['Dependency error'];
 		if (isset($_POST['disable_selected']))
 		{
 			$head_notice = $lang_pun_man_ext_improved['Disable checked'];
 			$form_radboxes = '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld10" name="disable_type" value="0" /></span><label>'.$lang_pun_man_ext_improved['Ignore deps'].'</label></div>';
 			$form_radboxes .= '<div class="mf-item"><span class="fld-input"><input type="radio" id="fld11" name="disable_type" value="1" checked="checked"/></span><label>'.$lang_pun_man_ext_improved['Disable deps extensions'].'</label></div>';
-
+			if (!empty($dependencies_error))
+			{
+				$dependencies_error_message = '<h2 class="warn hn"><span>'.$lang_pun_man_ext_improved['Dep error message'].'</span></h2>';
+				$dependencies_error_message .= '<ul class="error-list">';
+				foreach ($dependencies_error as $dep => $main)
+					$dependencies_error_message .= '<li class="warn"><span>'.sprintf($lang_pun_man_ext_improved['Work dependencies'], $dep, implode(', ', $main)).'</span></li>';
+				$dependencies_error_message .= '</ul>';
+				$dependencies_error_message = '<div class="ct-box error-box">'.$dependencies_error_message.'</div>';
+			}
 			$type = 'disable';
 		}
 		else if (isset($_POST['enable_selected']))
@@ -410,7 +438,7 @@ else if (isset($_GET['multy']))
 		$form_radboxes = '<legend><span>'.$lang_pun_man_ext_improved['Choose action'].'</span></legend><div class="mf-box">'.$form_radboxes.'</div>';
 
 		$handle = $base_url.'/admin/extensions.php?section=manage&amp;multy&amp;'.$type.'_sel';
-		
+
 		include $ext_info['path'].'/continue.php';
 	}
 }

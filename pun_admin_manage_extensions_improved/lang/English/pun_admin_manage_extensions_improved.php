@@ -34,14 +34,15 @@ $lang_pun_man_ext_improved = array(
 	'Uninstall all'			=>	'Uninstall all dependend extensions',
 	'No selected'			=>	'<strong>WARNING!</strong> No extensions selected!',
 	'Warnings'				=>	'<strong>WARNING!</strong> Important warnings:',
-	'Work dependencies'		=>	'%s can\'t work without %s!',
+	'Work dependencies'		=>	'%s can\'t work without %s',
 	'Select extension'		=>	'Select extension',
 	'Button disable'		=>	'Disable selected',
 	'Button enable'			=>	'Enable selected',
 	'Button uninstall'		=>	'Uninstall selected',
 	'Only hooks'			=>	'Refresh hooks',
 	'Extension title'		=>	'Pun Manage Extensions Improved',
-	'Ext note'				=>	'When there are dependencies between extensions, you will see an alert. Use refresh hooks action to remove extension hooks from database and fetch them again from manifest.xml. No install/uninstall code will be executed. Useful to keep extensions\' data untouched while debugging.'
+	'Ext note'				=>	'When there are dependencies between extensions, you will see an alert. Use refresh hooks action to remove extension hooks from database and fetch them again from manifest.xml. No install/uninstall code will be executed. Useful to keep extensions\' data untouched while debugging.',
+	'Dep error message'		=>	'<strong>Warning!</strong> There is some dependencies errors:',
 );
 
 ?>
