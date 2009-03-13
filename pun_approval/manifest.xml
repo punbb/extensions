@@ -469,7 +469,7 @@
 		]]></hook>
 		
 		<hook id="aex_new_action"><![CDATA[
-
+			
 			if (($section == 'approvalpost') || ($section == 'unapp_posts'))
 			{
 				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
@@ -478,12 +478,21 @@
 					require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 				require $ext_info['path'].'/post_app_url.php';
 				
+				$aptid = isset($_GET['aptid']) ? $_GET['aptid'] : 0;
+				$pid = isset($_GET['appid']) ? $_GET['appid'] : 0;
+				$del = isset($_GET['del']) ? $_GET['del'] : 0;
+				$app = isset($_GET['app']) ? $_GET['app'] : 0;
+				$topics = isset($_GET['topics']) ? $_GET['topics'] : 0;
+				
 				// Setup breadcrumbs
 				$forum_page['crumbs'] = array(
 					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 					array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
 					array($lang_app_post['Unp posts'], forum_link($post_app_url['Section']))
 				);
+				
+				if ($aptid)
+					array_push($forum_page['crumbs'], array($lang_app_post['Topics'], forum_link($post_app_url['Section'])));
 				
 				define('FORUM_PAGE_SECTION', 'unapp_posts');
 				define('FORUM_PAGE', 'admin-unapp_posts-approvalpost');
@@ -492,7 +501,6 @@
 				ob_start();
 				
 				show_unapproved_posts();
-				//show_approvalpost_section();
 				
 				$tpl_app_post = trim(ob_get_contents());
 				$tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);

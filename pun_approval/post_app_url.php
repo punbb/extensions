@@ -14,7 +14,7 @@ $post_app_url = array(
 	'app sev'						=> 'admin/extensions.php?section=approvalpost&app_sev=1',
 	'app all'						=> 'admin/extensions.php?section=approvalpost&app_all=1',
 	'approval'						=> 'admin/extensions.php?section=approvalpost&app=$1',
-	'Page url'						=> 'admin/extensions.php?section=approvalpost&page=$1',
+	'Page url'						=> 'admin/extensions.php?section=approvalpost&page=$1'
 );
 
 ?>

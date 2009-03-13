@@ -154,28 +154,28 @@ function show_unapproved_topics()
 
 function show_unapproved_posts()
 {
-	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config;
+	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic, 
+		$base_url, $forum_page, $cur_forum, $aptid, $pid, $del, $app, $topics;
 	
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/topic.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/profile.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/common.php';
 	require FORUM_ROOT.'extensions/pun_approval/post_app_url.php';
 	
-	$aptid = isset($_GET['aptid']) ? $_GET['aptid'] : 0;
-	$pid = isset($_GET['appid']) ? $_GET['appid'] : 0;
-	$action = isset($_GET['action']) ? $_GET['action'] : null;
-	$del = isset($_GET['del']) ? $_GET['del'] : 0;
-	$app = isset($_GET['app']) ? $_GET['app'] : 0;
-	$topics = isset($_GET['topics']) ? $_GET['topics'] : 0;
-	
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($pid < 0))
 		message($lang_common['Bad request']);
 	
-	if ($topics)
+	if (!$aptid)
 	{
+		$forum_page['num_pages'] = ceil($cur_forum['num_topics'] / $forum_user['disp_topics']);
+		$forum_page['page'] = (!isset($_GET['p']) || !is_numeric($_GET['p']) || $_GET['p'] <= 1 || $_GET['p'] > $forum_page['num_pages']) ? 1 : $_GET['p'];
+		$forum_page['start_from'] = $forum_user['disp_topics'] * ($forum_page['page'] - 1);
+		$forum_page['finish_at'] = min(($forum_page['start_from'] + $forum_user['disp_topics']), ($cur_forum['num_topics']));
+		$forum_page['items_info'] = generate_items_info($lang_forum['Topics'], ($forum_page['start_from'] + 1), $cur_forum['num_topics']);
+		
 		// Fetch list of topics
 		$query_app_post = array(
-			'SELECT'	=> 'c.cat_name, t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to',
+			'SELECT'	=> 'DISTINCT c.cat_name, t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to',
 			'FROM'		=> 'post_approval_topics AS t',
 			'JOINS'		=> array(
 				array(
@@ -186,161 +186,166 @@ function show_unapproved_posts()
 					'INNER JOIN'	=> 'categories AS c',
 					'ON'			=> 'f.cat_id=c.id'
 				),
+				array(
+					'INNER JOIN'	=> 'post_approval_posts AS p',
+					'ON'			=> 'p.topic_id=t.id'
+				),
 			),
 			'ORDER BY'	=> 't.last_post DESC'
 		);
 		
 		$result_app_topic = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 		
+		$forum_page['item_header'] = array();
+		$forum_page['item_header']['subject']['title'] = '<strong class="subject-title">'.$lang_forum['Topics'].'</strong>';
+		$forum_page['item_header']['info']['replies'] = '<strong class="info-replies">'.$lang_forum['replies'].'</strong>';
+
+		if ($forum_config['o_topic_views'] == '1')
+			$forum_page['item_header']['info']['views'] = '<strong class="info-views">'.$lang_forum['views'].'</strong>';
+
+		$forum_page['item_header']['info']['lastpost'] = '<strong class="info-lastpost">'.$lang_forum['last post'].'</strong>';
+		
+		$line_subtitles = sprintf($lang_forum['Forum subtitle'], implode(' ', $forum_page['item_header']['subject']), implode(', ', $forum_page['item_header']['info']));
+		var_dump($line_subtitles);
+		
 		?>
+		
+		<div class="main-head">
 			
-				<div class="main-head">
-				<?php
-
-					if (!empty($forum_page['main_head_options']))
-						echo "\n\t\t".'<p class="options">'.implode(' ', $forum_page['main_head_options']).'</p>';
-
-				?>
-		<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
-	</div>
-	<div class="main-subhead">
-		<p class="item-summary<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>"><span><?php printf($lang_forum['Forum subtitle'], implode(' ', $forum_page['item_header']['subject']), implode(', ', $forum_page['item_header']['info'])) ?></span></p>
-	</div>
-	<div id="forum<?php echo $id ?>" class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
+		</div>
+		<div class="main-subhead">
+			<p class="item-summary"><span><?php  ?></span></p>
+		</div>
+		<div class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
+		
+		<?php
 			
-			<div id="brd-main" class="main sectioned admin">
-				<div class="main-head">
-					<h1><span>{ <?php echo end($forum_page['crumbs']) ?> }</span></h1>
-				</div>
-				
-				<div class="main-content frm">
-					<div class="frm-head">
-						<h2><span><?php echo $lang_app_post['name page'] ?></span></h2>
-					</div>
-					<div class="main-content frm">
-							
-							<?php
+			if ($forum_db->num_rows($result_app_topic))
+			{
 								
-								if ($forum_db->num_rows($result_app_topic))
+								$forum_page['item_count'] = 0;
+								
+								while ($cur_topic = $forum_db->fetch_assoc($result_app_topic))
 								{
+									++$forum_page['item_count'];
 									
-									?>
+									// Start from scratch
+									$forum_page['item_subject'] = $forum_page['item_status'] = $forum_page['item_last_post'] = $forum_page['item_alt_message'] = $forum_page['item_nav'] = array();
+									$forum_page['item_indicator'] = '';
+									$forum_page['item_alt_message'][] = $lang_forum['Topics'].' '.($forum_page['item_count']);
+
+									if ($forum_config['o_censoring'] == '1')
+										$cur_topic['subject'] = censor_words($cur_topic['subject']);
 									
-										<div id="forum<?php echo $id ?>" class="main-content forum">
-											<table cellspacing="0" >
-												<thead>
-													<tr>
-														<th class="tcl" scope="col"><?php echo $lang_app_post['name 1 col'] ?></th>
-														<th class="tc2" scope="col"><?php echo $lang_app_post['name 2 col'] ?></th>
-														<th class="tc3" scope="col"><?php echo $lang_app_post['name 3 col'] ?></th>
-														<th class="tcr" scope="col"><?php echo $lang_app_post['name 4 col'] ?></th>
-													</tr>
-												</thead>
-												<tbody class="statused">
-												
-												<?php
-													
-													while ($cur_topic = $forum_db->fetch_assoc($result_app_topic))
-													{
-														++$forum_page['item_count'];
-														
-														// Start from scratch
-														$forum_page['item_subject'] = $forum_page['item_status'] = $forum_page['item_last_post'] = $forum_page['item_alt_message'] = $forum_page['item_nav'] = array();
-														$forum_page['item_indicator'] = '';
-														$forum_page['item_alt_message'][] = $lang_topic['Topic'].' '.($forum_page['item_count']);
-
-														if ($forum_config['o_censoring'] == '1')
-															$cur_topic['subject'] = censor_words($cur_topic['subject']);
-
-														if ($cur_topic['moved_to'] != null)
-														{
-															$forum_page['item_status'][] = 'moved';
-															$forum_page['item_last_post'][] = $forum_page['item_alt_message'][] = $lang_app_post['Moved'];
-															$forum_page['item_subject'][] = '<a href="'.forum_link($post_app_url['topic'], array($cur_topic['moved_to'], sef_friendly($cur_topic['subject']))).'">'.forum_htmlencode($cur_topic['subject']).'</a>';
-															$forum_page['item_subject'][] = '<span class="byuser">'.sprintf($lang_common['By user'], forum_htmlencode($cur_topic['poster'])).'</span>';
-															$cur_topic['num_replies'] = $cur_topic['num_views'] = ' - ';
-														}
-														else
-														{
-															// Should we display the dot or not? :)
-															if (!$forum_user['is_guest'] && $forum_config['o_show_dot'] == '1' && $cur_topic['has_posted'] == $forum_user['id'])
-															{
-																$forum_page['item_indicator'] = $lang_app_post['You posted indicator'];
-																$forum_page['item_status'][] = 'posted';
-																$forum_page['item_alt_message'][] = $lang_app_post['You posted'];
-															}
-
-															if ($cur_topic['closed'] == '1')
-															{
-																$forum_page['item_subject'][] = $lang_common['Closed'];
-																$forum_page['item_status'][] = 'closed';
-															}
-
-															$forum_page['item_subject'][] = '<a href="'.forum_link($post_app_url['topic'], array($cur_topic['id'], sef_friendly($cur_topic['subject']))).'">'.forum_htmlencode($cur_topic['subject']).'</a>';
-
-															$forum_page['item_pages'] = ceil(($cur_topic['num_replies'] + 1) / $forum_user['disp_posts']);
-
-															if ($forum_page['item_pages'] > 1)
-																$forum_page['item_nav'][] = paginate($forum_page['item_pages'], -1, $post_app_url['topic'], $lang_common['Page separator'], array($cur_topic['id'], sef_friendly($cur_topic['subject'])));
-
-															if (!empty($forum_page['item_nav']))
-																$forum_page['item_subject'][] = '<span class="topic-nav">[&#160;'.implode('&#160;&#160;', $forum_page['item_nav']).'&#160;]</span>';
-
-															$forum_page['item_subject'][] = '<span class="byuser">'.sprintf($lang_common['By user'], forum_htmlencode($cur_topic['poster'])).'</span>';
-															
-															if ($cur_topic['last_post'] != 0)
-																$forum_page['item_last_post'][] = '<a href="'.forum_link($post_app_url['post'], $cur_topic['last_post_id']).'"><span>'.format_time($cur_topic['last_post']).'</span></a><span><em>'.$cur_topic['last_poster'].'</em></span>';
-															else
-																$forum_page['item_last_post'][] = $lang_app_post['no topic'];
-														}
-
-														$forum_page['item_style'] = (($forum_page['item_count'] % 2 != 0) ? 'odd' : 'even').' '.implode(' ', $forum_page['item_status']);
-														$forum_page['item_indicator'] = '<span class="status '.implode(' ', $forum_page['item_status']).'" title="'.implode(' - ', $forum_page['item_alt_message']).'"><img src="'.$base_url.'/style/'.$forum_user['style'].'/status.png" alt="'.implode(' - ', $forum_page['item_alt_message']).'" />'.$forum_page['item_indicator'].'</span>';
-													
-													?>
-													
-														<tr class="<?php echo $forum_page['item_style'] ?>">
-															<td class="tcl"><?php echo $forum_page['item_indicator'].' '.implode(' ', $forum_page['item_subject']) ?></td>
-															<td class="tc2"><?php echo $cur_topic['cat_name'] ?></td>
-															<td class="tc3"><?php echo $cur_topic['num_replies'] ?></td>
-															<td class="tcr"><?php echo implode(' ', $forum_page['item_last_post']) ?></td>
-														</tr>
-													
-													<?php
-													
-													}
-													
-													?>
-												
-												</tbody>
-											</table>
-										</div>
-									
-									<?php
-									
-								}
-								else
-								{
-									$result_app_topic_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-									
-									if ($forum_db->num_rows($result_app_topic_app_post))
+									// Should we display the dot or not? :)
+									if (!$forum_user['is_guest'] && $forum_config['o_show_dot'] == '1' && $cur_topic['has_posted'] > 0)
 									{
-									
-										?>
-											
-											<div class="frm-info">
-												<p><?php echo $lang_app_post['no posts'] ?></p>
-											</div>
-											
-										<?php
-										
+										$forum_page['item_title']['posted'] = '<span class="posted-mark">'.$lang_forum['You posted indicator'].'</span>';
+										$forum_page['item_status']['posted'] = 'posted';
 									}
+
+									if ($cur_topic['sticky'] == '1')
+									{
+										$forum_page['item_title_status']['sticky'] = '<em class="sticky">'.$lang_forum['Sticky'].'</em>';
+										$forum_page['item_status']['sticky'] = 'sticky';
+									}
+
+									if ($cur_topic['closed'] == '1')
+									{
+										$forum_page['item_title_status']['closed'] = '<em class="closed">'.$lang_forum['Closed'].'</em>';
+										$forum_page['item_status']['closed'] = 'closed';
+									}
+
+									($hook = get_hook('vf_topic_loop_normal_topic_pre_item_title_status_merge')) ? eval($hook) : null;
+
+									if (!empty($forum_page['item_title_status']))
+										$forum_page['item_title']['status'] = '<span class="item-status">'.sprintf($lang_forum['Item status'], implode(', ', $forum_page['item_title_status'])).'</span>';
+
+									$forum_page['item_title']['link'] = '<a href="'.forum_link($post_app_url['Permalink topic'], array($cur_topic['id'], sef_friendly($cur_topic['subject']))).'">'.forum_htmlencode($cur_topic['subject']).'</a>';
+
+									($hook = get_hook('vf_topic_loop_normal_topic_pre_item_title_merge')) ? eval($hook) : null;
+
+									$forum_page['item_body']['subject']['title'] = '<h3 class="hn"><span class="item-num">'.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span> '.implode(' ', $forum_page['item_title']).'</h3>';
+
+									// Assemble the Topic subject
+
+									if (empty($forum_page['item_status']))
+										$forum_page['item_status']['normal'] = 'normal';
+
+									$forum_page['item_pages'] = ceil(($cur_topic['num_replies'] + 1) / $forum_user['disp_posts']);
+
+									if ($forum_page['item_pages'] > 1)
+										$forum_page['item_nav']['pages'] = '<span>'.$lang_forum['Pages'].'&#160;</span>'.paginate($forum_page['item_pages'], -1, $forum_url['topic'], $lang_common['Page separator'], array($cur_topic['id'], sef_friendly($cur_topic['subject'])));
+
+									
+
+									($hook = get_hook('vf_topic_loop_normal_topic_pre_item_nav_merge')) ? eval($hook) : null;
+
+									if (!empty($forum_page['item_nav']))
+										$forum_page['item_subject']['nav'] = '<span class="item-nav">'.sprintf($lang_forum['Topic navigation'], implode('&#160;&#160;', $forum_page['item_nav'])).'</span>';
+
+									($hook = get_hook('vf_topic_loop_normal_topic_pre_item_subject_merge')) ? eval($hook) : null;
+
+									$forum_page['item_body']['info']['replies'] = '<li class="info-replies"><strong>'.forum_number_format($cur_topic['num_replies']).'</strong> <span class="label">'.(($cur_topic['num_replies'] == 1) ? $lang_forum['reply'] : $lang_forum['replies']).'</span></li>';
+
+									if ($forum_config['o_topic_views'] == '1')
+										$forum_page['item_body']['info']['views'] = '<li class="info-views"><strong>'.forum_number_format($cur_topic['num_views']).'</strong> <span class="label">'.(($cur_topic['num_views'] == 1) ? $lang_forum['view'] : $lang_forum['views']).'</span></li>';
+
+									$forum_page['item_body']['info']['lastpost'] = '<li class="info-lastpost"><span class="label">'.$lang_forum['Last post'].'</span> <strong><a href="'.forum_link($forum_url['post'], $cur_topic['last_post_id']).'">'.format_time($cur_topic['last_post']).'</a></strong> <cite>'.sprintf($lang_forum['by poster'], forum_htmlencode($cur_topic['last_poster'])).'</cite></li>';
+
+									$forum_page['item_subject']['starter'] = '<span class="item-starter">'.sprintf($lang_forum['Topic starter'], '<cite>'.forum_htmlencode($cur_topic['poster']).'</cite>').'</span>';
+									$forum_page['item_body']['subject']['desc'] = implode(' ', $forum_page['item_subject']);
+
+									($hook = get_hook('vf_row_pre_item_status_merge')) ? eval($hook) : null;
+
+									$forum_page['item_style'] = (($forum_page['item_count'] % 2 != 0) ? ' odd' : ' even').(($forum_page['item_count'] == 1) ? ' main-first-item' : '').((!empty($forum_page['item_status'])) ? ' '.implode(' ', $forum_page['item_status']) : '');
+
+									($hook = get_hook('vf_row_pre_display')) ? eval($hook) : null;
+								
+								?>
+								
+									<div id="topic<?php echo $cur_topic['id'] ?>" class="main-item<?php echo $forum_page['item_style'] ?>">
+										<span class="icon <?php echo implode(' ', $forum_page['item_status']) ?>"><!-- --></span>
+										<div class="item-subject">
+											<?php echo implode("\n\t\t\t\t", $forum_page['item_body']['subject'])."\n" ?>
+										</div>
+										<ul class="item-info">
+											<?php echo implode("\n\t\t\t\t", $forum_page['item_body']['info'])."\n" ?>
+										</ul>
+									</div>
+								
+								<?php
+								
 								}
 								
-							?>
-					</div>
-				</div>
-			</div>
+								?>
+								
+						
+				
+				<?php
+				
+			}
+			else
+			{
+				$result_app_topic_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				
+				if ($forum_db->num_rows($result_app_topic_app_post))
+				{
+				
+					?>
+						
+						<div class="frm-info">
+							<p><?php echo $lang_app_post['no posts'] ?></p>
+						</div>
+						
+					<?php
+					
+				}
+			}
+			
+		?>
+		
+		</div>
 		
 		<?php
 		
@@ -821,6 +826,8 @@ function show_unapproved_posts()
 			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
 	}
 	
+	if ($aptid)
+	{
 	$forum_page = array();
 	
 	// Determine on what page the post is located (depending on $forum_user['disp_posts'])
@@ -869,14 +876,18 @@ function show_unapproved_posts()
 	}	
 	else
 	{
-		
+		// Setup breadcrumbs
+		$forum_page['crumbs'] = array(
+			array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+			array($cur_forum['forum_name'], forum_link($forum_url['forum'], array($id, sef_friendly($cur_forum['forum_name']))))
+		);
 		
 		$forum_page['page_post']['paging'] = '<p class="paging"><span class="pages">'.$lang_common['Pages'].'</span> '.paginate($forum_page['num_pages'], $forum_page['page'], forum_link($post_app_url['Page url'], $forum_page['page']), $lang_common['Paging separator']).'</p>';
 		
 		?>
 		
 		<div class="main-subhead">
-			<h2 class="hn"><span><?php echo $lang_app_post['Unp posts'] ?><a href="<?php echo forum_link($post_app_url['Topics section'])?>">Topics</a></span></h2>
+			<h2 class="hn"><span><?php echo $lang_app_post['Unp posts'] ?></span></h2>
 		</div>
 		<div class="paged-head">
 			<?php echo implode("\n\t\t", $forum_page['page_post'])."\n" ?>
@@ -980,8 +991,8 @@ function show_unapproved_posts()
 		</div>
         
      <?php
-	 
-	}	
+	 }
+	}
 }
 
 ?>

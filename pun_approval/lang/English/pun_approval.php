@@ -11,6 +11,7 @@ $lang_app_post = array(
 	'Approve'				=> 'Approve post',
 	'Remove'				=> 'Remove post',
 	'Sel post'				=> 'Select post',
+	'Topics'				=> 'Topics',
 	'Topic warning'			=> 'Your topic should be approved(moderated)',
 	'warn'					=> 'This is section of unapproved posts.',
 //viewtopic.php
