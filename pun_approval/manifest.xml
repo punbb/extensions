@@ -182,7 +182,7 @@
 		
 		$forum_db->create_table('post_approval_topics', $schema);
 		
-		$sql_query = 'INSERT INTO post_approval_topics SELECT * FROM topics';
+		$sql_query = 'INSERT INTO post_approval_topics (id, poster, subject, posted, closed, sticky, forum_id) SELECT id, poster, subject, posted, closed, sticky, forum_id FROM topics';
 		
 		$forum_db->query($sql_query);
 	}
@@ -278,11 +278,22 @@
 			if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
 			{
 				$query = array(
-					'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id',
-					'INTO'		=> 'post_approval_topics',
-					'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['posted'].', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['forum_id']
+					'SELECT'	=> 'num_replies',
+					'FROM'		=> 'post_approval_topics'
 				);
+				
+				$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+				
+				$count = $forum_db->fetch_assoc($res);
+				
+				$query = array(
+					'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id, num_replies',
+					'INTO'		=> 'post_approval_topics',
+					'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['posted'].', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['forum_id'].', '.($count['num_replies'] + 1)
+				);
+				
 				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				
 				$approve = true;
 				$new_tid = 0;
 				$new_pid = 0;
@@ -317,8 +328,40 @@
 					WHERE id='.$new_app_pid;
 				$forum_db->query($query_app) or error(__FILE__, __LINE__);
 				
-				$query_app = 'DELETE FROM posts WHERE id='.$new_app_pid;
-				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				$query_app = array(
+					'SELECT'	=> 't.id, t.num_replies',
+					'FROM'		=> 'post_approval_posts AS p',
+					'JOIN'		=> array(
+						array(
+							'INNER JOIN'	=> 'post_approval_topics AS t',
+							'ON'			=> 't.id=t.topic_id'
+						)
+					),
+					'WHERE'		=> 'p.id='.$new_app_pid
+				);
+				$resour = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				$line = array();
+				
+				if ($forum_db->num_rows($resour))
+				{
+					$line = $forum_db->fetch_assoc($resour);
+					
+					$query_app = array(
+						'UPDATE'	=> 'post_approval_topics',
+						'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1),
+						'WHERE'		=> 'id='.$line['id']
+					);
+					
+					$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				}
+				
+				$query_app = array(
+					'DELETE'	=> 'posts',
+					'WHERE'		=> 'id='.$new_app_pid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			}
 		]]></hook>
 		

@@ -175,16 +175,12 @@ function show_unapproved_posts()
 		
 		// Fetch list of topics
 		$query_app_post = array(
-			'SELECT'	=> 'DISTINCT c.cat_name, t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to',
+			'SELECT'	=> 'DISTINCT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to',
 			'FROM'		=> 'post_approval_topics AS t',
 			'JOINS'		=> array(
 				array(
 					'INNER JOIN'	=> 'forums AS f',
 					'ON'			=> 't.forum_id=f.id'
-				),
-				array(
-					'INNER JOIN'	=> 'categories AS c',
-					'ON'			=> 'f.cat_id=c.id'
 				),
 				array(
 					'INNER JOIN'	=> 'post_approval_posts AS p',
@@ -206,15 +202,11 @@ function show_unapproved_posts()
 		$forum_page['item_header']['info']['lastpost'] = '<strong class="info-lastpost">'.$lang_forum['last post'].'</strong>';
 		
 		$line_subtitles = sprintf($lang_forum['Forum subtitle'], implode(' ', $forum_page['item_header']['subject']), implode(', ', $forum_page['item_header']['info']));
-		var_dump($line_subtitles);
 		
 		?>
 		
-		<div class="main-head">
-			
-		</div>
 		<div class="main-subhead">
-			<p class="item-summary"><span><?php  ?></span></p>
+			<h2 class="hn"><span><?php echo $lang_app_post['Unp topics'] ?></span></h2>
 		</div>
 		<div class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
 		
@@ -288,9 +280,6 @@ function show_unapproved_posts()
 
 									$forum_page['item_body']['info']['replies'] = '<li class="info-replies"><strong>'.forum_number_format($cur_topic['num_replies']).'</strong> <span class="label">'.(($cur_topic['num_replies'] == 1) ? $lang_forum['reply'] : $lang_forum['replies']).'</span></li>';
 
-									if ($forum_config['o_topic_views'] == '1')
-										$forum_page['item_body']['info']['views'] = '<li class="info-views"><strong>'.forum_number_format($cur_topic['num_views']).'</strong> <span class="label">'.(($cur_topic['num_views'] == 1) ? $lang_forum['view'] : $lang_forum['views']).'</span></li>';
-
 									$forum_page['item_body']['info']['lastpost'] = '<li class="info-lastpost"><span class="label">'.$lang_forum['Last post'].'</span> <strong><a href="'.forum_link($forum_url['post'], $cur_topic['last_post_id']).'">'.format_time($cur_topic['last_post']).'</a></strong> <cite>'.sprintf($lang_forum['by poster'], forum_htmlencode($cur_topic['last_poster'])).'</cite></li>';
 
 									$forum_page['item_subject']['starter'] = '<span class="item-starter">'.sprintf($lang_forum['Topic starter'], '<cite>'.forum_htmlencode($cur_topic['poster']).'</cite>').'</span>';
@@ -329,18 +318,22 @@ function show_unapproved_posts()
 			{
 				$result_app_topic_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 				
-				if ($forum_db->num_rows($result_app_topic_app_post))
-				{
-				
+				if (empty($forum_page['item_status']))
+					$forum_page['item_status']['normal'] = 'normal';
+					
 					?>
-						
-						<div class="frm-info">
-							<p><?php echo $lang_app_post['no posts'] ?></p>
+						<div id="topic" class="main-item">
+							<span class="icon <?php echo implode(' ', $forum_page['item_status']) ?>"><!-- --></span>
+							<div class="item-subject">
+								<?php echo $lang_app_post['no posts'] ?>
+							</div>
+							<ul class="item-info">
+								
+							</ul>
 						</div>
 						
 					<?php
-					
-				}
+				
 			}
 			
 		?>

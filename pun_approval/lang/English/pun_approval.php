@@ -38,7 +38,7 @@ $lang_app_post = array(
 	'name check 2'			=> 'Allow post approval',
 //other page
 	'name page'				=> 'Post approval',
-	'no posts'				=> 'There are no topics with unaproved posts since your last visit.',
+	'no posts'				=> "There are no topics with unaproved posts\nsince your last visit.",
 	'no topic'				=> 'No posts',
 	'warning'				=> 'Your post should be approved(moderated)',
 	'name 1 col'			=> 'Topic',
