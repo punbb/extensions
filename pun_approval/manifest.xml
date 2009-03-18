@@ -329,19 +329,17 @@
 				$forum_db->query($query_app) or error(__FILE__, __LINE__);
 				
 				$query_app = array(
-					'SELECT'	=> 't.id, t.num_replies',
-					'FROM'		=> 'post_approval_posts AS p',
+					'SELECT'	=> 't.num_replies, p.posted',
+					'FROM'		=> 'post_approval_topics AS t',
 					'JOIN'		=> array(
 						array(
-							'INNER JOIN'	=> 'post_approval_topics AS t',
-							'ON'			=> 't.id=t.topic_id'
-						)
+							'INNER JOIN'	=> 'post_approval_posts AS p',
+							'ON'			=> '(p.id='.$new_app_pid.' AND p.topic_id=t.id)',
+						),
 					),
-					'WHERE'		=> 'p.id='.$new_app_pid
+					'WHERE'		=> 't.id='.$post_info['topic_id']
 				);
 				$resour = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-				
-				$line = array();
 				
 				if ($forum_db->num_rows($resour))
 				{
@@ -350,7 +348,7 @@
 					$query_app = array(
 						'UPDATE'	=> 'post_approval_topics',
 						'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1),
-						'WHERE'		=> 'id='.$line['id']
+						'WHERE'		=> 'id='.$post_info['topic_id']
 					);
 					
 					$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
