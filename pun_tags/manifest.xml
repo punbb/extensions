@@ -113,24 +113,55 @@
 			//Output of search results
 			if ($forum_config['o_pun_tags_show'] == 1 && in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
 			{
-				$output_results = array();			
+				$output_results = array();
 				switch (FORUM_PAGE)
 				{
 					case 'index':
 						if (isset($pun_tags['index']))
 						{
-							foreach ($pun_tags['index'] as $tag_ind)
-								$output_results[ $tag_ind['tag'] ] = $tag_ind;
+							$forum_ids = pun_tags_forum_perms();
+							if (!empty($forum_ids))
+							{
+								$tags_weights = array();
+								foreach ($pun_tags['index'] as $tag_ind)
+								{
+									//Can we read forum marked by current tag?
+									$forum_count = 0;
+									foreach ($forum_ids as $forum_id)
+										if (in_array($tag_ind['tag_id'], $pun_tags['forums'][$forum_id]))
+											$forum_count++;
+									if ($forum_count > 0)
+									{
+										$output_results[$tag_ind['tag']] = array('tag_id' => $tag_ind['tag_id'], 'tag' => $tag_ind['tag'], 'weight' => $forum_count);
+										$tags_weights[] = $forum_count;
+									}
+								}
+							}
 						}
 						break;
 					case 'viewforum':
 						$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 						if (($id >= 1) && isset($pun_tags['forums'][$id]) && isset($pun_tags['index']))
 						{
-							foreach ($pun_tags['forums'][$id] as $tags_id)
-								foreach ($pun_tags['index'] as $tag_ind)
-									if ($tag_ind['tag_id'] == $tags_id)
-										$output_results[ $tag_ind['tag'] ] = $tag_ind;
+							$forum_ids = pun_tags_forum_perms();
+							if (in_array($id, $forum_ids))
+							{
+								$tags_weights = array();
+								foreach ($pun_tags['forums'][$id] as $tags_id)
+									foreach ($pun_tags['index'] as $tag_ind)
+										if ($tag_ind['tag_id'] == $tags_id)
+										{
+											$forum_count = 0;
+											foreach ($forum_ids as $forum_id)
+												if (in_array($tag_ind['tag_id'], $pun_tags['forums'][$forum_id]))
+													$forum_count++;
+											if ($forum_count > 0)
+											{
+												$output_results[$tag_ind['tag']] = array('tag_id' => $tag_ind['tag_id'], 'tag' => $tag_ind['tag'], 'weight' => $forum_count);
+												$tags_weights[] = $forum_count;
+											}
+										}
+							}
 						}
 						break;
 					case 'viewtopic':
@@ -152,11 +183,43 @@
 							$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 	
 						if (($id >= 1) && isset($pun_tags['topics'][$id]) && isset($pun_tags['index']))
-						{				
-							foreach ($pun_tags['topics'][$id] as $tags_id)
-								foreach ($pun_tags['index'] as $tag_ind)
-									if ($tag_ind['tag_id'] == $tags_id)
-										$output_results[ $tag_ind['tag'] ] = $tag_ind;
+						{
+							//Can user read this topic
+							$query = array(
+								'SELECT'	=> 'f.id',
+								'FROM'		=> 'topics AS t',
+								'JOINS'		=> array(
+									array(
+										'LEFT JOIN'		=> 'forums AS f',
+										'ON'			=> '(f.id=t.forum_id)'
+									),
+									array(
+										'LEFT JOIN'		=> 'forum_perms AS fp',
+										'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
+									)
+								),
+								'WHERE'		=> 't.id = '.$id
+							);
+							$query_result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+							if ($forum_db->num_rows($query_result) > 0)
+							{
+								$forum_ids = pun_tags_forum_perms();
+								$tags_weights = array();
+								foreach ($pun_tags['topics'][$id] as $tags_id)
+									foreach ($pun_tags['index'] as $tag_ind)
+										if ($tag_ind['tag_id'] == $tags_id)
+										{
+											$forum_count = 0;
+											foreach ($forum_ids as $forum_id)
+												if (in_array($tag_ind['tag_id'], $pun_tags['forums'][$forum_id]))
+													$forum_count++;
+											if ($forum_count > 0)
+											{
+												$output_results[$tag_ind['tag']] = array('tag_id' => $tag_ind['tag_id'], 'tag' => $tag_ind['tag'], 'weight' => $forum_count);
+												$tags_weights[] = $forum_count;
+											}
+										}
+							}
 						}
 						break;
 					case 'searchtopics':
@@ -169,20 +232,22 @@
 				{
 					$minfontsize = 100;
 					$maxfontsize = 200;
-					if ($pun_tags['max_pop'] - $pun_tags['min_pop'] == 0)
+					$max_pop = max($tags_weights);
+					$min_pop = min($tags_weights);
+					if ($max_pop - $min_pop == 0)
 						$step = $maxfontsize - $minfontsize;
 					else
-						$step = ($maxfontsize - $minfontsize) / ($pun_tags['max_pop'] - $pun_tags['min_pop']);
-	
+						$step = ($maxfontsize - $minfontsize) / ($max_pop - $min_pop);
+
 					ksort($output_results);
 					$output_results = array_slice($output_results, 0, $forum_config['o_pun_tags_count_in_cloud']);
 					$results = array();
 					foreach ($output_results as $res)
-						$results[] = pun_tags_get_link(round(($res['weight'] - $pun_tags['min_pop']) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
+						$results[] = pun_tags_get_link(round(($res['weight'] - $min_pop) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
 					$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content">'.implode('&nbsp;', $results).'</div>';
-					unset($minfontsize, $maxfontsize, $step, $results);
+					unset($minfontsize, $maxfontsize, $step, $results, $min_pop, $max_pop);
 				}
-				unset($output_results);
+				unset($output_results, $tags_weights);
 			}
 		]]></hook>
 		<hook id="co_modify_url_scheme"><![CDATA[
@@ -287,8 +352,8 @@
 					<div class="sf-box text required longtext">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_tags['Topic tags']; ?></span><small><?php echo $lang_pun_tags['Enter tags']; ?></small></label><br />
 							<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_tags" value="<?php echo empty($_POST['pun_tags']) ? '' : forum_htmlencode($_POST['pun_tags']) ?>" size="80" maxlength="100"/></span>
-					</div>	
-				</div>			
+					</div>
+				</div>
 			<?php
 
 			}
@@ -468,6 +533,8 @@
 			if ($forum_config['o_pun_tags_show'] == 1 && !empty($search_set))
 			{
 				$tags_results = array();
+				$forum_ids = pun_tags_forum_perms();
+				$tags_weights = array();
 				foreach ($search_set as $res)
 				{
 					if (!isset($pun_tags['topics'][ $res['tid'] ]))
@@ -476,7 +543,15 @@
 						foreach ($pun_tags['index'] as $tag)
 							if ($tag['tag_id'] == $tag_id)
 							{
-								$tags_results[ $tag['tag'] ] = $tag;
+								$forum_count = 0;
+								foreach ($forum_ids as $forum_id)
+									if (in_array($tag['tag_id'], $pun_tags['forums'][$forum_id]))
+										$forum_count++;
+								if ($forum_count > 0)
+								{
+									$tags_results[$tag['tag']] = array('tag_id' => $tag['tag_id'], 'tag' => $tag['tag'], 'weight' => $forum_count);
+									$tags_weights[] = $forum_count;
+								}
 								break;
 							}
 				}
@@ -484,17 +559,19 @@
 				{
 					$minfontsize = 100;
 					$maxfontsize = 200;
-					if ($pun_tags['max_pop'] - $pun_tags['min_pop'] == 0)
+					$max_pop = max($tags_weights);
+					$min_pop = min($tags_weights);
+					if ($max_pop - $min_pop == 0)
 						$step = $maxfontsize - $minfontsize;
 					else
-						$step = ($maxfontsize - $minfontsize) / ($pun_tags['max_pop'] - $pun_tags['min_pop']);
-	
+						$step = ($maxfontsize - $minfontsize) / ($max_pop - $min_pop);
+
 					ksort($tags_results);
 					$tags_results = array_slice($tags_results, 0, $forum_config['o_pun_tags_count_in_cloud']);
 					$ouput_results = array();
 					foreach ($tags_results as $res)
-						$ouput_results[] = pun_tags_get_link( round(($res['weight'] - $pun_tags['min_pop']) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
-					unset($minfontsize, $maxfontsize, $step, $tags_results);
+						$ouput_results[] = pun_tags_get_link(round(($res['weight'] - $min_pop) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
+					unset($minfontsize, $maxfontsize, $step, $tags_results, $min_pop, $max_pop);
 				}
 			}
 		]]></hook>
@@ -513,7 +590,6 @@
 					if (empty($search_ids))
 						message($lang_common['Bad request']);
 				}
-	
 				$query = array(
 					'SELECT'	=> 't.id AS tid, t.poster, t.subject, t.first_post_id, t.posted, t.last_post, t.last_post_id, t.last_poster, t.num_replies, t.closed, t.sticky, t.forum_id, f.forum_name',
 					'FROM'		=> 'topics AS t',
@@ -521,9 +597,13 @@
 						array(
 							'INNER JOIN'	=> 'forums AS f',
 							'ON'			=> 'f.id=t.forum_id'
+						),
+						array(
+							'LEFT JOIN'		=> 'forum_perms AS fp',
+							'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
 						)
 					),
-					'WHERE'		=> 't.id IN('.implode(',', $search_ids).')'
+					'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND t.id IN('.implode(',', $search_ids).')'
 				);
 				// With "has posted" indication
 				if (!$forum_user['is_guest'] && $forum_config['o_show_dot'] == '1')

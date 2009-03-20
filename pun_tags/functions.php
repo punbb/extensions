@@ -37,19 +37,7 @@ function pun_tags_generate_cache()
 	if ($forum_db->num_rows($result))
 	{
 		while ($cur_tag = $forum_db->fetch_assoc($result))
-			$pun_tags['index'][] = array('tag_id' => $cur_tag['id'], 'tag' => $cur_tag['tag'], 'weight' => $cur_tag['cnt']);
-
-		$min_pop = $max_pop = $pun_tags['index'][0]['weight'];
-		for ($i = 1; $i < count($pun_tags['index']); $i++)
-		{
-			if ($pun_tags['index'][$i]['weight'] < $min_pop)
-				$min_pop = $pun_tags['index'][$i]['weight'];
-
-			if ($pun_tags['index'][$i]['weight'] > $max_pop)
-				$max_pop = $pun_tags['index'][$i]['weight'];
-		}
-		$pun_tags['min_pop'] = $min_pop;
-		$pun_tags['max_pop'] = $max_pop;
+			$pun_tags['index'][] = array('tag_id' => $cur_tag['id'], 'tag' => $cur_tag['tag']);
 
 		// Get tags for every tagged topic
 		$query = array(
@@ -80,11 +68,7 @@ function pun_tags_generate_cache()
 				$pun_tags['forums'][$cur['forum_id']] = $pun_tags['topics'][ $cur['id'] ];
 	}
 	else
-	{
-		$pun_tags['min_pop'] = 0;
-		$pun_tags['max_pop'] = 0;
 		$pun_tags['cached'] = 0;
-	}
 
 	// Output pun tags as PHP code
 	$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_tags.php', 'wb');
@@ -195,6 +179,30 @@ function pun_tags_add_new( $pun_tag, $tid )
 		'VALUES'	=> $tid.', '.$tag_id
 	);
 	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
+}
+
+function pun_tags_forum_perms()
+{
+	global $forum_user, $forum_db, $pun_tags;
+
+	$query = array(
+		'SELECT'	=> 'f.id',
+		'FROM'		=> 'forums AS f',
+		'JOINS'		=> array(
+			array(
+				'LEFT JOIN'		=> 'forum_perms AS fp',
+				'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
+			)
+		),
+		'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND id IN ('.implode(',', array_keys($pun_tags['forums'])).')'
+	);
+	$query_result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	$forum_ids = array();
+	while ($row = $forum_db->fetch_row($query_result))
+		$forum_ids[] = $row[0];
+
+	return $forum_ids;
 }
 
 ?>
