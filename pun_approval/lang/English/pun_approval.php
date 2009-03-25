@@ -14,6 +14,8 @@ $lang_app_post = array(
 	'Topics'				=> 'Topics',
 	'Topic warning'			=> 'Your topic should be approved(moderated)',
 	'warn'					=> 'This is section of unapproved posts.',
+	'First topic'			=> 'Topics of this forum are in the process of approving',
+	'See posts'				=> 'See all unapproved posts',
 //viewtopic.php
 	'time app'				=> 'Post was approved by %s',
 //part features

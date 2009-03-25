@@ -273,31 +273,97 @@
 			}
 		]]></hook>
 		
+		<hook id="vf_no_results_row_pre_display"><![CDATA[
+			
+			if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
+				$forum_page['item_body']['subject']['approve'] = '<p>'.$lang_app_post['First topic'].'</p>';
+			
+		]]></hook>
+		
 		<hook id="po_pre_add_topic"><![CDATA[
-		//If forum no needed post approval or user can post without approval
+			
+			//If forum no needed post approval or user can post without approval
 			if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
 			{
+				// Create the topic
 				$query = array(
-					'SELECT'	=> 'num_replies',
-					'FROM'		=> 'post_approval_topics'
-				);
-				
-				$res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-				
-				$count = $forum_db->fetch_assoc($res);
-				
-				$query = array(
-					'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id, num_replies',
-					'INTO'		=> 'post_approval_topics',
-					'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['posted'].', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['forum_id'].', '.($count['num_replies'] + 1)
+					'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id',
+					'INTO'		=> 'topics',
+					'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['posted'].', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['forum_id']
 				);
 				
 				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$new_tid = $forum_db->insert_id(); // number ID of topic
 				
-				$approve = true;
-				$new_tid = 0;
-				$new_pid = 0;
+				// Create the post ("topic post")
+				$query = array(
+					'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
+					'INTO'		=> 'posts',
+					'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape(get_remote_address()).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$new_tid
+				);
+
+				// If it's a guest post, there might be an e-mail address we need to include
+				if ($post_info['is_guest'] && $post_info['poster_email'] != null)
+				{
+					$query['INSERT'] .= ', poster_email';
+					$query['VALUES'] .= ', \''.$forum_db->escape($post_info['poster_email']).'\'';
+				}
+				
+				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$new_pid = $forum_db->insert_id(); // number ID of post
+				
+				$query_app = 'INSERT INTO post_approval_topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
+					SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
+					FROM topics AS t 
+					WHERE t.id='.$new_tid;
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				
+				$query_app = 'INSERT INTO post_approval_posts (id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id) 
+					SELECT p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id 
+					FROM posts AS p 
+					WHERE id='.$new_pid;
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				
+				$query_app = array(
+					'SELECT'	=> 'p.poster, p.posted, t.subject, t.forum_id',
+					'FROM'		=> 'post_approval_posts AS p',
+					'JOINS'		=> array(
+						array(
+							'INNER JOIN'	=> 'post_approval_topics AS t',
+							'ON'			=> 't.id=p.topic_id',
+						),
+					),
+					'WHERE'		=> 'p.id='.$new_pid
+				);
+				
+				$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				$res_posts = $forum_db->fetch_assoc($result_app);
+				
+				$query_app = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'subject=\''.$res_posts['subject'].' (approved)\', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
+					'WHERE'		=> 'id='.$new_tid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				$query_app = array(
+					'DELETE'	=> 'posts',
+					'WHERE'		=> 'id='.$new_pid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				$query_app = array(
+					'DELETE'	=> 'topics',
+					'WHERE'		=> 'id='.$new_tid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				redirect(forum_link($forum_url['forum'], $res_posts['forum_id']), $lang_app_post['Topic warning']);
 			}
+			
 		]]></hook>
 		
 		<hook id="po_pre_add_post"><![CDATA[
@@ -331,7 +397,7 @@
 				$query_app = array(
 					'SELECT'	=> 't.num_replies, p.posted',
 					'FROM'		=> 'post_approval_topics AS t',
-					'JOIN'		=> array(
+					'JOINS'		=> array(
 						array(
 							'INNER JOIN'	=> 'post_approval_posts AS p',
 							'ON'			=> '(p.id='.$new_app_pid.' AND p.topic_id=t.id)',
@@ -347,7 +413,7 @@
 					
 					$query_app = array(
 						'UPDATE'	=> 'post_approval_topics',
-						'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1),
+						'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1).', last_post='.$line['posted'],
 						'WHERE'		=> 'id='.$post_info['topic_id']
 					);
 					
@@ -363,16 +429,18 @@
 			}
 		]]></hook>
 		
-		<hook id="fn_add_post_start"><![CDATA[
+		<hook id="fn_add_topic_start"><![CDATA[
 			//If no need to approve posts of this topic or user can post without approval
 			global $cur_posting, $forum_user;
+			
 			if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 				return 1;
 		]]></hook>
 		
-		<hook id="fn_add_topic_start"><![CDATA[
-			global $cur_posting, $forum_user;
+		<hook id="fn_add_post_start"><![CDATA[
 			//If no need to approve posts of this topic or user can post without approval
+			global $cur_posting, $forum_user;
+			
 			if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 				return 1;
 		]]></hook>
@@ -469,9 +537,9 @@
 			$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost';
 			
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-            	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-            else
-            	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 			require $ext_info['path'].'/functions.php';
 			
 			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
@@ -520,9 +588,10 @@
 				require $ext_info['path'].'/post_app_url.php';
 				
 				$aptid = isset($_GET['aptid']) ? $_GET['aptid'] : 0;
-				$pid = isset($_GET['appid']) ? $_GET['appid'] : 0;
 				$del = isset($_GET['del']) ? $_GET['del'] : 0;
 				$app = isset($_GET['app']) ? $_GET['app'] : 0;
+				$appid = isset($_GET['appid']) ? $_GET['appid'] : 0;
+				$p_cr = isset($_GET['p']) ? $_GET['p'] : 0;
 				$topics = isset($_GET['topics']) ? $_GET['topics'] : 0;
 				
 				// Setup breadcrumbs
@@ -532,8 +601,22 @@
 					array($lang_app_post['Unp posts'], forum_link($post_app_url['Section']))
 				);
 				
-				if ($aptid)
+				if ($aptid || $appid)
+				{
+					if ($appid)
+					{
+						$query_app = array(
+							'SELECT'	=> 'topic_id',
+							'FROM'		=> 'post_approval_posts',
+							'WHERE'		=> 'id='.$appid
+						);
+						
+						$res_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+						$tmp_app = $forum_db->fetch_assoc($res_app);
+						$aptid = intval($tmp_app['topic_id']);
+					}
 					array_push($forum_page['crumbs'], array($lang_app_post['Topics'], forum_link($post_app_url['Section'])));
+				}
 				
 				define('FORUM_PAGE_SECTION', 'unapp_posts');
 				define('FORUM_PAGE', 'admin-unapp_posts-approvalpost');
