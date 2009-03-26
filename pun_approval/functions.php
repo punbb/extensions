@@ -334,7 +334,7 @@ function show_unapproved_posts()
 			
 		?>
 			<div class="main-subhead">
-				<h2 class="hn"><span><a href="<?php echo forum_link($lang_app_post_url['Posts section']) ?>"<?php echo $lang_app_post['See posts']?></span></h2>
+				<h2 class="hn"><span><a href="<?php echo forum_link($post_app_url['Posts section']) ?>"<?php echo $lang_app_post['See posts']?></span></h2>
 			</div>
 		</div>
 		
@@ -457,6 +457,7 @@ function show_unapproved_posts()
 		
 		if ($forum_db->num_rows($result))
 		{
+			//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
 			$query_app_post = array(
 				'SELECT'	=> 't.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
 				'FROM'		=> 'post_approval_posts AS p',
@@ -473,8 +474,12 @@ function show_unapproved_posts()
 			$row = $forum_db->fetch_assoc($result_app_post);
 			$aptid = $row['topic_id'];
 			
+			echo '<pre>';
+			var_dump($row);
+			
 			$count_replies = 1;
 			
+			//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
 			$query_app_post = array(
 				'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
 				'INTO'		=> 'posts',
@@ -483,28 +488,63 @@ function show_unapproved_posts()
 			
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 			$new_pid = $forum_db->insert_id();
+			var_dump($new_pid);
 			
+			//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
 			$new_subject = str_replace(' (approved)', '', $row['subject']);
 			
+			//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
+			$query_app = array(
+				'SELECT'	=> 't.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id',
+				'FROM'		=> 'post_approval_topics AS t',
+				'WHERE'		=> 't.id='.$aptid
+			);
+			
+			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$row_app = $forum_db->fetch_assoc($result_app);
+			
+			var_dump($row_app);
+			var_dump($aptid);
+			var_dump($new_subject);
+			
+			$query_app = array(
+				'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
+				'INTO'		=> 'topics',
+				'VALUES'	=> $row_app['id'].', \''.$forum_db->escape($row_app['poster']).'\', \''.$forum_db->escape($row_app['subject']).'\', '.$row_app['posted'].', '.$row_app['first_post_id'].', '.$row_app['last_post'].', '.$row_app['last_post_id'].', \''.$forum_db->escape($row_app['last_poster']).'\', '.$row_app['num_views'].', '.$row_app['num_replies'].', '.$row_app['closed'].', '.$row_app['sticky'].', '.$row_app['moved_to'].', '.$row_app['forum_id']
+			);
+			
+			$forum_db->query_build() or error(__FILE__, __LINE__);
+			
+			/*
 			$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
 				SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
 				FROM post_approval_topics AS t 
-				WHERE t.id='.$row['topic_id'];
-				
-			$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				WHERE t.id='.$aptid;
 			
+			$forum_db->query($query_app) or error(__FILE__, __LINE__);
+			*/
+			
+			//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
 			$query_app = array(
 				'UPDATE'	=> 'post_approval_topics',
 				'SET'		=> 'subject='.$new_subject,
-				'WHERE'		=> 'id='.$row['topic_id']
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
+			$query_app = array(
+				'UPDATE'	=> 'topics',
+				'SET'		=> 'subject='.$new_subject,
+				'WHERE'		=> 'id='.$aptid
 			);
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			
+			//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
 			$query_app = array(
-				'UPDATE'	=> 'topics',
-				'SET'		=> 'subject='.$new_subject,
-				'WHERE'		=> 'id='.$row['topic_id']
+				'DELETE'	=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$pid
 			);
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
@@ -953,49 +993,60 @@ function show_unapproved_posts()
 		
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		
+		// Setup breadcrumbs
+		$forum_page['crumbs'] = array(
+			array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+			array($cur_forum['forum_name'], forum_link($forum_url['forum'], array($id, sef_friendly($cur_forum['forum_name']))))
+		);
+		
+		$forum_page['page_post']['paging'] = '<p class="paging"><span class="pages">'.$lang_common['Pages'].'</span> '.paginate($forum_page['num_pages'], $forum_page['page'], forum_link($post_app_url['Page url'], $forum_page['page']), $lang_common['Paging separator']).'</p>';
+		
+		?>
+		
+		<div class="main-subhead">
+			<h2 class="hn"><span><?php echo $lang_app_post['Unp posts'] ?></span></h2>
+		</div>
+		<div class="paged-head">
+			<?php echo implode("\n\t\t", $forum_page['page_post'])."\n" ?>
+		</div>
+		<div class="main-head">
+			<h2 class="hn"><span><?php echo $forum_page['main_info']; ?></span></h2>
+		</div>
+		<div class="main-content main-frm">
+			<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo forum_link($post_app_url['Section']) ?>">
+				<div class="hidden">
+					<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($post_app_url['Posts section'])) ?>" />
+				</div>
+				<div class="ct-box warn-box">
+					<p class="warn"><?php echo $lang_app_post['warn'] ?></p>
+				</div>
+		
+	<?php
+		
+		
 		if (!$forum_db->num_rows($result))
 		{
 		
 		?>
-			
-			<div class="frm-info">
-				<p><?php echo $lang_app_post['No posts']; ?></p>
-			</div>
+				<div class="post odd replypost">
+					<div class="postmain">
+						<div class="postbody">
+							<div class="post-entry">
+								<h4 class="entry-title"><?php echo $forum_page['item_subject'] ?></h4>
+									<div class="entry-content">
+										<p>
+											<?php echo $lang_app_post['No posts']; ?>
+										</p>
+									</div>
+							</div>
+						</div>
+					</div>
+				</div>
 		<?php
 		
-		}	
+		}
 		else
 		{
-			// Setup breadcrumbs
-			$forum_page['crumbs'] = array(
-				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
-				array($cur_forum['forum_name'], forum_link($forum_url['forum'], array($id, sef_friendly($cur_forum['forum_name']))))
-			);
-			
-			$forum_page['page_post']['paging'] = '<p class="paging"><span class="pages">'.$lang_common['Pages'].'</span> '.paginate($forum_page['num_pages'], $forum_page['page'], forum_link($post_app_url['Page url'], $forum_page['page']), $lang_common['Paging separator']).'</p>';
-			
-			?>
-			
-			<div class="main-subhead">
-				<h2 class="hn"><span><?php echo $lang_app_post['Unp posts'] ?></span></h2>
-			</div>
-			<div class="paged-head">
-				<?php echo implode("\n\t\t", $forum_page['page_post'])."\n" ?>
-			</div>
-			<div class="main-head">
-				<h2 class="hn"><span><?php echo $forum_page['main_info']; ?></span></h2>
-			</div>
-			<div class="main-content main-frm">
-				<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo forum_link($post_app_url['Section']) ?>">
-					<div class="hidden">
-						<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($post_app_url['Posts section'])) ?>" />
-					</div>
-					<div class="ct-box warn-box">
-						<p class="warn"><?php echo $lang_app_post['warn'] ?></p>
-					</div>
-			
-		<?php
-			
 			$start = $forum_page['start_from'];
 			
 			while ($cur_post = $forum_db->fetch_assoc($result))
@@ -1064,7 +1115,7 @@ function show_unapproved_posts()
 							</div>
 						</div>
 					</div>
-				</div> 
+				</div>
 
 			<?php
 

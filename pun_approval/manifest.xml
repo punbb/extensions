@@ -275,7 +275,7 @@
 		
 		<hook id="vf_no_results_row_pre_display"><![CDATA[
 			
-			if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
+			if (!$forum_user['is_admmod'] && !$forum_user['g_without_approval'])
 				$forum_page['item_body']['subject']['approve'] = '<p>'.$lang_app_post['First topic'].'</p>';
 			
 		]]></hook>
