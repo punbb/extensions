@@ -341,7 +341,7 @@
 				
 				$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'subject=\''.$res_posts['subject'].' (approved)\', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
+					'SET'		=> 'subject=\''.$res_posts['subject'].' (approved)\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
 					'WHERE'		=> 'id='.$new_tid
 				);
 				

@@ -174,6 +174,814 @@ function show_unapproved_posts()
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		message($lang_common['Bad request']);
 	
+	if (!$aptid && $appid)
+	{
+		$query_app = array(
+			'SELECT'	=> 'topic_id',
+			'FROM'		=> 'post_approval_posts',
+			'WHERE'		=> 'id='.$appid
+		);
+		
+		$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+		
+		if ($forum_db->num_rows($result))
+			$aptid = $forum_db->result($result);
+	}
+	
+	
+	if (isset($_GET['del']))
+	{
+		$pid = $_GET['del'];
+		
+		$query_app = array(
+			'SELECT'	=> 'id',
+			'FROM'		=> 'post_approval_topics',
+			'WHERE'		=> 'first_post_id='.$pid
+		);
+		
+		$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+		
+		if ($forum_db->num_rows($result))
+		{
+			$query_app = array(
+				'SELECT'	=> 'p.id, p.topic_id',
+				'FROM'		=> 'post_approval_posts AS p',
+				'WHERE'		=> 'p.id='.$pid
+			);
+			
+			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$row = $forum_db->fetch_assoc($result_app);
+			
+			$query_app_post = array(
+				'DELETE'	=> 'post_approval_topics',
+				'WHERE'		=> 'id='.$row['topic_id']
+			);
+			
+			$query_app_post = array(
+				'DELETE'	=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$row['id']
+			);
+		}
+		else
+		{
+			$query_app_post = array(
+				'SELECT'	=> 'topic_id',
+				'FROM'		=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$pid
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$top_id = $forum_db->result($result_app_post);
+			$aptid = $top_id;
+			
+			$query_app_post = array(
+				'DELETE'	=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$pid
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			$query_app_post = array(
+				'SELECT'	=> 'num_replies',
+				'FROM'		=> 'post_approval_topics',
+				'WHERE'		=> 'id='.$top_id
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$num_replies = $forum_db->result($result_app_post) - 1;
+			
+			$query_app_post = array(
+				'SELECT'	=> 'id, posted, topic_id',
+				'FROM'		=> 'post_approval_posts',
+				'WHERE'		=> 'topic_id='.$top_id,
+				'ORDER BY'	=> 'posted DESC'
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			if ($forum_db->num_rows($result_app_post))
+			{
+				$row = $forum_db->fetch_assoc($result_app_post);
+				
+				$query_app_post = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$row['id'],
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			}
+			else
+			{
+				$query_app_post = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			}
+		}
+		
+		redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic redirect']);
+	}
+	
+	if (isset($_GET['app']))
+	{
+		$pid = $_GET['app'];
+		
+		$query_app = array(
+			'SELECT'	=> 'p.id',
+			'FROM'		=> 'post_approval_posts AS p',
+			'JOINS'		=> array(
+				array(
+					'INNER JOIN'	=> 'post_approval_topics AS t',
+					'ON'			=> 't.first_post_id=p.id'
+				)
+			),
+			'WHERE'		=> 'p.id='.$pid
+		);
+		
+		$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+		
+		if ($forum_db->num_rows($result))
+		{
+			//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
+			$query_app_post = array(
+				'SELECT'	=> 't.forum_id, t.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
+				'FROM'		=> 'post_approval_posts AS p',
+				'JOINS'		=> array(
+					array(
+						'INNER JOIN'	=> 'post_approval_topics AS t',
+						'ON'			=> 't.id=p.topic_id'
+					),
+				),
+				'WHERE'		=> 'p.id='.$pid
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$row = $forum_db->fetch_assoc($result_app_post);
+			$aptid = $row['topic_id'];
+			
+			$count_replies = 1;
+			
+			//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
+			$query_app_post = array(
+				'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
+				'INTO'		=> 'posts',
+				'VALUES'	=> $pid.', \''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$new_pid = $forum_db->insert_id();
+			
+			//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
+			$new_subject = str_replace(' (approved)', '', $row['subject']);
+			
+			//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
+			$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
+				SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
+				FROM post_approval_topics AS t 
+				WHERE t.id='.$aptid;
+			
+			$forum_db->query($query_app) or error(__FILE__, __LINE__);
+			
+			
+			//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
+			$query_app = array(
+				'UPDATE'	=> 'post_approval_topics',
+				'SET'		=> 'subject='.$new_subject.', first_post_id=0, last_post_id=0',
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
+			$query_app = array(
+				'UPDATE'	=> 'topics',
+				'SET'		=> 'subject='.$new_subject,
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			
+			//ÎÁÍÎÂËÅÍÈÅ ÔÎÐÓÌÀ
+			if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
+				require FORUM_ROOT.'include/search_idx.php';
+			
+			update_search_index('post', $new_pid, $row['message'], $new_subject);
+			
+			sync_forum($row['forum_id']);
+			
+			//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
+			$query_app = array(
+				'DELETE'	=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$pid
+			);
+			
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+		}
+		else
+		{
+			$query_app_post = array(
+				'SELECT'	=> 'poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
+				'FROM'		=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$pid
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$row = $forum_db->fetch_assoc($result_app_post);
+			$aptid = $row['topic_id'];
+			
+			$count_replies = 1;
+			
+			$query_app_post = array(
+				'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
+				'INTO'		=> 'posts',
+				'VALUES'	=> $pid.', \''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$new_pid = $forum_db->insert_id();
+			
+			$query_app_post = array(
+				'SELECT'	=> 'num_replies',
+				'FROM'		=> 'topics',
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$num_replies = $forum_db->result($result_app_post) + 1;
+			
+			$query_app_post = array(
+				'UPDATE'	=> 'topics',
+				'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$new_pid,
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			$query_app_post = array(
+				'DELETE'	=> 'post_approval_posts',
+				'WHERE'		=> 'id='.$pid
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			$query_app_post = array(
+				'SELECT'	=> 'num_replies',
+				'FROM'		=> 'post_approval_topics',
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			$num_replies = $forum_db->result($result_app_post) - 1;
+			
+			$query_app_post = array(
+				'SELECT'	=> 'id, posted',
+				'FROM'		=> 'post_approval_posts',
+				'WHERE'		=> 'topic_id='.$aptid,
+				'ORDER BY'	=> 'posted DESC'
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			if ($forum_db->num_rows($result_app_post))
+			{
+				$row = $forum_db->fetch_assoc($result_app_post);
+				
+				$query_app_post = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$row['id'],
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			}
+			else
+			{
+				$query_app_post = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			}
+		}
+		
+		redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
+	}
+	
+	if (isset($_POST['del_sev']))
+	{
+		if (isset($_POST['sel_posts']))
+		{
+			$posts_check = $_POST['sel_posts'];
+			
+			$query_app_post = array(
+				'DELETE'	=> 'post_approval_posts',
+				'WHERE'		=> 'id IN ('.implode(', ', array_values($posts_check)).')'
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			$query_app_post = array(
+				'DELETE'	=> 'post_approval_topics',
+				'WHERE'		=> 'first_post_id IN ('.implode(', ', array_values($posts_check)).')'
+			);
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			$query_app_post = array(
+				'SELECT'	=> 'num_replies',
+				'FROM'		=> 'post_approval_topics',
+				'WHERE'		=> 'id='.$aptid
+			);
+			
+			$count_replies = count($posts_check);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			if ($forum_db->num_rows($result_app_post))
+			{
+				$num_replies = $forum_db->result($result_app_post) - $count_replies;
+				
+				$query_app_post = array(
+					'SELECT'	=> 'id, posted',
+					'FROM'		=> 'post_approval_posts',
+					'WHERE'		=> 'topic_id='.$aptid,
+					'ORDER BY'	=> 'posted DESC'
+				);
+				
+				$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				if ($forum_db->num_rows($result_app_post))
+				{
+					$row = $forum_db->fetch_assoc($result_app_post);
+					
+					$query_app_post = array(
+						'UPDATE'	=> 'post_approval_topics',
+						'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$row['id'],
+						'WHERE'		=> 'id='.$aptid
+					);
+					
+					$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				}
+				else
+				{
+					$query_app_post = array(
+						'UPDATE'	=> 'post_approval_topics',
+						'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
+						'WHERE'		=> 'id='.$aptid
+					);
+					
+					$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				}
+			}
+			
+			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic redirect']);
+		}
+	}
+	if (isset($_POST['app_sev']))
+	{
+		if (isset($_POST['sel_posts']))
+		{
+			$arr_ID_app = array();
+			$arr_ID_app = array_keys($_POST['sel_posts']);
+			
+			$count_arr = count($arr_ID_app);
+			$boo = 0;
+			
+			$query_app = array(
+				'SELECT'	=> 'p.id',
+				'FROM'		=> 'post_approval_posts AS p',
+				'JOINS'		=> array(
+					array(
+						'INNER JOIN'	=> 'post_approval_topics AS t',
+						'ON'			=> 't.first_post_id=p.id'
+					)
+				),
+				'WHERE'		=> 'p.id IN ('.implode(', ', array_values($arr_ID_app)).')'
+			);
+			
+			$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			
+			if ($forum_db->num_rows($result))
+			{
+				//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
+				$query_app_post = array(
+					'SELECT'	=> 't.forum_id, t.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
+					'FROM'		=> 'post_approval_posts AS p',
+					'JOINS'		=> array(
+						array(
+							'INNER JOIN'	=> 'post_approval_topics AS t',
+							'ON'			=> 't.id=p.topic_id'
+						),
+					),
+					'WHERE'		=> 'p.id IN ('.implode(', ', array_values($arr_ID_app)).')'
+				);
+				
+				$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				$row = $forum_db->fetch_assoc($result_app_post);
+				$aptid = $row['topic_id'];
+				$pid = $arr_ID_app[0];
+				
+				$count_replies = 1;
+				
+				//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
+				$query_app_post = array(
+					'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
+					'INTO'		=> 'posts',
+					'VALUES'	=> $pid.', \''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				$new_pid = $forum_db->insert_id();
+				
+				//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
+				$new_subject = str_replace(' (approved)', '', $row['subject']);
+				
+				//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
+				$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
+					SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
+					FROM post_approval_topics AS t 
+					WHERE t.id='.$aptid;
+				
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				
+				
+				//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
+				$query_app = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'subject='.$new_subject.', first_post_id=0, last_post_id=0',
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
+				$query_app = array(
+					'UPDATE'	=> 'topics',
+					'SET'		=> 'subject='.$new_subject,
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				//ÎÁÍÎÂËÅÍÈÅ ÔÎÐÓÌÀ
+				if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
+					require FORUM_ROOT.'include/search_idx.php';
+				
+				update_search_index('post', $new_pid, $row['message'], $new_subject);
+				
+				sync_forum($row['forum_id']);
+				
+				//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
+				$query_app = array(
+					'DELETE'	=> 'post_approval_posts',
+					'WHERE'		=> 'id='.$pid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			}
+			else
+			{
+				if ($count_arr != 0)
+				{
+					$query_app_post = 
+					
+					$query = array(
+						'SELECT'	=> 'p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id, t.subject',
+						'FROM'		=> 'post_approval_posts AS p',
+						'JOINS'		=> array(
+							array(
+								'INNER JOIN'	=> 'topics AS t',
+								'ON'			=> 'p.topic_id=t.id'
+							)
+						),
+						'WHERE'		=> 'p.id IN ('.implode(', ', $arr_ID_app).')'
+					);
+					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+					
+					if (!$forum_db->num_rows($result))
+						message($lang_common['Bad request']);
+					
+					while ($row = $forum_db->fetch_assoc($result))
+					{
+						$post_info = array(
+							'is_guest'		=> ($row['id'] == 1) ? (true) : (false),
+							'poster'		=> $row['poster'],
+							'poster_id'		=> $row['poster_id'],
+							'poster_email'	=> $row['poster_email'],
+							'message'		=> $row['message'],
+							'hide_smilies'	=> $row['hide_smilies'],
+							'posted'		=> $row['posted'],
+							'topic_id'		=> $row['topic_id'],
+							'subject'		=> $row['subject'],
+							'subscr_action'	=> 0
+						);
+						$query = array(
+							'SELECT'	=> 'forum_id',
+							'FROM'		=> 'topics',
+							'WHERE'		=> 'id = '.$row['topic_id']
+						);
+						$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$fid = $forum_db->fetch_assoc($result) or error(__FILE__, __LINE__);
+						$post_info['forum_id'] = $fid['forum_id'];
+						
+						// Add the post
+						$query = array(
+							'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
+							'INTO'		=> 'posts',
+							'VALUES'	=> intval($row['id']).', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape(get_remote_address()).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
+						);
+
+						// If it's a guest post, there might be an e-mail address we need to include
+						if ($post_info['is_guest'] && $post_info['poster_email'] != null)
+						{
+							$query['INSERT'] .= ', poster_email';
+							$query['VALUES'] .= ', \''.$forum_db->escape($post_info['poster_email']).'\'';
+						}
+
+						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$new_pid = $forum_db->insert_id();
+						
+						if (!$post_info['is_guest'])
+						{
+							// Subscribe or unsubscribe?
+							if ($post_info['subscr_action'] == 1)
+							{
+								$query = array(
+									'INSERT'	=> 'user_id, topic_id',
+									'INTO'		=> 'subscriptions',
+									'VALUES'	=> $post_info['poster_id'].' ,'.$post_info['topic_id']
+								);
+
+								$forum_db->query_build($query) or error(__FILE__, __LINE__);
+							}
+							else if ($post_info['subscr_action'] == 2)
+							{
+								$query = array(
+									'DELETE'	=> 'subscriptions',
+									'WHERE'		=> 'topic_id='.$post_info['topic_id'].' AND user_id='.$post_info['poster_id']
+								);
+
+								$forum_db->query_build($query) or error(__FILE__, __LINE__);
+							}
+						}
+
+						// Count number of replies in the topic
+						$query = array(
+							'SELECT'	=> 'COUNT(p.id)',
+							'FROM'		=> 'posts AS p',
+							'WHERE'		=> 'p.topic_id='.$post_info['topic_id']
+						);
+
+						$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$num_replies = $forum_db->result($result, 0) - 1;
+
+						// Update topic
+						$query = array(
+							'UPDATE'	=> 'topics',
+							'SET'		=> 'num_replies='.$num_replies.', last_post='.$post_info['posted'].', last_post_id='.$new_pid.', last_poster=\''.$forum_db->escape($post_info['poster']).'\'',
+							'WHERE'		=> 'id='.$post_info['topic_id']
+						);
+
+						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+						sync_forum($post_info['forum_id']);
+
+						if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
+							require FORUM_ROOT.'include/search_idx.php';
+
+						update_search_index('post', $new_pid, $post_info['message']);
+
+						send_subscriptions($post_info, $new_pid);
+
+						// Increment user's post count & last post time
+						if (isset($post_info['update_user']))
+						{
+							if ($post_info['is_guest'])
+							{
+								$query = array(
+									'UPDATE'	=> 'online',
+									'SET'		=> 'last_post='.$post_info['posted'],
+									'WHERE'		=> 'ident=\''.$forum_db->escape(get_remote_address()).'\''
+								);
+							}
+							else
+							{
+								$query = array(
+									'UPDATE'	=> 'users',
+									'SET'		=> 'num_posts=num_posts+1, last_post='.$post_info['posted'],
+									'WHERE'		=> 'id='.$post_info['poster_id']
+								);
+							}
+
+							$forum_db->query_build($query) or error(__FILE__, __LINE__);
+						}
+
+						// If the posting user is logged in update his/her unread indicator
+						if (!$post_info['is_guest'] && isset($post_info['update_unread']) && $post_info['update_unread'])
+						{
+							$tracked_topics = get_tracked_topics();
+							$tracked_topics['topics'][$post_info['topic_id']] = time();
+							set_tracked_topics($tracked_topics);
+						}
+					}
+					$query_app_post = array(
+						'DELETE'	=> 'post_approval_posts',
+						'WHERE'		=> 'id IN ('.implode(', ', $arr_ID_app).')'
+					);
+					
+					$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				}
+			}
+			
+			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
+		}
+	}
+	
+	if (isset($_POST['app_all']))
+	{
+		$query_app_post = array(
+			'SELECT'	=> 'id',
+			'FROM'		=> 'post_approval_posts',
+			'WHERE'		=> 'topic_id='.$aptid
+		);
+		
+		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+		$arr_ID_app = array();
+		
+		if ($forum_db->num_rows($result_app_post))
+		{
+			while($row = $forum_db->fetch_assoc($result_app_post))
+			{
+				$arr_ID_app[] = $row['id'];
+			}
+		}
+		
+		if (count($arr_ID_app))
+		{
+			$query_app_post = array(
+				'SELECT'	=> 'poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
+				'FROM'		=> 'post_approval_posts',
+				'WHERE'		=> 'id IN ('.implode(', ', $arr_ID_app).')',
+				'ORDER BY'	=> 'posted ASC'
+			);
+			
+			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+			$arr_keys_app = array();
+			$count_replies = 0;
+			$arr_val_app = array();
+			
+			$query_app = array(
+				'SELECT'	=> 'p.id',
+				'FROM'		=> 'post_approval_posts AS p',
+				'JOINS'		=> array(
+					array(
+						'INNER JOIN'	=> 'post_approval_topics AS t',
+						'ON'			=> 't.first_post_id=p.id'
+					)
+				),
+				'WHERE'		=> 'p.id IN ('.implode(', ', $arr_ID_app).')'
+			);
+			
+			$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			
+			if ($forum_db->num_rows($result))
+			{
+				//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
+				$query_app_post = array(
+					'SELECT'	=> 't.forum_id, t.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
+					'FROM'		=> 'post_approval_posts AS p',
+					'JOINS'		=> array(
+						array(
+							'INNER JOIN'	=> 'post_approval_topics AS t',
+							'ON'			=> 't.id=p.topic_id'
+						),
+					),
+					'WHERE'		=> 'p.id IN ('.implode(', ', $arr_ID_app).')'
+				);
+				
+				$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				$row = $forum_db->fetch_assoc($result_app_post);
+				$aptid = $row['topic_id'];
+				$pid = $arr_ID_app[0];
+				
+				$count_replies = 1;
+				
+				//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
+				$query_app_post = array(
+					'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
+					'INTO'		=> 'posts',
+					'VALUES'	=> $pid.', \''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				$new_pid = $forum_db->insert_id();
+				
+				//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
+				$new_subject = str_replace(' (approved)', '', $row['subject']);
+				
+				//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
+				$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
+					SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
+					FROM post_approval_topics AS t 
+					WHERE t.id='.$aptid;
+				
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+				
+				
+				//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
+				$query_app = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'subject='.$new_subject.', first_post_id=0, last_post_id=0',
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
+				$query_app = array(
+					'UPDATE'	=> 'topics',
+					'SET'		=> 'subject='.$new_subject,
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				//ÎÁÍÎÂËÅÍÈÅ ÔÎÐÓÌÀ
+				if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
+					require FORUM_ROOT.'include/search_idx.php';
+				
+				update_search_index('post', $new_pid, $row['message'], $new_subject);
+				
+				sync_forum($row['forum_id']);
+				
+				//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
+				$query_app = array(
+					'DELETE'	=> 'post_approval_posts',
+					'WHERE'		=> 'id='.$pid
+				);
+				
+				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			}
+			else
+			{
+			
+				while($row = $forum_db->fetch_assoc($result_app_post))
+				{
+					++$count_replies;
+					
+					$query_app_post = array(
+						'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
+						'INTO'		=> 'posts',
+						'VALUES'	=> '\''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', '.$forum_user['username']
+					);
+					
+					$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+					
+					$arr_val_app[$count_replies] = $row;
+					$arr_val_app[$count_replies]['id'] = $forum_db->insert_id();
+				}
+				
+				$query_app_post = array(
+					'SELECT'	=> 'num_replies',
+					'FROM'		=> 'topics',
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				$num_replies = $forum_db->result($result_app_post) + $count_replies;
+				
+				$query_app_post = array(
+					'UPDATE'	=> 'topics',
+					'SET'		=> 'num_replies='.$num_replies.', last_post='.$arr_val_app[$count_replies]['posted'].', last_post_id='.$arr_val_app[$count_replies]['id'],
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				
+				$query_app_post = array(
+					'DELETE'	=> 'post_approval_posts',
+					'WHERE'		=> 'topic_id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+				
+				$query_app_post = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
+					'WHERE'		=> 'id='.$aptid
+				);
+				
+				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			}
+		}
+		
+		redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
+	}
+	
 	if (!$aptid && !$appid && !$all_post)
 	{
 		$forum_page['num_pages'] = ceil($cur_forum['num_topics'] / $forum_user['disp_topics']);
@@ -192,7 +1000,7 @@ function show_unapproved_posts()
 					'ON'			=> 't.forum_id=f.id'
 				),
 			),
-			'WHERE'		=> '(t.num_replies>0 OR t.last_post_id>0)',
+			'WHERE'		=> '(t.num_replies>0 OR t.first_post_id>0)',
 			'ORDER BY'	=> 't.last_post DESC'
 		);
 		
@@ -345,614 +1153,6 @@ function show_unapproved_posts()
 	}
 	
 	$id = 0;
-	
-	if (isset($_GET['del']))
-	{
-		$pid = $_GET['del'];
-		
-		$query_app = array(
-			'SELECT'	=> 'id',
-			'FROM'		=> 'post_approval_topics',
-			'WHERE'		=> 'first_post_id='.$pid
-		);
-		
-		$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-		
-		if ($forum_db->num_rows($result))
-		{
-			$query_app = array(
-				'SELECT'	=> 'p.id, p.topic_id',
-				'FROM'		=> 'post_approval_posts AS p',
-				'WHERE'		=> 'p.id='.$pid
-			);
-			
-			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-			$row = $forum_db->fetch_assoc($result_app);
-			
-			$query_app_post = array(
-				'DELETE'	=> 'post_approval_topics',
-				'WHERE'		=> 'id='.$row['topic_id']
-			);
-			
-			$query_app_post = array(
-				'DELETE'	=> 'post_approval_posts',
-				'WHERE'		=> 'id='.$row['id']
-			);
-		}
-		else
-		{
-			$query_app_post = array(
-				'SELECT'	=> 'topic_id',
-				'FROM'		=> 'post_approval_posts',
-				'WHERE'		=> 'id='.$pid
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$top_id = $forum_db->result($result_app_post);
-			$aptid = $top_id;
-			
-			$query_app_post = array(
-				'DELETE'	=> 'post_approval_posts',
-				'WHERE'		=> 'id='.$pid
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$query_app_post = array(
-				'SELECT'	=> 'num_replies',
-				'FROM'		=> 'post_approval_topics',
-				'WHERE'		=> 'id='.$top_id
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$num_replies = $forum_db->result($result_app_post) - 1;
-			
-			$query_app_post = array(
-				'SELECT'	=> 'id, posted, topic_id',
-				'FROM'		=> 'post_approval_posts',
-				'WHERE'		=> 'topic_id='.$top_id,
-				'ORDER BY'	=> 'posted DESC'
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			if ($forum_db->num_rows($result_app_post))
-			{
-				$row = $forum_db->fetch_assoc($result_app_post);
-				
-				$query_app_post = array(
-					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$row['id'],
-					'WHERE'		=> 'id='.$aptid
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-			else
-			{
-				$query_app_post = array(
-					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
-					'WHERE'		=> 'id='.$aptid
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-		}
-		
-		redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic redirect']);
-	}
-	
-	if (isset($_GET['app']))
-	{
-		$pid = $_GET['app'];
-		
-		$query_app = array(
-			'SELECT'	=> 'id',
-			'FROM'		=> 'post_approval_topics',
-			'WHERE'		=> 'first_post_id='.$pid
-		);
-		
-		$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-		
-		if ($forum_db->num_rows($result))
-		{
-			//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
-			$query_app_post = array(
-				'SELECT'	=> 't.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
-				'FROM'		=> 'post_approval_posts AS p',
-				'JOINS'		=> array(
-					array(
-						'INNER JOIN'	=> 'post_approval_topics AS t',
-						'ON'			=> 't.id=t.topic_id'
-					),
-				),
-				'WHERE'		=> 'id='.$pid
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$row = $forum_db->fetch_assoc($result_app_post);
-			$aptid = $row['topic_id'];
-			
-			echo '<pre>';
-			var_dump($row);
-			
-			$count_replies = 1;
-			
-			//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
-			$query_app_post = array(
-				'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
-				'INTO'		=> 'posts',
-				'VALUES'	=> $pid.', \''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$new_pid = $forum_db->insert_id();
-			var_dump($new_pid);
-			
-			//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
-			$new_subject = str_replace(' (approved)', '', $row['subject']);
-			
-			//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
-			$query_app = array(
-				'SELECT'	=> 't.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id',
-				'FROM'		=> 'post_approval_topics AS t',
-				'WHERE'		=> 't.id='.$aptid
-			);
-			
-			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-			$row_app = $forum_db->fetch_assoc($result_app);
-			
-			var_dump($row_app);
-			var_dump($aptid);
-			var_dump($new_subject);
-			
-			$query_app = array(
-				'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
-				'INTO'		=> 'topics',
-				'VALUES'	=> $row_app['id'].', \''.$forum_db->escape($row_app['poster']).'\', \''.$forum_db->escape($row_app['subject']).'\', '.$row_app['posted'].', '.$row_app['first_post_id'].', '.$row_app['last_post'].', '.$row_app['last_post_id'].', \''.$forum_db->escape($row_app['last_poster']).'\', '.$row_app['num_views'].', '.$row_app['num_replies'].', '.$row_app['closed'].', '.$row_app['sticky'].', '.$row_app['moved_to'].', '.$row_app['forum_id']
-			);
-			
-			$forum_db->query_build() or error(__FILE__, __LINE__);
-			
-			/*
-			$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
-				SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
-				FROM post_approval_topics AS t 
-				WHERE t.id='.$aptid;
-			
-			$forum_db->query($query_app) or error(__FILE__, __LINE__);
-			*/
-			
-			//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
-			$query_app = array(
-				'UPDATE'	=> 'post_approval_topics',
-				'SET'		=> 'subject='.$new_subject,
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-			// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
-			$query_app = array(
-				'UPDATE'	=> 'topics',
-				'SET'		=> 'subject='.$new_subject,
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-			
-			//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
-			$query_app = array(
-				'DELETE'	=> 'post_approval_posts',
-				'WHERE'		=> 'id='.$pid
-			);
-			
-			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-		}
-		else
-		{
-			$query_app_post = array(
-				'SELECT'	=> 'poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
-				'FROM'		=> 'post_approval_posts',
-				'WHERE'		=> 'id='.$pid
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$row = $forum_db->fetch_assoc($result_app_post);
-			$aptid = $row['topic_id'];
-			
-			$count_replies = 1;
-			
-			$query_app_post = array(
-				'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
-				'INTO'		=> 'posts',
-				'VALUES'	=> $pid.', \''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', \''.$forum_user['username'].'\''
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$new_pid = $forum_db->insert_id();
-			
-			$query_app_post = array(
-				'SELECT'	=> 'num_replies',
-				'FROM'		=> 'topics',
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$num_replies = $forum_db->result($result_app_post) + 1;
-			
-			$query_app_post = array(
-				'UPDATE'	=> 'topics',
-				'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$new_pid,
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$query_app_post = array(
-				'DELETE'	=> 'post_approval_posts',
-				'WHERE'		=> 'id='.$pid
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$query_app_post = array(
-				'SELECT'	=> 'num_replies',
-				'FROM'		=> 'post_approval_topics',
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$num_replies = $forum_db->result($result_app_post) - 1;
-			
-			$query_app_post = array(
-				'SELECT'	=> 'id, posted',
-				'FROM'		=> 'post_approval_posts',
-				'WHERE'		=> 'topic_id='.$aptid,
-				'ORDER BY'	=> 'posted DESC'
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			if ($forum_db->num_rows($result_app_post))
-			{
-				$row = $forum_db->fetch_assoc($result_app_post);
-				
-				$query_app_post = array(
-					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$row['id'],
-					'WHERE'		=> 'id='.$aptid
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-			else
-			{
-				$query_app_post = array(
-					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
-					'WHERE'		=> 'id='.$aptid
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-		}
-		
-		redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
-	}
-	
-	if (isset($_POST['del_sev']))
-	{
-		if (isset($_POST['sel_posts']))
-		{
-			$posts_check = $_POST['sel_posts'];
-			
-			$query_app_post = array(
-				'DELETE'	=> 'post_approval_posts',
-				'WHERE'		=> 'id IN ('.implode(', ', array_values($posts_check)).')'
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$query_app_post = array(
-				'SELECT'	=> 'num_replies',
-				'FROM'		=> 'post_approval_topics',
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$count_replies = count($posts_check);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$num_replies = $forum_db->result($result_app_post) - $count_replies;
-			
-			$query_app_post = array(
-				'SELECT'	=> 'id, posted',
-				'FROM'		=> 'post_approval_posts',
-				'WHERE'		=> 'topic_id='.$aptid,
-				'ORDER BY'	=> 'posted DESC'
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			if ($forum_db->num_rows($result_app_post))
-			{
-				$row = $forum_db->fetch_assoc($result_app_post);
-				
-				$query_app_post = array(
-					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'num_replies='.$num_replies.', last_post='.$row['posted'].', last_post_id='.$row['id'],
-					'WHERE'		=> 'id='.$aptid
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-			else
-			{
-				$query_app_post = array(
-					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
-					'WHERE'		=> 'id='.$aptid
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-			
-			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic redirect']);
-		}
-	}
-	if (isset($_POST['app_sev']))
-	{
-		if (isset($_POST['sel_posts']))
-		{
-			$arr_ID_app = array();
-			$arr_ID_app = array_keys($_POST['sel_posts']);
-			
-			$count_arr = count($arr_ID_app);
-			$boo = 0;
-			if ($count_arr != 0)
-			{
-				$query_app_post = 
-				
-				$query = array(
-					'SELECT'	=> 'p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id, t.subject',
-					'FROM'		=> 'post_approval_posts AS p',
-					'JOINS'		=> array(
-						array(
-							'INNER JOIN'	=> 'topics AS t',
-							'ON'			=> 'p.topic_id=t.id'
-						)
-					),
-					'WHERE'		=> 'p.id IN ('.implode(', ', $arr_ID_app).')'
-				);
-				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-				
-				if (!$forum_db->num_rows($result))
-					message($lang_common['Bad request']);
-				
-				while ($row = $forum_db->fetch_assoc($result))
-				{
-					$post_info = array(
-						'is_guest'		=> ($row['id'] == 1) ? (true) : (false),
-						'poster'		=> $row['poster'],
-						'poster_id'		=> $row['poster_id'],
-						'poster_email'	=> $row['poster_email'],
-						'message'		=> $row['message'],
-						'hide_smilies'	=> $row['hide_smilies'],
-						'posted'		=> $row['posted'],
-						'topic_id'		=> $row['topic_id'],
-						'subject'		=> $row['subject'],
-						'subscr_action'	=> 0
-					);
-					$query = array(
-						'SELECT'	=> 'forum_id',
-						'FROM'		=> 'topics',
-						'WHERE'		=> 'id = '.$row['topic_id']
-					);
-					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-					$fid = $forum_db->fetch_assoc($result) or error(__FILE__, __LINE__);
-					$post_info['forum_id'] = $fid['forum_id'];
-					
-					// Add the post
-					$query = array(
-						'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
-						'INTO'		=> 'posts',
-						'VALUES'	=> intval($row['id']).', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape(get_remote_address()).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
-					);
-
-					// If it's a guest post, there might be an e-mail address we need to include
-					if ($post_info['is_guest'] && $post_info['poster_email'] != null)
-					{
-						$query['INSERT'] .= ', poster_email';
-						$query['VALUES'] .= ', \''.$forum_db->escape($post_info['poster_email']).'\'';
-					}
-
-					$forum_db->query_build($query) or error(__FILE__, __LINE__);
-					$new_pid = $forum_db->insert_id();
-					
-					if (!$post_info['is_guest'])
-					{
-						// Subscribe or unsubscribe?
-						if ($post_info['subscr_action'] == 1)
-						{
-							$query = array(
-								'INSERT'	=> 'user_id, topic_id',
-								'INTO'		=> 'subscriptions',
-								'VALUES'	=> $post_info['poster_id'].' ,'.$post_info['topic_id']
-							);
-
-							$forum_db->query_build($query) or error(__FILE__, __LINE__);
-						}
-						else if ($post_info['subscr_action'] == 2)
-						{
-							$query = array(
-								'DELETE'	=> 'subscriptions',
-								'WHERE'		=> 'topic_id='.$post_info['topic_id'].' AND user_id='.$post_info['poster_id']
-							);
-
-							$forum_db->query_build($query) or error(__FILE__, __LINE__);
-						}
-					}
-
-					// Count number of replies in the topic
-					$query = array(
-						'SELECT'	=> 'COUNT(p.id)',
-						'FROM'		=> 'posts AS p',
-						'WHERE'		=> 'p.topic_id='.$post_info['topic_id']
-					);
-
-					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-					$num_replies = $forum_db->result($result, 0) - 1;
-
-					// Update topic
-					$query = array(
-						'UPDATE'	=> 'topics',
-						'SET'		=> 'num_replies='.$num_replies.', last_post='.$post_info['posted'].', last_post_id='.$new_pid.', last_poster=\''.$forum_db->escape($post_info['poster']).'\'',
-						'WHERE'		=> 'id='.$post_info['topic_id']
-					);
-
-					$forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-					sync_forum($post_info['forum_id']);
-
-					if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
-						require FORUM_ROOT.'include/search_idx.php';
-
-					update_search_index('post', $new_pid, $post_info['message']);
-
-					send_subscriptions($post_info, $new_pid);
-
-					// Increment user's post count & last post time
-					if (isset($post_info['update_user']))
-					{
-						if ($post_info['is_guest'])
-						{
-							$query = array(
-								'UPDATE'	=> 'online',
-								'SET'		=> 'last_post='.$post_info['posted'],
-								'WHERE'		=> 'ident=\''.$forum_db->escape(get_remote_address()).'\''
-							);
-						}
-						else
-						{
-							$query = array(
-								'UPDATE'	=> 'users',
-								'SET'		=> 'num_posts=num_posts+1, last_post='.$post_info['posted'],
-								'WHERE'		=> 'id='.$post_info['poster_id']
-							);
-						}
-
-						$forum_db->query_build($query) or error(__FILE__, __LINE__);
-					}
-
-					// If the posting user is logged in update his/her unread indicator
-					if (!$post_info['is_guest'] && isset($post_info['update_unread']) && $post_info['update_unread'])
-					{
-						$tracked_topics = get_tracked_topics();
-						$tracked_topics['topics'][$post_info['topic_id']] = time();
-						set_tracked_topics($tracked_topics);
-					}
-				}
-				$query_app_post = array(
-					'DELETE'	=> 'post_approval_posts',
-					'WHERE'		=> 'id IN ('.implode(', ', $arr_ID_app).')'
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			}
-			
-			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
-		}
-	}
-	
-	if (isset($_POST['app_all']))
-	{
-		$query_app_post = array(
-			'SELECT'	=> 'id',
-			'FROM'		=> 'post_approval_posts',
-			'WHERE'		=> 'topic_id='.$aptid
-		);
-		
-		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-		$arr_ID_app = array();
-		
-		if ($forum_db->num_rows($result_app_post))
-		{
-			while($row = $forum_db->fetch_assoc($result_app_post))
-			{
-				$arr_ID_app[] = $row['id'];
-			}
-		}
-		
-		$count_arr = count($arr_ID_app);
-		
-		if ($count_arr != 0)
-		{
-			$query_app_post = array(
-				'SELECT'	=> 'poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
-				'FROM'		=> 'post_approval_posts',
-				'WHERE'		=> 'id IN ('.implode(', ', $arr_ID_app).')',
-				'ORDER BY'	=> 'posted ASC'
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$arr_keys_app = array();
-			$count_replies = 0;
-			$arr_val_app = array();
-			
-			while($row = $forum_db->fetch_assoc($result_app_post))
-			{
-				++$count_replies;
-				
-				$query_app_post = array(
-					'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
-					'INTO'		=> 'posts',
-					'VALUES'	=> '\''.$forum_db->escape($row['poster']).'\', '.$row['poster_id'].', \''.$row['poster_ip'].'\', \''.$forum_db->escape($row['message']).'\', '.$row['hide_smilies'].', '.$row['posted'].', '.$row['topic_id'].', '.time().', '.$forum_user['username']
-				);
-				
-				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-				
-				$arr_val_app[$count_replies] = $row;
-				$arr_val_app[$count_replies]['id'] = $forum_db->insert_id();
-			}
-			
-			$query_app_post = array(
-				'SELECT'	=> 'num_replies',
-				'FROM'		=> 'topics',
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			$num_replies = $forum_db->result($result_app_post) + $count_replies;
-			
-			$query_app_post = array(
-				'UPDATE'	=> 'topics',
-				'SET'		=> 'num_replies='.$num_replies.', last_post='.$arr_val_app[$count_replies]['posted'].', last_post_id='.$arr_val_app[$count_replies]['id'],
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$query_app_post = array(
-				'DELETE'	=> 'post_approval_posts',
-				'WHERE'		=> 'topic_id='.$aptid
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			$query_app_post = array(
-				'UPDATE'	=> 'post_approval_topics',
-				'SET'		=> 'num_replies=0, last_post=0, last_post_id=0',
-				'WHERE'		=> 'id='.$aptid
-			);
-			
-			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-			
-			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
-		}
-		else
-			redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['topic red app']);
-	}
 	
 	if ($aptid || $appid || $all_post)
 	{
@@ -1246,49 +1446,8 @@ function show_unapproved_posts()
 					}
 				}
 
-				// Generate the post options links
-				if (!$forum_user['is_guest'])
-				{
-					$forum_page['post_actions']['report'] = '<span class="report-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['report'], $cur_post['id']).'">'.$lang_topic['Report'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-
-					if (!$forum_user['is_admmod'])
-					{
-						if ($cur_topic['closed'] == '0')
-						{
-							if ($cur_post['poster_id'] == $forum_user['id'])
-							{
-								if (($forum_page['start_from'] + $forum_page['item_count']) == 1 && $forum_user['g_delete_topics'] == '1')
-									$forum_page['post_actions']['delete'] = '<span class="delete-topic'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['delete'], $cur_topic['first_post_id']).'">'.$lang_topic['Delete topic'].'</a></span>';
-								if (($forum_page['start_from'] + $forum_page['item_count']) > 1 && $forum_user['g_delete_posts'] == '1')
-									$forum_page['post_actions']['delete'] = '<span class="delete-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['delete'], $cur_post['id']).'">'.$lang_topic['Delete'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-								if ($forum_user['g_edit_posts'] == '1')
-									$forum_page['post_actions']['edit'] = '<span class="edit-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['edit'], $cur_post['id']).'">'.$lang_topic['Edit'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-							}
-
-							if (($cur_topic['post_replies'] == '' && $forum_user['g_post_replies'] == '1') || $cur_topic['post_replies'] == '1')
-								$forum_page['post_actions']['quote'] = '<span class="quote-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'">'.$lang_topic['Quote'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-						}
-					}
-					else
-					{
-						if (($forum_page['start_from'] + $forum_page['item_count']) == 1)
-							$forum_page['post_actions']['delete'] = '<span class="delete-topic'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['delete'], $cur_topic['first_post_id']).'">'.$lang_topic['Delete topic'].'</a></span>';
-						else
-							$forum_page['post_actions']['delete'] = '<span class="delete-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['delete'], $cur_post['id']).'">'.$lang_topic['Delete'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-
-						$forum_page['post_actions']['edit'] = '<span class="edit-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['edit'], $cur_post['id']).'">'.$lang_topic['Edit'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-						$forum_page['post_actions']['quote'] = '<span class="quote-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'">'.$lang_topic['Quote'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-					}
-				}
-				else
-				{
-					if ($cur_topic['closed'] == '0')
-					{
-						if (($cur_topic['post_replies'] == '' && $forum_user['g_post_replies'] == '1') || $cur_topic['post_replies'] == '1')
-							$forum_page['post_actions']['quote'] = '<span class="report-post'.(empty($forum_page['post_actions']) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['quote'], array($id, $cur_post['id'])).'">'.$lang_topic['Quote'].'<span> '.$lang_topic['Post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</span></a></span>';
-					}
-				}
 				
+				// Generate actions of post
 				$forum_page['post_actions']['approve'] = '<span class="approve-post"><a href="'.forum_link($post_app_url['approval'], $cur_post['id']).'">'.$lang_app_post['Approve'].'</a></span>';
 				$forum_page['post_actions']['delete'] = '<span class="delete-post"><a href="'.forum_link($post_app_url['delete'], $cur_post['id']).'">'.$lang_app_post['Remove'].'</a></span>';
 
@@ -1395,13 +1554,18 @@ function show_unapproved_posts()
 			<?php
 
 			}
-
-	?>
+			
+			if (!$all_post)
+			{
+			?>
 					<div class="frm-buttons">
 							<span class="submit"><input type="submit" name="app_sev" value="Approve selected" /></span>
 							<span class="submit"><input type="submit" name="del_sev" value="Remove selected" /></span>
 							<span class="submit"><input type="submit" name="app_all" value="Approve all" /></span>
 					</div>
+			<?php
+			}
+			?>
 				</div>
 			</form>
 			<div class="main-foot">
