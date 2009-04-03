@@ -280,6 +280,34 @@
 			
 		]]></hook>
 		
+		<hook id="fn_qr_update_topic2"><![CDATA[
+			
+			$query_app_post = $query;
+			$query_app_post['UPDATE'] = 'post_approval_topics';
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+		]]></hook>
+		
+		<hook id="fn_sync_topic_qr_update_topic"><![CDATA[
+			
+			$query_app_post = $query;
+			
+			$query_app_post['UPDATE'] = 'post_approval_topics';
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+		]]></hook>
+		
+		<hook id="mr_confirm_delete_posts_qr_delete_posts"><![CDATA[
+			
+			$query_app_post = $query;
+			
+			$query_app_post['DELETE'] = 'post_approval_posts';
+			
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+			
+		]]></hook>
+		
 		<hook id="po_pre_add_topic"><![CDATA[
 			
 			//If forum no needed post approval or user can post without approval
@@ -341,7 +369,7 @@
 				
 				$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'subject=\''.$res_posts['subject'].' (approved)\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
+					'SET'		=> 'subject=\''.$res_posts['subject'].' (been approving)\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
 					'WHERE'		=> 'id='.$new_tid
 				);
 				
@@ -363,6 +391,38 @@
 				
 				redirect(forum_link($forum_url['forum'], $res_posts['forum_id']), $lang_app_post['Topic warning']);
 			}
+			
+		]]></hook>
+		
+		<hook id="mr_confirm_split_posts_qr_move_posts"><![CDATA[
+			// ÊÎÏÈÐÎÂÀÍÈÅ Â ËÅÂÓÞ
+			$query_app = 'INSERT INTO post_approval_topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
+				SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
+				FROM topics AS t 
+				WHERE t.id='.$new_tid;
+			$forum_db->query($query_app) or error(__FILE__, __LINE__);
+			// ÓÄÀËÅÍÈÅ Ñ ÏÐÀÂÎÉ
+			$query_app = array(
+				'DELETE'	=> 'topics',
+				'WHERE'		=> 'id='.$new_tid
+			);
+			
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			// ÎÁÍÎÂËÅÍÈÅ ËÅÂÎÉ
+			$query_app = array(
+				'UPDATE'	=> 'post_approval_topics',
+				'SET'		=> 'first_post_id='.$first_post_data['id'],
+				'WHERE'		=> 'id='.$new_tid
+			);
+			
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			// ÊÎÏÈÐÎÂÀÍÈÅ ÏÅÐÂÎÃÎ ÏÎÑÒÀ
+			$query_app = 'INSERT INTO post_approval_posts (id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id) 
+				SELECT p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id 
+				FROM posts AS p
+				WHERE id='.$first_post_data['id'];
+			
+			$forum_db->query($query_app) or error(__FILE__, __LINE__);
 			
 		]]></hook>
 		
@@ -392,6 +452,7 @@
 					SELECT p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id 
 					FROM posts AS p 
 					WHERE id='.$new_app_pid;
+				
 				$forum_db->query($query_app) or error(__FILE__, __LINE__);
 				
 				$query_app = array(
@@ -427,6 +488,20 @@
 				
 				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			}
+		]]></hook>
+		
+		<hook id="fn_add_topic_end"><![CDATA[
+			
+			if (($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
+			{
+				$query_app = 'INSERT INTO post_approval_topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
+					SELECT t.id, t.poster, t.subject, t.posted, t.first_post_id, t.last_post, t.last_post_id, t.last_poster, t.num_views, t.num_replies, t.closed, t.sticky, t.moved_to, t.forum_id
+					FROM topics AS t 
+					WHERE t.id='.$new_tid;
+				
+				$forum_db->query($query_app) or error(__FILE__, __LINE__);
+			}
+			
 		]]></hook>
 		
 		<hook id="fn_add_topic_start"><![CDATA[
