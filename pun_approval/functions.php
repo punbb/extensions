@@ -361,7 +361,7 @@ function show_unapproved_posts()
 			$new_pid = $forum_db->insert_id();
 			
 			//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
-			$new_subject = str_replace(' (approved)', '', $row['subject']);
+			$new_subject = str_replace(' (been approving)', '', $row['subject']);
 			
 			//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
 			$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
@@ -375,15 +375,16 @@ function show_unapproved_posts()
 			//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
 			$query_app = array(
 				'UPDATE'	=> 'post_approval_topics',
-				'SET'		=> 'subject='.$new_subject.', first_post_id=0, last_post_id=0',
+				'SET'		=> 'subject=\''.$new_subject.'\', first_post_id=0, last_post_id=0',
 				'WHERE'		=> 'id='.$aptid
 			);
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			
 			// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
 			$query_app = array(
 				'UPDATE'	=> 'topics',
-				'SET'		=> 'subject='.$new_subject,
+				'SET'		=> 'subject=\''.$new_subject.'\'',
 				'WHERE'		=> 'id='.$aptid
 			);
 			
@@ -404,6 +405,11 @@ function show_unapproved_posts()
 			);
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			
+			// If the posting user is logged in update his/her unread indicator
+			$tracked_topics = get_tracked_topics();
+			$tracked_topics['topics'][$aptid] = time();
+			set_tracked_topics($tracked_topics);
 		}
 		else
 		{
@@ -701,7 +707,7 @@ function show_unapproved_posts()
 				$new_pid = $forum_db->insert_id();
 				
 				//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
-				$new_subject = str_replace(' (approved)', '', $row['subject']);
+				$new_subject = str_replace(' (been approving)', '', $row['subject']);
 				
 				//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
 				$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
@@ -744,6 +750,10 @@ function show_unapproved_posts()
 				);
 				
 				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				$tracked_topics = get_tracked_topics();
+				$tracked_topics['topics'][$aptid] = time();
+				set_tracked_topics($tracked_topics);
 			}
 			else
 			{
@@ -975,7 +985,7 @@ function show_unapproved_posts()
 				$new_pid = $forum_db->insert_id();
 				
 				//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
-				$new_subject = str_replace(' (approved)', '', $row['subject']);
+				$new_subject = str_replace(' (been approving)', '', $row['subject']);
 				
 				//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
 				$query_app = 'INSERT INTO topics (id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id) 
@@ -1018,6 +1028,10 @@ function show_unapproved_posts()
 				);
 				
 				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+				
+				$tracked_topics = get_tracked_topics();
+				$tracked_topics['topics'][$aptid] = time();
+				set_tracked_topics($tracked_topics);
 			}
 			else
 			{
@@ -1203,12 +1217,15 @@ function show_unapproved_posts()
 								<?php echo implode("\n\t\t\t\t", $forum_page['item_body']['info'])."\n" ?>
 							</ul>
 						</div>
-					<div class="main-subhead">
-						<h3 class="hn"><span><a href="<?php echo forum_link($post_app_url['Posts section']) ?>"><?php echo $lang_app_post['See posts']?></a></span></h2>
-					</div>
 					<?php
 					
 				}
+				
+				?>
+					<div class="main-subhead">
+						<h3 class="hn"><span><a href="<?php echo forum_link($post_app_url['Posts section']) ?>"><?php echo $lang_app_post['See posts']?></a></span></h2>
+					</div>
+				<?php
 			}
 			else
 			{
