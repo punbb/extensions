@@ -40,6 +40,7 @@
 	<install><![CDATA[
 
 		require FORUM_ROOT.'/extensions/'.$id.'/install_function.php';
+		
 		if (file_exists(FORUM_ROOT.'/extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php'))
 			require FORUM_ROOT.'/extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php';
 		else
@@ -392,6 +393,48 @@
 			}
 
 		]]></hook>
+		
+		<hook id="fn_add_topic_end"><![CDATA[
+			
+			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
+			{
+				global $num_attach, $tid;
+
+				// get id's owner of a current post  
+				$query = array(
+					'SELECT'	=> 'poster_id',
+					'FROM'		=> 'posts',
+					'WHERE'		=> 'id='.$new_pid
+				);
+
+				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+				if ($forum_db->num_rows($result))
+				{
+					$rules = $forum_db->fetch_assoc($result);
+					$owner_id = $rules['poster_id'];
+				}
+
+				for ($i=0; $i < $num_attach; $i++)
+				{
+					if (isset($_POST['attachment_'.$i]))
+					{
+						$tid = $tid ? $tid : $new_tid;
+
+						//To add here the attachment to a post
+						$attach_query = array(
+							'UPDATE'	=> 'attach_files',
+							'SET'		=> 'post_id='.$new_pid.', topic_id='.$tid.', owner_id='.intval($owner_id),
+							'WHERE'		=> 'id='.intval($_POST['attachment_'.$i])
+						);
+
+						$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+					}
+
+				}
+			}
+			
+		]]></hook
 
 		<hook id="po_pre_header_load"><![CDATA[
 
@@ -451,7 +494,10 @@
 
 								if (empty($attach_errors))
 								{
-									$new_pid = 0;
+									$new_pid = $forum_db->insert_id();
+									
+									
+									
 									$attach_id = attach_create_attachment($_FILES['attach_file']['name'], $_FILES['attach_file']['type'], $_FILES['attach_file']['size'], $_FILES['attach_file']['tmp_name'], count_chars($message), time(), $new_pid);
 
 									if (!$attach_id)
