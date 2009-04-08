@@ -369,7 +369,7 @@
 				
 				$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'subject=\''.$forum_db->escape($res_posts['subject'].' (been approving)').'\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
+					'SET'		=> 'subject=\''.$forum_db->escape($res_posts['subject']).' (been approving)\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
 					'WHERE'		=> 'id='.$new_tid
 				);
 				
@@ -395,7 +395,7 @@
 		]]></hook>
 		
 		<hook id="mr_confirm_split_posts_qr_move_posts"><![CDATA[
-			// ÊÎÏÈÐÎÂÀÍÈÅ Â ËÅÂÓÞ
+			
 			$query_app = array(
 				'SELECT'	=> 'subject',
 				'FROM'		=> 'topics',
@@ -413,18 +413,17 @@
 			if ($forum_db->num_rows($res_app))
 			{
 				$n_topic = $forum_db->result($res_app);
-				$n_topic .= ' (been approving)';
 				
 				$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'subject=\''.$forum_db->escape($n_topic).'\'',
+					'SET'		=> 'subject=\''.$forum_db->escape($n_topic).' (been approving)\'',
 					'WHERE'		=> 'id='.$new_tid
 				);
 				
 				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			}
 			
-			// ÓÄÀËÅÍÈÅ Ñ ÏÐÀÂÎÉ
+			
 			$query_app = array(
 				'DELETE'	=> 'topics',
 				'WHERE'		=> 'id='.$new_tid
@@ -432,7 +431,7 @@
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			
-			// ÎÁÍÎÂËÅÍÈÅ ËÅÂÎÉ
+			
 			$query_app = array(
 				'UPDATE'	=> 'post_approval_topics',
 				'SET'		=> 'first_post_id='.$first_post_data['id'],
@@ -441,7 +440,7 @@
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			
-			// ÊÎÏÈÐÎÂÀÍÈÅ ÏÅÐÂÎÃÎ ÏÎÑÒÀ
+			
 			$query_app = 'INSERT INTO post_approval_posts (id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id) 
 				SELECT p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id 
 				FROM posts AS p
@@ -449,10 +448,10 @@
 			
 			$forum_db->query($query_app) or error(__FILE__, __LINE__);
 			
-			// ÓÄÀËßÅÌ ÏÅÐÂÛÉ ÏÎÑÒ Ñ ÏÐÀÂÎÉ ÒÀÁËÈÖÛ
+			
 			$query_app = array(
 				'DELETE'	=> 'posts',
-				'WHERE'		=> 'id='.$first_post_data['id'];
+				'WHERE'		=> 'id='.$first_post_data['id']
 			);
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
