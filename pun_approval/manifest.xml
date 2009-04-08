@@ -723,6 +723,7 @@
 						$tmp_app = $forum_db->fetch_assoc($res_app);
 						$aptid = intval($tmp_app['topic_id']);
 					}
+					
 					array_push($forum_page['crumbs'], array($lang_app_post['Topics'], forum_link($post_app_url['Section'])));
 				}
 				

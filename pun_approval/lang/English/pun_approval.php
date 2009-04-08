@@ -117,5 +117,3 @@ $lang_app_post = array(
 	'Delete posts'			=> 'Delete posts',
 	'bann'					=> 'Bann to user'
 );
-
-?>

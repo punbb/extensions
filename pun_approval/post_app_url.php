@@ -16,5 +16,3 @@ $post_app_url = array(
 	'approval'						=> 'admin/extensions.php?section=approvalpost&app=$1',
 	'Page url'						=> 'admin/extensions.php?section=approvalpost&page=$1'
 );
-
-?>

@@ -1,4 +1,5 @@
 <?php
+
 function app_count_tid($tid)
 {
 	$query_app = array(
@@ -1690,5 +1691,3 @@ function show_unapproved_posts()
 		}
 	}
 }
-
-?>
