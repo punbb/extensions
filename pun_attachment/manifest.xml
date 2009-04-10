@@ -430,11 +430,10 @@
 
 						$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 					}
-
 				}
 			}
 			
-		]]></hook
+		]]></hook>
 
 		<hook id="po_pre_header_load"><![CDATA[
 
@@ -728,6 +727,11 @@
 
 				if (isset($post_content[$cur_post['id']]))
 				{
+					$forum_page['message'][] .= '
+						<fieldset style="border: 2px solid #1F537B; padding: 10px; background-color: #DDE4EB;">
+							<legend><sup style="font-size: 10pt">List of attachments</sup></legend>
+						';
+					
 					foreach ($post_content[$cur_post['id']] as $key => $value)
 					{
 						$attach_img = '0';
@@ -767,13 +771,29 @@
 							$args = array();
 							$args[] = $attach_id;
 							$args[] = $download;
-
+							
 							if ($allowed_down)
-								$forum_page['message'][] .= '<div class="post-signature"><a href="'.forum_link($attach_url['misc_vt_down'], $args).'">'.attach_icon($ext).$name.'</a>, '.$size.', '.$download_counter.'</div><br>';
+							{
+								if (in_array($ext, array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
+								{
+									list ($width, $height, , ) = getimagesize($ext_info['path'].'/attachments/'.$file_path);
+
+									$download = '0';
+
+									if (($height > $forum_config['attach_small_height']) && ($width > $forum_config['attach_small_width']))
+									{
+										$forum_page['message'][] .= '<div class="post-signature"><a href="'.forum_link($attach_url['misc_admin'], $args).'">'.attach_icon($ext).$name.'</a>, '.$size.', '.$download_counter.'</div><br>';
+									}
+								}
+								else
+									$forum_page['message'][] .= '<div class="post-signature"><a href="'.forum_link($attach_url['misc_vt_down'], $args).'">'.attach_icon($ext).$name.'</a>, '.$size.', '.$download_counter.'</div><br>';
+							}
 							else
 								$forum_page['message'][] .= '<div class="post-signature">'.attach_icon($ext).'&nbsp;'.$name.', '.$size.', '.$download_counter.'</div><br>';
 						}
 					}
+					
+					$forum_page['message'][] .= '</fieldset>';
 
 					if (isset($images))
 					{
@@ -1342,7 +1362,7 @@
 						if ($back_to == 'post')
 							$crumbs = array($lang_attach['Post attachments'], forum_link(isset($_GET['topic']) && $_GET['topic'] == 1 ? $forum_url['new_topic'] : $forum_url['new_reply'], $post_id));
 						else
-							$crumbs = array($lang_attach['Edit attachments'], forum_link($forum_url['edit'], $post_id));						
+							$crumbs = array($lang_attach['Edit attachments'], forum_link($forum_url['edit'], $post_id));
 					}
 					else
 						$crumbs = array($lang_attach['Post attachments'], $base_url);
@@ -1362,19 +1382,16 @@
 
 					?>
 					<div class="main-head">
-						<h2 class="hn"><span><?php echo 'Preview image: '.$attach_info['filename']; ?></span></h2>
+						<h2 class="hn"><span><?php echo 'Preview image ' ?></span></h2>
 					</div>
 
 					<div class="main-content main-frm">
+						<div class="content-head">
+							<h2 class="hn"><span><?php echo $attach_info['filename']; ?></span></h2>
+						</div>
 						<fieldset class="frm-group group1">
-							<div class="ct-set set1">
-								<div class="ct-box">
-									<p class="avatar-demo">
-										<span><img src="<?php echo forum_link($attach_url['misc_download'], $attach_item) ?>"></span>
-									</p>
-									<p><?php echo $lang_attach['Download:']; ?> <a href="<?php echo forum_link($attach_url['misc_download'], $attach_item) ?>"><?php echo $attach_info['filename']; ?></a></p>
-								</div>
-							</div>
+							<span><img src="<?php echo forum_link($attach_url['misc_download'], $attach_item) ?>"></span>
+							<p><?php echo $lang_attach['Download:']; ?> <a href="<?php echo forum_link($attach_url['misc_download'], $attach_item) ?>"><?php echo $attach_info['filename']; ?></a></p>
 						</fieldset>
 					</div>
 					<?php
