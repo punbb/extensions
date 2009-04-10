@@ -2,7 +2,7 @@
 /**
  * Default SEF URL scheme.
  *
- * @copyright Copyright (C) 2008 PunBB
+ * @copyright (C) 2008-2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_pm
  */

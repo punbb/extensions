@@ -3,7 +3,7 @@
 /**
  * pun_pm functions: logic, database and output
  *
- * @copyright Copyright (C) 2008 PunBB
+ * @copyright (C) 2008-2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_pm
  */
@@ -352,10 +352,12 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
-	pun_pm_clear_cache($receiver_id); // Clear cached 'New messages' in user table
-	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message sent']);
 
-	return $errors;
+	pun_pm_clear_cache($receiver_id); // Clear cached 'New messages' in the user table
+
+	($hook = get_hook('pun_pm_sent_pre_redirect')) ? eval($hook) : null;
+
+	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message sent']);
 }
 
 function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
@@ -648,7 +650,7 @@ function pun_pm_delete_from_inbox ($ids)
 		'WHERE'		=> 'id in ('.$forum_db->escape(implode(', ', $ids)).') AND receiver_id = '.$forum_user['id'],
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	
+
 	pun_pm_deliver_messages();
 	pun_pm_clear_cache($forum_user['id']);
 }
@@ -695,19 +697,6 @@ function pun_pm_delete_message($ids)
 }
 
 // DESIGN
-/*
-function pun_pm_navigation()
-{
-	global $lang_pun_pm, $forum_url, $forum_user, $pun_pm_page;
-
-	$links = array(
-		'<li'.($pun_pm_page == 'inbox' ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_pm_inbox'], $forum_user['id']).'">'.$lang_pun_pm['Inbox'].'</a></li>',
-		'<li'.($pun_pm_page == 'outbox' ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_pm_outbox'], $forum_user['id']).'">'.$lang_pun_pm['Outbox'].'</a></li>',
-	);
-
-	return '<div><ul>'.implode('', $links).'</ul></div>';
-}
-*/
 function pun_pm_get_page(&$page)
 {
 	global $forum_url, $forum_user, $lang_common;
