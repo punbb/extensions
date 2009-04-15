@@ -238,6 +238,8 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 	else
 		$pun_pm_send_action = 'preview';
 
+	($hook = get_hook('pun_pm_after_send_action_set')) ? eval($hook) : null;
+
 	if ($pun_pm_send_action == 'draft')
 	{
 		// Try to save the message as draft
@@ -267,12 +269,14 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 		pun_pm_delete_from_outbox(array((int) $pun_pm_message_id));
 		redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message deleted']);
 	}
-	else
+	elseif ($pun_pm_send_action == 'preview')
 	{
 		// Preview message
 		$pun_pm_errors = array();
 		$pun_pm_msg_preview = pun_pm_preview($pun_pm_receiver_username, $pun_pm_subject, $pun_pm_body, $pun_pm_errors);
 	}
+
+	($hook = get_hook('pun_pm_new_send_action')) ? eval($hook) : null;
 
 	$pun_pm_page_text = pun_pm_send_form($pun_pm_receiver_username, $pun_pm_subject, $pun_pm_body, $pun_pm_message_id, false, false, $pun_pm_msg_preview);
 
@@ -289,6 +293,8 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 		array($lang_pun_pm['Private messages'], forum_link($forum_url['pun_pm'])),
 		array($lang_pun_pm['Compose message'], forum_link($forum_url['pun_pm_write']))
 	);
+
+	($hook = get_hook('pun_pm_pre_send_output')) ? eval($hook) : null;
 
 	define('FORUM_PAGE', 'pun_pm-write');
 	require FORUM_ROOT.'header.php';
@@ -319,8 +325,9 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 
 	$pun_pm_page = isset($_GET['pmpage']) ? $_GET['pmpage'] : '';
 
+	($hook = get_hook('pun_pm_pre_page_building')) ? eval($hook) : null;
+
 	// pun_pm_get_page() performs everything :)
-	// Remember $pun_pm_page correction inside pun_pm_get_page() if this variable is incorrect
 	$pun_pm_page_text = pun_pm_get_page($pun_pm_page);
 
 	// Setup navigation menu
@@ -341,6 +348,8 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 		$forum_page['crumbs'][] = array($lang_pun_pm['Outbox'], forum_link($forum_url['pun_pm_outbox']));
 	else if ($pun_pm_page == 'write')
 		$forum_page['crumbs'][] = array($lang_pun_pm['Compose message'], forum_link($forum_url['pun_pm_write']));
+
+	($hook = get_hook('pun_pm_pre_page_output')) ? eval($hook) : null;
 
 	define('FORUM_PAGE', 'pun_pm-'.$pun_pm_page);
 	require FORUM_ROOT.'header.php';
@@ -403,6 +412,7 @@ $forum_page['group_count'] = $forum_page['item_count'] = 0;
 						</div>
 					</div>
 				</fieldset>
+<?php ($hook = get_hook('pun_pm_aop_features_pre_pm_settings_fieldset_end')) ? eval($hook) : null; ?>
 			</fieldset>
 <?php
 
@@ -416,6 +426,8 @@ if (!isset($form['pun_pm_show_new_count']) || $form['pun_pm_show_new_count'] != 
 	$form['pun_pm_show_new_count'] = '0';
 if (!isset($form['pun_pm_show_global_link']) || $form['pun_pm_show_global_link'] != '1')
 	$form['pun_pm_show_global_link'] = '0';
+
+($hook = get_hook('pun_pm_aop_features_validation_end')) ? eval($hook) : null;
 
 		]]></hook>
 
@@ -438,7 +450,11 @@ if (!$forum_user['is_guest'] && $forum_config['o_pun_pm_show_new_count'])
 	if (!function_exists('pun_pm_unread_messages'))
 		require $ext_info['path'].'/functions.php';
 
+	($hook = get_hook('pun_pm_hd_visit_elements_pre_change')) ? eval($hook) : null;
+
 	$visit_elements['<!-- forum_visit -->'] = preg_replace('#(<p id="visit-links" class="options">.*?)(</p>)#', '$1 <span><a href="'.forum_link($forum_url['pun_pm_inbox']).'">'.pun_pm_unread_messages().'</a></span>$2', $visit_elements['<!-- forum_visit -->']);
+
+	($hook = get_hook('pun_pm_hd_visit_elements_after_change')) ? eval($hook) : null;
 }
 		]]></hook>
 
@@ -453,16 +469,21 @@ if (!isset($lang_pun_pm))
 	else
 		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 }
+
+($hook = get_hook('pun_pm_pre_post_contacts_add')) ? eval($hook) : null;
+
 // Links 'Send PM' near posts
 if (!$forum_user['is_guest'] && $cur_post['poster_id'] > 1 && $forum_user['id'] != $cur_post['poster_id'])
 	$forum_page['post_contacts']['PM'] = '<a class="contact" title="'.$lang_pun_pm['Send PM'].'" href="'.forum_link($forum_url['pun_pm_post_link'], $cur_post['poster_id']).'">'.$lang_pun_pm['PM'].'</a>';
+
+($hook = get_hook('pun_pm_after_post_contacts_add')) ? eval($hook) : null;
 
 		]]></hook>
 
 		<hook id="fn_generate_navlinks_end"><![CDATA[
 
 // Link 'PM' in the main nav menu
-if (isset($links['profile'])  && $forum_config['o_pun_pm_show_global_link'])
+if (isset($links['profile']) && $forum_config['o_pun_pm_show_global_link'])
 {
 	global $lang_pun_pm;
 
@@ -477,7 +498,11 @@ if (isset($links['profile'])  && $forum_config['o_pun_pm_show_global_link'])
 	if ('pun_pm' == substr(FORUM_PAGE, 0, 6))
 		$links['profile'] = str_replace(' class="isactive"', '', $links['profile']);
 
+	($hook = get_hook('pun_pm_pre_main_navlinks_add')) ? eval($hook) : null;
+
 	$links['profile'] .= "\n\t\t".'<li id="nav_pun_pm"'.('pun_pm' == substr(FORUM_PAGE, 0, 6) ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_pm']).'"><span>'.$lang_pun_pm['Private messages'].'</span></a></li>';
+
+	($hook = get_hook('pun_pm_after_main_navlinks_add')) ? eval($hook) : null;
 }
 
 		]]></hook>
@@ -495,7 +520,11 @@ if (!$forum_user['is_guest'] && $forum_user['id'] != $user['id'])
 			include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 	}
 
+	($hook = get_hook('pun_pm_pre_profile_user_contact_add')) ? eval($hook) : null;
+
 	$forum_page['user_contact']['PM'] = '<li><span>'.$lang_pun_pm['PM'].': <a href="'.forum_link($forum_url['pun_pm_post_link'], $id).'">'.$lang_pun_pm['Send PM'].'</a></span></li>';
+
+	($hook = get_hook('pun_pm_after_profile_user_contact_add')) ? eval($hook) : null;
 }
 		]]></hook>
 
@@ -516,6 +545,8 @@ $forum_rewrite_rules['/^pun_pm(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm';
 $forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1';
 $forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)[\/_-]?(p|page\/)([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1&p=$3';
 $forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1&message_id=$2';
+
+($hook = get_hook('pun_pm_after_rewrite_rules_set')) ? eval($hook) : null;
 
 		]]></hook>
 

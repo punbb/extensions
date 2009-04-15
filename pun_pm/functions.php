@@ -19,6 +19,7 @@ function pun_pm_new_messages_text($s)
 	return $s;
 }
 
+// Erases user's ($id) cache
 function pun_pm_clear_cache($id)
 {
 	global $forum_db, $forum_user;
@@ -29,12 +30,15 @@ function pun_pm_clear_cache($id)
 		'WHERE'		=> 'id = '.$id,
 	);
 
+	($hook = get_hook('pun_pm_fn_clear_cache_pre_query')) ? eval($hook) : null;
+
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	if ($forum_user['id'] == $id)
 		unset($forum_user['pun_pm_new_messages']);
 }
 
+// Returns the number of unread messages ($count) and the inbox full flag ($flag) for the current user
 function pun_pm_read_cache()
 {
 	global $forum_user;
@@ -50,6 +54,7 @@ function pun_pm_read_cache()
 	return array($count, false);
 }
 
+// Writes the number of unread messages ($count) and the inbox full flag ($flag) to the user's ($id) cache
 function pun_pm_write_cache($id, $count, $flag)
 {
 	global $forum_db;
@@ -63,20 +68,22 @@ function pun_pm_write_cache($id, $count, $flag)
 		'WHERE'		=> 'id = '.$id,
 	);
 
+	($hook = get_hook('pun_pm_fn_write_cache_pre_query')) ? eval($hook) : null;
+
 	// Error handling was commented since some bugs appear while upgrading from earlier versions (when there was no cache)
 	$forum_db->query_build($query);// or error(__FILE__, __LINE__);
 }
 
 // Bad global variable :(
 // But it allows to avoid a DB query :)
-$pun_pm_inbox_full = false;
+$pun_pm_my_inbox_full = false;
 
 function pun_pm_deliver_messages()
 {
 	if (defined('PUN_PM_DELIVERED_MESSAGES'))
 		return;
 
-	global $forum_db, $forum_user, $forum_config, $lang_pun_pm, $pun_pm_inbox_full, $pun_pm_inbox_count;
+	global $forum_db, $forum_user, $forum_config, $lang_pun_pm, $pun_pm_my_inbox_full, $pun_pm_my_inbox_count;
 
 	if ($forum_config['o_pun_pm_inbox_size'] == 0)
 	{
@@ -87,6 +94,8 @@ function pun_pm_deliver_messages()
 			'SET'		=> 'status = \'delivered\'',
 			'WHERE'		=> 'receiver_id = '.$forum_user['id'].' AND status = \'sent\'',
 		);
+
+		($hook = get_hook('pun_pm_fn_deliver_messages_unlimited_pre_query')) ? eval($hook) : null;
 
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
@@ -106,6 +115,8 @@ function pun_pm_deliver_messages()
 				'LIMIT'		=> (string)($forum_config['o_pun_pm_inbox_size'] - $inbox_count),
 			);
 
+			($hook = get_hook('pun_pm_fn_deliver_messages_limited_pre_fetch_ids_query')) ? eval($hook) : null;
+
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 			// We have to deliver some messages
@@ -123,46 +134,64 @@ function pun_pm_deliver_messages()
 					'WHERE'		=> 'id IN ('.substr($ids, 0, -2).')',
 				);
 
+				($hook = get_hook('pun_pm_fn_deliver_messages_limited_pre_deliver_query')) ? eval($hook) : null;
+
 				$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 				// Clear cached inbox count
-				$pun_pm_inbox_count = false;
+				$pun_pm_my_inbox_count = false;
 			}
 		}
 		else
-			$pun_pm_inbox_full = true;
+			$pun_pm_my_inbox_full = true;
 	}
+
 	define('PUN_PM_DELIVERED_MESSAGES', 1);
+
+	($hook = get_hook('pun_pm_fn_deliver_messages_end')) ? eval($hook) : null;
 }
 
+// Returns text for 'New messages' link
 function pun_pm_unread_messages()
 {
-	global $forum_db, $forum_user, $forum_config, $lang_pun_pm, $pun_pm_inbox_full;
+	global $forum_db, $forum_user, $forum_config, $lang_pun_pm, $pun_pm_my_inbox_full;
 
-	list($new_messages, $pun_pm_inbox_full) = pun_pm_read_cache();
+	list($new_messages, $pun_pm_my_inbox_full) = pun_pm_read_cache();
+
+	($hook = get_hook('pun_pm_fn_unread_messages_after_read_cache')) ? eval($hook) : null;
 
 	if ($new_messages === false)
 	{
+		($hook = get_hook('pun_pm_fn_unread_messages_pre_deliver_messages')) ? eval($hook) : null;
+
 		pun_pm_deliver_messages();
 
-		//How much delivered messages do we have?
+		//How many delivered messages do we have?
 		$query = array(
 			'SELECT'	=> 'count(id)',
 			'FROM'		=> 'pun_pm_messages',
 			'WHERE'		=> 'receiver_id = '.$forum_user['id'].' AND status = \'delivered\' AND deleted_by_receiver = 0'
 		);
 
+		($hook = get_hook('pun_pm_fn_unread_messages_pre_query')) ? eval($hook) : null;
+
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 		list($new_messages) = $forum_db->fetch_row($result);
 
-		pun_pm_write_cache($forum_user['id'], $new_messages, $pun_pm_inbox_full);
+		($hook = get_hook('pun_pm_fn_unread_messages_pre_write_cache')) ? eval($hook) : null;
+
+		pun_pm_write_cache($forum_user['id'], $new_messages, $pun_pm_my_inbox_full);
 	}
 
-	return $new_messages ? sprintf($lang_pun_pm['New link active'], $new_messages) : (!$pun_pm_inbox_full ? $lang_pun_pm['New link'] : $lang_pun_pm['New link full']);
+	$return = $new_messages ? sprintf($lang_pun_pm['New link active'], $new_messages) : (!$pun_pm_my_inbox_full ? $lang_pun_pm['New link'] : $lang_pun_pm['New link full']);
+
+	($hook = get_hook('pun_pm_fn_unread_messages_end')) ? eval($hook) : null;
+
+	return $return;
 }
 
-// Get user id
+// Returns 'NULL' for an empty username or errors for an incorrect username
 function pun_pm_get_receiver_id($username, &$errors)
 {
 	global $lang_pun_pm, $forum_db, $forum_user;
@@ -177,6 +206,8 @@ function pun_pm_get_receiver_id($username, &$errors)
 			'WHERE'		=> 'username=\''.$forum_db->escape($username).'\''
 		);
 
+		($hook = get_hook('pun_pm_fn_get_receiver_id_pre_query')) ? eval($hook) : null;
+
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 		if ($forum_db->num_rows($result))
@@ -187,6 +218,8 @@ function pun_pm_get_receiver_id($username, &$errors)
 		if ($forum_user['id'] == $receiver_id)
 			$errors[] = $lang_pun_pm['Message to yourself'];
 	}
+
+	($hook = get_hook('pun_pm_fn_get_receiver_id_end')) ? eval($hook) : null;
 
 	return $receiver_id;
 }
@@ -201,6 +234,8 @@ function pun_pm_get_username($id)
 		'WHERE'		=> 'id='.intval($id),
 	);
 
+	($hook = get_hook('pun_pm_fn_get_username_pre_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	if ($forum_db->num_rows($result))
@@ -208,17 +243,19 @@ function pun_pm_get_username($id)
 	else
 		$username = '';
 
+	($hook = get_hook('pun_pm_fn_get_username_end')) ? eval($hook) : null;
+
 	return $username;
 }
 
-$pun_pm_inbox_count = false;
+$pun_pm_my_inbox_count = false;
 
 function pun_pm_inbox_count($userid)
 {
-	global $forum_db, $pun_pm_inbox_count;
+	global $forum_db, $forum_user, $pun_pm_my_inbox_count;
 
-	if ($pun_pm_inbox_count !== false)
-		return $pun_pm_inbox_count;
+	if ($forum_user['id'] == $userid && $pun_pm_my_inbox_count !== false)
+		return $pun_pm_my_inbox_count;
 
 	$query = array(
 		'SELECT'	=> 'count(id)',
@@ -226,11 +263,18 @@ function pun_pm_inbox_count($userid)
 		'WHERE'		=> 'receiver_id = '.$forum_db->escape($userid).' AND (status = \'read\' OR status = \'delivered\') AND deleted_by_receiver = 0'
 	);
 
+	($hook = get_hook('pun_pm_fn_inbox_count_pre_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	list($pun_pm_inbox_count) = $forum_db->fetch_row($result);
+	list($count) = $forum_db->fetch_row($result);
 
-	return $pun_pm_inbox_count;
+	if ($forum_user['id'] == $userid)
+		$pun_pm_my_inbox_count = $count;
+
+	($hook = get_hook('pun_pm_fn_inbox_count_end')) ? eval($hook) : null;
+
+	return $count;
 }
 
 function pun_pm_outbox_count($userid)
@@ -243,9 +287,13 @@ function pun_pm_outbox_count($userid)
 		'WHERE'		=> 'sender_id = '.$forum_db->escape($userid).' AND deleted_by_sender = 0'
 	);
 
+	($hook = get_hook('pun_pm_fn_outbox_count_pre_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	list($count) = $forum_db->fetch_row($result);
+
+	($hook = get_hook('pun_pm_fn_outbox_count_end')) ? eval($hook) : null;
 
 	return $count;
 }
@@ -309,6 +357,8 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 		$body = preparse_bbcode($body, $errors);
 	}
 
+	($hook = get_hook('pun_pm_fn_send_message_pre_errors_check')) ? eval($hook) : null;
+
 	if (count($errors))
 		return $errors;
 
@@ -322,6 +372,8 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 			'SET'			=> 'status = \'sent\', receiver_id = '.$receiver_id.', lastedited_at = '.$now.', subject = \''.$forum_db->escape($subject).'\', body=\''.$forum_db->escape($body).'\'',
 			'WHERE'			=> 'id = '.$forum_db->escape($message_id).' AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\')'
 		);
+
+		($hook = get_hook('pun_pm_fn_send_message_pre_draft_send_query')) ? eval($hook) : null;
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
@@ -350,12 +402,14 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 			'VALUES'		=> $forum_user['id'].', '.$receiver_id.', \'sent\', '.$now.', 0, \''.$forum_db->escape($subject).'\', \''.$forum_db->escape($body).'\''
 		);
 
+		($hook = get_hook('pun_pm_fn_send_message_pre_new_send_query')) ? eval($hook) : null;
+
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
 
 	pun_pm_clear_cache($receiver_id); // Clear cached 'New messages' in the user table
 
-	($hook = get_hook('pun_pm_sent_pre_redirect')) ? eval($hook) : null;
+	($hook = get_hook('pun_pm_fn_send_message_pre_redirect')) ? eval($hook) : null;
 
 	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message sent']);
 }
@@ -391,6 +445,8 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 	if ($body == '' && $subject == '' && $receiver_username == '')
 		$errors[] = $lang_pun_pm['Empty all fields'];
 
+	($hook = get_hook('pun_pm_fn_save_message_pre_errors_check')) ? eval($hook) : null;
+
 	if (count($errors))
 		return $errors;
 
@@ -405,6 +461,8 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 			'SET'			=> 'status = \'draft\', receiver_id = '.$receiver_id.', lastedited_at = '.$now.', subject = \''.$forum_db->escape($subject).'\', body=\''.$forum_db->escape($body).'\'',
 			'WHERE'			=> 'id = '.$forum_db->escape($message_id).' AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\')'
 		);
+
+		($hook = get_hook('pun_pm_fn_save_message_pre_edit_query')) ? eval($hook) : null;
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
@@ -433,11 +491,79 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 			'VALUES'		=> $forum_user['id'].', '.$receiver_id.', '.$now.', 0, \'draft\', \''.$forum_db->escape($subject).'\', \''.$forum_db->escape($body).'\''
 		);
 
+		($hook = get_hook('pun_pm_fn_save_message_pre_new_save_query')) ? eval($hook) : null;
+
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
-	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message saved']);
 
-	return $errors;
+	($hook = get_hook('pun_pm_fn_save_message_pre_redirect')) ? eval($hook) : null;
+
+	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message saved']);
+}
+
+function pun_pm_edit_message()
+{
+	global $forum_db, $forum_user, $lang_pun_pm;
+
+	$errors = array();
+
+	// Verify input data
+	$query = array(
+		'SELECT'	=> 'm.id as id, m.sender_id as sender_id, m.status as status, u.username as username, m.subject as subject, m.body as body',
+		'FROM'		=> 'pun_pm_messages m',
+		'JOINS'		=> array(
+			array(
+				'LEFT JOIN'		=> 'users AS u',
+				'ON'			=> '(u.id = m.receiver_id)'
+			),
+		),
+		'WHERE'		=> 'm.id = '.$forum_db->escape($_GET['message_id']).' AND m.sender_id = '.$forum_user['id'].' AND m.deleted_by_sender = 0'
+	);
+
+	($hook = get_hook('pun_pm_fn_edit_message_pre_validate_query')) ? eval($hook) : null;
+
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	if ($forum_db->num_rows($result) != 0)
+	{
+		$row = $forum_db->fetch_assoc($result);
+		if ($row['status'] == 'sent')
+		{
+			$now = time();
+
+			// Change status to 'draft'
+			$query = array(
+				'UPDATE'		=> 'pun_pm_messages',
+				'SET'			=> 'status = \'draft\', lastedited_at = '.$now,
+				'WHERE'			=> 'id = '.$forum_db->escape($_GET['message_id']).' AND (status = \'draft\' OR status = \'sent\')'
+			);
+
+			($hook = get_hook('pun_pm_fn_edit_message_pre_status_change_query')) ? eval($hook) : null;
+
+			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+			// An error occured
+			if ($forum_db->affected_rows() == 0)
+				$errors[] = $lang_pun_pm['Delivered message'];
+		}
+		elseif ($row['status'] != 'draft')
+			$errors[] = $lang_pun_pm['Delivered message'];
+	}
+	else
+		$errors[] = $lang_pun_pm['Non-existent message'];
+
+	($hook = get_hook('pun_pm_fn_edit_message_pre_errors_check')) ? eval($hook) : null;
+
+	// An error occured. Go displaying error message
+	if (count($errors))
+		return pun_pm_edit_message_errors($errors);
+
+	$notice = $row['status'] == 'sent' ? "\t\t\t".'<div class="ct-box info-box">'."\n\t\t\t\t".'<p class="important">'.$lang_pun_pm['Sent -> draft'].'</p>'."\n\t\t\t".'</div>'."\n" : false;
+	$preview = $row['status'] == 'draft' ? pun_pm_preview($row['username'], $row['subject'], $row['body'], $errors) : false;
+
+	($hook = get_hook('pun_pm_fn_edit_message_end')) ? eval($hook) : null;
+
+	return pun_pm_send_form($row['username'], $row['subject'], $row['body'], $row['id'], false, $notice, $preview);
 }
 
 function pun_pm_preview($receiver, $subject, $body, &$errors)
@@ -460,6 +586,8 @@ function pun_pm_preview($receiver, $subject, $body, &$errors)
 		$body = preparse_bbcode($body, $errors);
 	}
 
+	($hook = get_hook('pun_pm_fn_preview_pre_errors_check')) ? eval($hook) : null;
+
 	if (count($errors))
 		return false;
 
@@ -469,6 +597,8 @@ function pun_pm_preview($receiver, $subject, $body, &$errors)
 	$message['subject'] = $subject;
 	$message['status'] = 'draft';
 	$message['sent_at'] = time();
+
+	($hook = get_hook('pun_pm_fn_preview_end')) ? eval($hook) : null;
 
 	return pun_pm_message($message, 'inbox');
 }
@@ -521,6 +651,8 @@ function pun_pm_inbox()
 		'LIMIT'		=> $page['start_from'].', '.$forum_user['disp_topics']
 	);
 
+	($hook = get_hook('pun_pm_fn_inbox_pre_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$messages = array();
@@ -528,6 +660,8 @@ function pun_pm_inbox()
 		$messages[] = $row;
 
 	$page['list'] = $messages;
+
+	($hook = get_hook('pun_pm_fn_inbox_end')) ? eval($hook) : null;
 
 	return pun_pm_box($page);
 }
@@ -566,6 +700,8 @@ function pun_pm_outbox()
 		'LIMIT'		=> $page['start_from'].', '.$forum_user['disp_topics']
 	);
 
+	($hook = get_hook('pun_pm_fn_outbox_pre_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$messages = array();
@@ -573,6 +709,8 @@ function pun_pm_outbox()
 		$messages[] = $row;
 
 	$page['list'] = $messages;
+
+	($hook = get_hook('pun_pm_fn_outbox_end')) ? eval($hook) : null;
 
 	return pun_pm_box($page);
 }
@@ -605,6 +743,8 @@ function pun_pm_get_message($id, $type)
 		'WHERE'		=> 'm.id='.$forum_db->escape($id).' AND '.$condition,
 	);
 
+	($hook = get_hook('pun_pm_fn_get_message_pre_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	if ($forum_db->num_rows($result) != 1)
@@ -622,10 +762,15 @@ function pun_pm_get_message($id, $type)
 			'SET'		=> 'status = \'read\', read_at = '.$now,
 			'WHERE'		=> 'id='.$id,
 		);
+
+		($hook = get_hook('pun_pm_fn_get_message_pre_update_status_query')) ? eval($hook) : null;
+
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 		pun_pm_clear_cache($message['receiver_id']);
 	}
+
+	($hook = get_hook('pun_pm_fn_get_message_end')) ? eval($hook) : null;
 
 	return $message;
 }
@@ -642,6 +787,9 @@ function pun_pm_delete_from_inbox ($ids)
 		'DELETE'	=> 'pun_pm_messages',
 		'WHERE'		=> 'id in ('.$forum_db->escape(implode(', ', $ids)).') AND receiver_id = '.$forum_user['id'].' AND deleted_by_sender = 1',
 	);
+
+	($hook = get_hook('pun_pm_fn_delete_from_inbox_delete_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$query = array(
@@ -649,6 +797,9 @@ function pun_pm_delete_from_inbox ($ids)
 		'SET'		=> 'deleted_by_receiver = 1',
 		'WHERE'		=> 'id in ('.$forum_db->escape(implode(', ', $ids)).') AND receiver_id = '.$forum_user['id'],
 	);
+
+	($hook = get_hook('pun_pm_fn_delete_from_inbox_mark_deleted_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	pun_pm_deliver_messages();
@@ -668,6 +819,8 @@ function pun_pm_delete_from_outbox ($ids)
 		'WHERE'		=> 'id in ('.implode(', ', $ids).') AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\' OR deleted_by_receiver = 1)',
 	);
 
+	($hook = get_hook('pun_pm_fn_delete_from_outbox_delete_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$query = array(
@@ -675,6 +828,9 @@ function pun_pm_delete_from_outbox ($ids)
 		'SET'		=> 'deleted_by_sender = 1',
 		'WHERE'		=> 'id in ('.implode(', ', $ids).') AND sender_id = '.$forum_user['id'],
 	);
+
+	($hook = get_hook('pun_pm_fn_delete_from_outbox_mark_deleted_query')) ? eval($hook) : null;
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
@@ -685,11 +841,17 @@ function pun_pm_delete_message($ids)
 	if (isset($_POST['pm_delete_inbox']))
 	{
 		pun_pm_delete_from_inbox($ids);
+
+		($hook = get_hook('pun_pm_fn_delete_message_inbox_pre_redirect')) ? eval($hook) : null;
+
 		redirect(forum_link($forum_url['pun_pm_inbox']), $lang_pun_pm['Message deleted']);
 	}
 	elseif (isset($_POST['pm_delete_outbox']))
 	{
 		pun_pm_delete_from_outbox($ids);
+
+		($hook = get_hook('pun_pm_fn_delete_message_outbox_pre_redirect')) ? eval($hook) : null;
+
 		redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message deleted']);
 	}
 
@@ -697,9 +859,14 @@ function pun_pm_delete_message($ids)
 }
 
 // DESIGN
+
 function pun_pm_get_page(&$page)
 {
 	global $forum_url, $forum_user, $lang_common;
+
+	$return = ($hook = get_hook('pun_pm_fn_get_page_new_page')) ? eval($hook) : null;
+	if ($return != null)
+		return $return;
 
 	if ($page == 'write')
 	{
@@ -776,6 +943,8 @@ function pun_pm_box($forum_page)
 
 	$forum_page['hidden_fields']['csrf_token'] = '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />';
 
+	($hook = get_hook('pun_pm_fn_box_pre_output')) ? eval($hook) : null;
+
 	ob_start();
 
 ?>
@@ -803,9 +972,9 @@ function pun_pm_box($forum_page)
 	if (!count($forum_page['list']))
 	{
 ?>
-		<div class="ct-box info-box">
-			<p class="important"><?php echo $lang_pun_pm['Empty box']?></p>
-		</div>
+			<div class="ct-box info-box">
+				<p class="important"><?php echo $lang_pun_pm['Empty box']?></p>
+			</div>
 <?php
 	}
 ?>
@@ -826,6 +995,9 @@ function pun_pm_box($forum_page)
 				'<span><a href="'.$message_link.'">'.trim($message['subject'] ? forum_htmlencode($message['subject']) : $lang_pun_pm['Empty']).'</a>'.($forum_user['pun_pm_long_subject'] == '1' ? ' <a class="mess" href="'.$message_link.'">'.preg_replace('#((?:\S*\s*){20})(?:.*)$#su', '$1', $message['body']).'</a>' : '').'</span>',
 				format_time($message['sent_at']),
 			);
+
+			($hook = get_hook('pun_pm_fn_box_pre_row_output')) ? eval($hook) : null;
+
 			echo "\t\t\t\t\t", '<tr', $forum_page['type'] == 'inbox' && $message['status'] == 'delivered' ? ' class="pm_new"': '', '>', "\n";
 			$col_count = 0;
 			foreach ($message_info as $value)
@@ -917,6 +1089,8 @@ function pun_pm_message($message, $type)
 	if (!defined('FORUM_PARSER_LOADED'))
 		require FORUM_ROOT.'include/parser.php';
 
+	($hook = get_hook('pun_pm_fn_message_pre_output')) ? eval($hook) : null;
+
 	ob_start();
 
 ?>
@@ -973,6 +1147,7 @@ function pun_pm_message($message, $type)
 							<td class="td1"><?php echo $lang_pun_pm['Subject'] ?></td>
 							<td><?php echo $message['subject'] ? forum_htmlencode($message['subject']) : $lang_pun_pm['Empty'] ?></td>
 						</tr>
+<?php ($hook = get_hook('pun_pm_fn_message_pre_info_end')) ? eval($hook) : null; ?>
 					</tbody>
 				</table>
 			</div>
@@ -1018,61 +1193,17 @@ function pun_pm_message($message, $type)
 	return $result;
 }
 
-function pun_pm_edit_message()
+function pun_pm_edit_message_errors($errors)
 {
-	global $forum_db, $forum_user, $lang_pun_pm;
+	global $lang_pun_pm;
 
-	$errors = array();
+	$forum_page['errors'] = array();
+	foreach ($errors as $cur_error)
+		$forum_page['errors'][] = '<li class="warn"><span>'.$cur_error.'</span></li>';
 
-	// Verify input data
-	$query = array(
-		'SELECT'	=> 'm.id as id, m.sender_id as sender_id, m.status as status, u.username as username, m.subject as subject, m.body as body',
-		'FROM'		=> 'pun_pm_messages m',
-		'JOINS'		=> array(
-			array(
-				'LEFT JOIN'		=> 'users AS u',
-				'ON'			=> '(u.id = m.receiver_id)'
-			),
-		),
-		'WHERE'		=> 'm.id = '.$forum_db->escape($_GET['message_id']).' AND m.sender_id = '.$forum_user['id'].' AND m.deleted_by_sender = 0'
-	);
+	($hook = get_hook('pun_pm_fn_edit_message_errors_pre_output')) ? eval($hook) : null;
 
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-	if ($forum_db->num_rows($result) != 0)
-	{
-		$row = $forum_db->fetch_assoc($result);
-		if ($row['status'] == 'sent')
-		{
-			$now = time();
-
-			// Change status to 'draft'
-			$query = array(
-				'UPDATE'		=> 'pun_pm_messages',
-				'SET'			=> 'status = \'draft\', lastedited_at = '.$now,
-				'WHERE'			=> 'id = '.$forum_db->escape($_GET['message_id']).' AND (status = \'draft\' OR status = \'sent\')'
-			);
-
-			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-			// An error occured
-			if ($forum_db->affected_rows() == 0)
-				$errors[] = $lang_pun_pm['Delivered message'];
-		}
-		elseif ($row['status'] != 'draft')
-			$errors[] = $lang_pun_pm['Delivered message'];
-	}
-	else
-		$errors[] = $lang_pun_pm['Non-existent message'];
-
-	// An error occured. Go displaying error message
-	if (count($errors))
-	{
-		$forum_page['errors'] = array();
-		foreach ($errors as $cur_error)
-			$forum_page['errors'][] = '<li class="warn"><span>'.$cur_error.'</span></li>';
-
-		ob_start();
+	ob_start();
 
 ?>
 	<div class="main-content main-frm">
@@ -1084,16 +1215,13 @@ function pun_pm_edit_message()
 		</div>
 	</div>
 <?php
-		$output = ob_get_contents();
-		ob_end_clean();
 
-		return $output;
-	}
+	$output = ob_get_contents();
+	ob_end_clean();
 
-	$notice = $row['status'] == 'sent' ? "\t\t\t".'<div class="ct-box info-box">'."\n\t\t\t\t".'<p class="important">'.$lang_pun_pm['Sent -> draft'].'</p>'."\n\t\t\t".'</div>'."\n" : false;
-	$preview = $row['status'] == 'draft' ? pun_pm_preview($row['username'], $row['subject'], $row['body'], $errors) : false;
+	($hook = get_hook('pun_pm_fn_edit_message_errors_pre_end')) ? eval($hook) : null;
 
-	return pun_pm_send_form($row['username'], $row['subject'], $row['body'], $row['id'], false, $notice, $preview);
+	return $output;
 }
 
 function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id = false, $reply_form = false, $notice = false, $preview = false)
@@ -1135,6 +1263,8 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 		$forum_page['text_options']['img'] = '<span'.(empty($forum_page['text_options']) ? ' class="first-item"' : '').'><a class="exthelp" href="'.forum_link($forum_url['help'], 'img').'" title="'.sprintf($lang_common['Help page'], $lang_common['Images']).'">'.$lang_common['Images'].'</a></span>';
 	if ($forum_config['o_smilies'] == '1')
 		$forum_page['text_options']['smilies'] = '<span'.(empty($forum_page['text_options']) ? ' class="first-item"' : '').'><a class="exthelp" href="'.forum_link($forum_url['help'], 'smilies').'" title="'.sprintf($lang_common['Help page'], $lang_common['Smilies']).'">'.$lang_common['Smilies'].'</a></span>';
+
+	($hook = get_hook('pun_pm_fn_send_form_pre_output')) ? eval($hook) : null;
 
 	ob_start();
 
@@ -1182,7 +1312,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['To'].' <em>'.$lang_common['Required'].'</em>' ?></span> <small><?php echo $lang_pun_pm['Receiver\'s username']; ?></small></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="80" maxlength="255" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="70" maxlength="255" /></span>
 					</div>
 				</div>
 <?php
@@ -1191,15 +1321,17 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['Subject'] ?></span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_subject" value="<?php echo $subject; ?>" size="80" maxlength="255" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_subject" value="<?php echo $subject; ?>" size="70" maxlength="255" /></span>
 					</div>
 				</div>
+<?php ($hook = get_hook('pun_pm_fn_send_form_pre_textarea_output')) ? eval($hook) : null; ?>
 				<div class="txt-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="txt-box textarea required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['Message'].' <em>'.$lang_common['Required'].'</em>' ?></span></label>
 						<div class="txt-input"><span class="fld-input"><textarea id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_body" rows="14" cols="95"><?php echo $body; ?></textarea></span></div>
 					</div>
 				</div>
+<?php ($hook = get_hook('pun_pm_fn_send_form_pre_fieldset_end')) ? eval($hook) : null; ?>
 			</fieldset>
 			<div class="frm-buttons">
 <?php
@@ -1209,6 +1341,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div style="float: right;"><input type="submit" name="pm_delete" value="<?php echo $lang_pun_pm['Delete draft'] ?>" onclick="return confirm('<?php echo $lang_pun_pm['Confirm delete draft'] ?>');" /></div>
 <?php
 	}
+	($hook = get_hook('pun_pm_fn_send_form_pre_buttons_output')) ? eval($hook) : null;
 ?>
 				<span class="submit"><input type="submit" name="pm_send" value="<?php echo $lang_pun_pm['Send button'] ?>" /></span>
 				<span class="submit"><input type="submit" name="pm_preview" value="<?php echo $lang_pun_pm['Preview'] ?>" style="padding-left: 2em; padding-right: 2em;"/></span>
@@ -1220,6 +1353,8 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 
 	$result = ob_get_contents();
 	ob_end_clean();
+
+	($hook = get_hook('pun_pm_fn_send_form_pre_end')) ? eval($hook) : null;
 
 	return $result;
 }
