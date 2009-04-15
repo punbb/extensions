@@ -328,6 +328,7 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 	($hook = get_hook('pun_pm_pre_page_building')) ? eval($hook) : null;
 
 	// pun_pm_get_page() performs everything :)
+	// Remember $pun_pm_page correction inside pun_pm_get_page() if this variable is incorrect
 	$pun_pm_page_text = pun_pm_get_page($pun_pm_page);
 
 	// Setup navigation menu
