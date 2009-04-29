@@ -233,7 +233,7 @@
 					<div class="mf-item">
 						<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="owner_delete" value="1"<?php if ($group['g_pun_attachment_allow_delete_own'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Owner delete'] ?></label>
-					</div>															
+					</div>
 				</div>
 			</fieldset>
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -353,7 +353,9 @@
 		]]></hook>
 
 		<hook id="fn_add_post_end"><![CDATA[
-
+			
+			global $forum_user;
+			
 			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
 			{
 				global $num_attach, $tid;
@@ -395,6 +397,8 @@
 		]]></hook>
 		
 		<hook id="fn_add_topic_end"><![CDATA[
+			
+			global $forum_user;
 			
 			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
 			{
@@ -598,7 +602,7 @@
 							$delete_button = '<input type="submit" name="delete_'.$cur_attach_id.'" value="'.$lang_attach['Delete'].'"/>';
 							$attach_hidden_value = '<input type="hidden" name="attachment_'.$i.'" value="'.$cur_attach_id.'" />';
 
-?>
+							?>
 								<div class="<?php echo $show_image ? 'ct-set' : 'sf-set'; ?> set<?php echo ++$forum_page['item_count'] ?>">
 									<div class="<?php echo $show_image ? 'ct' : 'sf'; ?>-box text">
 										<?php
@@ -642,7 +646,7 @@
 				if ($attach_allowed && (($rules['g_pun_attachment_files_per_post'] > $num_attach) || ($forum_user['is_admmod'] == '1')))
 				{
 
-	?>
+				?>
 					<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 						<div class="sf-box text">
 							<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Attachment'] ?></span></label><br />
@@ -654,26 +658,40 @@
 						</div>
 					</div>
 
-	<?php
+				<?php
 
 				}
 			}
 
-	?>
+			?>
 								<div class="hidden">
 									<input type="hidden" name="num_attach" value="<?php echo (isset($num_attach) ? intval($num_attach) : '0') ?>" />
 									<input type="hidden" name="preview_push" value="<?php echo (isset($_POST['preview']) ? '1' : '0') ?>" />
 								</div>
 
-	<?php
-
-
+			<?php
+			
 		]]></hook>
-
+		
+		<hook id="hd_head"><![CDATA[
+			
+			if (file_exists($ext_info['path'].'/attach_style.css'))
+			{
+				ob_start();
+				
+				$forum_head['attach_style'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.forum_link('extensions/pun_attachment/attach_style.css').'" />';
+				
+				ob_end_clean();
+			}
+			
+		]]></hook>
+		
 		<hook id="vt_start"><![CDATA[
 
 			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
+			{
 				require $ext_info['path'].'/include/attach_incl.php';
+			}
 
 
 		]]></hook>
@@ -727,9 +745,9 @@
 
 				if (isset($post_content[$cur_post['id']]))
 				{
+					
 					$forum_page['message'][] .= '
-						<fieldset style="border: 2px solid #1F537B; padding: 10px; background-color: #DDE4EB;">
-							<legend><sup style="font-size: 10pt">List of attachments</sup></legend>
+						<fieldset class="brd attachments">
 						';
 					
 					foreach ($post_content[$cur_post['id']] as $key => $value)
@@ -747,7 +765,7 @@
 						$download = 1;
 						$show = 0;
 
-						if (in_array($ext, array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
+						if (in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
 						{
 							list ($width, $height, , ) = getimagesize($ext_info['path'].'/attachments/'.$file_path);
 
@@ -774,7 +792,7 @@
 							
 							if ($allowed_down)
 							{
-								if (in_array($ext, array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
+								if (in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
 								{
 									list ($width, $height, , ) = getimagesize($ext_info['path'].'/attachments/'.$file_path);
 
@@ -792,13 +810,13 @@
 								$forum_page['message'][] .= '<div class="post-signature">'.attach_icon($ext).'&nbsp;'.$name.', '.$size.', '.$download_counter.'</div><br>';
 						}
 					}
-					
-					$forum_page['message'][] .= '</fieldset>';
 
 					if (isset($images))
 					{
 						$forum_page['message'][].= implode(' ', $images);
 					}
+					
+					$forum_page['message'][] .= '</fieldset>';
 				}
 			}
 
@@ -847,9 +865,9 @@
 
 				if (isset($attach_del))
 				{
-					for ($k=$attach_del; $k < $num_attach; $k++)
+					for ($k = $attach_del; $k < $num_attach; $k++)
 					{
-						@$attachments[$k] = $attachments[$k+1];
+						@$attachments[$k] = $attachments[$k + 1];
 					}
 				}
 			}
@@ -974,7 +992,7 @@
 					if (($rules['g_pun_attachment_allow_delete_own'] == '1') || ($rules['g_pun_attachment_allow_delete']))
 						$allowed_delete = true;
 					else
-						$allowed_delete = false;	
+						$allowed_delete = false;
 				}
 
 				if (isset($_POST['add_file']) || isset($attach_del))
@@ -1325,7 +1343,7 @@
 
 				$attach_allow_download = false;
 
-				if (($forum_config['attach_disable_attach'] == '0') && ($forum_user['is_admmod'] != '1'))
+				if (($forum_config['attach_disable_attach'] != '1') && ($forum_user['is_admmod'] != '1'))
 				{
 					$query = array(
 						'SELECT'	=> 'g.g_pun_attachment_allow_download, g.g_pun_attachment_allow_upload, g.g_pun_attachment_allow_delete, g.g_pun_attachment_allow_delete_own',

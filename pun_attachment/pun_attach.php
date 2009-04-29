@@ -101,7 +101,7 @@
 					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Max width'] ?></span></label><br />
 					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[small_width]" size="5" maxlength="5" value="<?php echo htmlspecialchars($forum_config['attach_small_width']); ?>" /></span>
 				</div>
-			</div>			
+			</div>
 		</fieldset>
 		<div class="content-head">
 			<h2 class="hn"><span><?php echo $lang_attach['Manage icons'] ?></span></h2>
@@ -155,14 +155,14 @@
 				{
 
 ?>
-					<div class="sf-box text">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span></span></label><br />
-							<span class="fld-input">
-								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ext_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ext_'.$i]) ? htmlspecialchars($_POST['attach_ext_'.$i]) : $icons[$i]) ?>" />
-								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ico_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ico_'.$i]) ? htmlspecialchars($_POST['attach_ico_'.$i]) : $names[$i]) ?>" />
-								<span class="fld-input"><img src="<?php echo (!(in_array($forum_config['attach_icon_folder'].$names[$i],$big_images) || in_array($forum_config['attach_icon_folder'].$names[$i],$missing_files)) ? $forum_config['attach_icon_folder'].$names[$i] : '') ?>" /></span>
-							</span>
-					</div>
+						<div class="sf-box text">
+							<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span></span></label><br />
+								<span class="fld-input">
+									<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ext_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ext_'.$i]) ? htmlspecialchars($_POST['attach_ext_'.$i]) : $icons[$i]) ?>" />
+									<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ico_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ico_'.$i]) ? htmlspecialchars($_POST['attach_ico_'.$i]) : $names[$i]) ?>" />
+									<span class="fld-input"><img src="<?php echo (!(in_array($forum_config['attach_icon_folder'].$names[$i],$big_images) || in_array($forum_config['attach_icon_folder'].$names[$i],$missing_files)) ? $forum_config['attach_icon_folder'].$names[$i] : '') ?>" /></span>
+								</span>
+						</div>
 
 <?php
 
@@ -170,7 +170,7 @@
 			}
 
 ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">			
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span></span></label>
 						<span class="fld-input">

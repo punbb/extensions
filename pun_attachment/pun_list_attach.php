@@ -246,7 +246,7 @@
 								<option <?php echo ((isset($form['order']) && ($form['order'] == 'file_mime_type')) ? 'selected="selected"' : '') ?> value="file_mime_type">Type</option>
 								<option <?php echo ((isset($form['order']) && ($form['order'] == 'topic_id')) ? 'selected="selected"' : '') ?> value="topic_id">Topic</option>
 								<option <?php echo ((isset($form['order']) && ($form['order'] == 'post_id')) ? 'selected="selected"' : '') ?> value="post_id">Post id</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'download_counter')) ? 'selected="selected"' : '') ?> value="downloads">Downloads</option>
+								<option <?php echo ((isset($form['order']) && ($form['order'] == 'download_counter')) ? 'selected="selected"' : '') ?> value="download_counter">Downloads</option>
 							</select>
 						</span>
 					</div>
