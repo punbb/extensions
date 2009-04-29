@@ -275,11 +275,14 @@ if (!isset($form['pun_antispam_captcha_restorepass']) || $form['pun_antispam_cap
 $pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
 		]]></hook>
 
-		<hook id="ft_about_end" priority="10"><![CDATA[
+		<hook id="ft_about_end" priority="9"><![CDATA[
 if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 {
 	define('PUN_EXTENSIONS_USED', 1);
-	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+	if (count($pun_extensions_used) == 1)
+		echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+	else
+		echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
 }
 		]]></hook>
 	</hooks>
