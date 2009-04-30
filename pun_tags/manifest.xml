@@ -64,23 +64,31 @@
 			);
 			$forum_db->create_table('tags', $schema);
 		}
-
+		//In release add notice about removing optioin
+		//Add perehod so staroi versii upgrade
 		$query_pun_tags = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name = "o_pun_tags_show"'
 		);
 		$result_pun_tags = $forum_db->query_build($query_pun_tags) or error(__FILE__, __LINE__);
-		// Add extension options to config, if needed
-		if ($forum_db->num_rows($result_pun_tags) == 0)
+		// Remove unnessary option pun_tags_show
+		if ($forum_db->num_rows($result_pun_tags) > 0)
 		{
 			$query = array(
-				'INSERT'	=> 'conf_name, conf_value',
-				'INTO'		=> 'config',
-				'VALUES'	=> '\'o_pun_tags_show\', \'1\''
+				'DELETE'	=>	'config',
+				'WHERE'		=>	'conf_name = "o_pun_tags_show"'
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
-
+		}
+		$query_pun_tags = array(
+			'SELECT'	=>	'1',
+			'FROM'		=>	'config',
+			'WHERE'		=>	'conf_name = "o_pun_tags_count_in_cloud"'
+		);
+		$result_pun_tags = $forum_db->query_build($query_pun_tags) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($result_pun_tags) == 0)
+		{
 			$query = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
@@ -89,9 +97,9 @@
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
 	]]></install>
-
 	<uninstall>
 	<![CDATA[
+		//Add upgrade in where
 		// Delete extension options from config
 		$query = array(
 			'DELETE'	=> 'config',
@@ -111,114 +119,51 @@
 	<hooks>
 		<hook id="hd_gen_elements"><![CDATA[
 			//Output of search results
-			if ($forum_config['o_pun_tags_show'] == 1 && in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
+			if (in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
 			{
 				$output_results = array();
 				switch (FORUM_PAGE)
 				{
 					case 'index':
-						if (isset($pun_tags['index']))
+						if (isset($pun_tags['forums']))
 						{
-							$forum_ids = pun_tags_forum_perms();
-							if (!empty($forum_ids))
+							foreach ($pun_tags['forums'] as $forum_id => $tags_list)
 							{
-								$tags_weights = array();
-								foreach ($pun_tags['index'] as $tag_ind)
+								//Can user read this forum?
+								if (in_array($forum_id, $pun_tags_groups_perms[$forum_user['group_id']]))
 								{
-									//Can we read forum marked by current tag?
-									$forum_count = 0;
-									foreach ($forum_ids as $forum_id)
-										if (in_array($tag_ind['tag_id'], $pun_tags['forums'][$forum_id]))
-											$forum_count++;
-									if ($forum_count > 0)
-									{
-										$output_results[$tag_ind['tag']] = array('tag_id' => $tag_ind['tag_id'], 'tag' => $tag_ind['tag'], 'weight' => $forum_count);
-										$tags_weights[] = $forum_count;
-									}
+									foreach ($tags_list as $tag_id => $tag_weight)
+										if (!isset($output_results[$tag_id]))
+											$output_results[$tag_id] = array('tag' => $pun_tags['index'][$tag_id], 'weight' => $tag_weight);
+										else
+											$output_results[$tag_id]['weight'] += $tag_weight;
 								}
 							}
 						}
 						break;
 					case 'viewforum':
-						$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-						if (($id >= 1) && isset($pun_tags['forums'][$id]) && isset($pun_tags['index']))
+						if (isset($pun_tags['forums'][$id]))
 						{
-							$forum_ids = pun_tags_forum_perms();
-							if (in_array($id, $forum_ids))
+							foreach ($pun_tags['forums'][$id] as $tag_id => $tag_weight)
 							{
-								$tags_weights = array();
-								foreach ($pun_tags['forums'][$id] as $tags_id)
-									foreach ($pun_tags['index'] as $tag_ind)
-										if ($tag_ind['tag_id'] == $tags_id)
-										{
-											$forum_count = 0;
-											foreach ($forum_ids as $forum_id)
-												if (in_array($tag_ind['tag_id'], $pun_tags['forums'][$forum_id]))
-													$forum_count++;
-											if ($forum_count > 0)
-											{
-												$output_results[$tag_ind['tag']] = array('tag_id' => $tag_ind['tag_id'], 'tag' => $tag_ind['tag'], 'weight' => $forum_count);
-												$tags_weights[] = $forum_count;
-											}
-										}
+								$output_results[$tag_id] = array('tag' => $pun_tags['index'][$tag_id], 'weight' => $tag_weight);
+								//Determine tag weight
+								foreach ($pun_tags['forums'] as $forum_id => $tags_list)
+									if ($forum_id != $id && in_array($forum_id, $pun_tags_groups_perms[$forum_user['group_id']]) && in_array($tag_id, array_keys($tags_list)))
+										$output_results[$tag_id]['weight'] += $tags_list[$tag_id];
 							}
 						}
 						break;
 					case 'viewtopic':
-						$pid = isset($_GET['pid']) ? intval($_GET['pid']) : 0;
-						if ($pid)
+						if (isset($pun_tags['topics'][$id]))
 						{
-							$query = array(
-								'SELECT'	=>	'topic_id',
-								'FROM'		=>	'posts',
-								'WHERE'		=>	'id = '.$pid
-							);
-							$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-							if (!$forum_db->num_rows($result))
-								$id = 0;
-							else
-								list($id) = $forum_db->fetch_row($result);
-						}
-						else
-							$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-	
-						if (($id >= 1) && isset($pun_tags['topics'][$id]) && isset($pun_tags['index']))
-						{
-							//Can user read this topic
-							$query = array(
-								'SELECT'	=> 'f.id',
-								'FROM'		=> 'topics AS t',
-								'JOINS'		=> array(
-									array(
-										'LEFT JOIN'		=> 'forums AS f',
-										'ON'			=> '(f.id=t.forum_id)'
-									),
-									array(
-										'LEFT JOIN'		=> 'forum_perms AS fp',
-										'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
-									)
-								),
-								'WHERE'		=> 't.id = '.$id
-							);
-							$query_result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-							if ($forum_db->num_rows($query_result) > 0)
+							foreach ($pun_tags['topics'][$id] as $tag_id)
 							{
-								$forum_ids = pun_tags_forum_perms();
-								$tags_weights = array();
-								foreach ($pun_tags['topics'][$id] as $tags_id)
-									foreach ($pun_tags['index'] as $tag_ind)
-										if ($tag_ind['tag_id'] == $tags_id)
-										{
-											$forum_count = 0;
-											foreach ($forum_ids as $forum_id)
-												if (in_array($tag_ind['tag_id'], $pun_tags['forums'][$forum_id]))
-													$forum_count++;
-											if ($forum_count > 0)
-											{
-												$output_results[$tag_ind['tag']] = array('tag_id' => $tag_ind['tag_id'], 'tag' => $tag_ind['tag'], 'weight' => $forum_count);
-												$tags_weights[] = $forum_count;
-											}
-										}
+								$output_results[$tag_id] = array('tag' => $pun_tags['index'][$tag_id], 'weight' => $pun_tags['forums'][$cur_topic['forum_id']][$tag_id]);
+								//Determine tag weight
+								foreach ($pun_tags['forums'] as $forum_id => $tags_list)
+									if ($forum_id != $cur_topic['forum_id'] && in_array($forum_id, $pun_tags_groups_perms[$forum_user['group_id']]) && in_array($tag_id, array_keys($tags_list)))
+										$output_results[$tag_id]['weight'] += $tags_list[$tag_id];
 							}
 						}
 						break;
@@ -228,22 +173,22 @@
 						$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content"></div>';
 						break;
 				}
+
 				if (!empty($output_results))
 				{
 					$minfontsize = 100;
 					$maxfontsize = 200;
-					$max_pop = max($tags_weights);
-					$min_pop = min($tags_weights);
+					list($min_pop, $max_pop) = min_max_tags_weights($output_results);
 					if ($max_pop - $min_pop == 0)
 						$step = $maxfontsize - $minfontsize;
 					else
 						$step = ($maxfontsize - $minfontsize) / ($max_pop - $min_pop);
 
-					ksort($output_results);
-					$output_results = array_slice($output_results, 0, $forum_config['o_pun_tags_count_in_cloud']);
+					uasort($output_results, 'compare_tags');
+					$output_results = array_tags_slice($output_results);
 					$results = array();
-					foreach ($output_results as $res)
-						$results[] = pun_tags_get_link(round(($res['weight'] - $min_pop) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
+					foreach ($output_results as $tag_id => $tag_info)
+						$results[] = pun_tags_get_link(round(($tag_info['weight'] - $min_pop) * $step + $minfontsize), $tag_id, $tag_info['weight'], $tag_info['tag']);
 					$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content">'.implode('&nbsp;', $results).'</div>';
 					unset($minfontsize, $maxfontsize, $step, $results, $min_pop, $max_pop);
 				}
@@ -269,8 +214,6 @@
 			}
 		]]></hook>
 		<hook id="aop_features_validation"><![CDATA[
-			if (!isset($form['pun_tags_show']) || $form['pun_tags_show'] != '1')
-				$form['pun_tags_show'] = '0';
 			if (isset($form['pun_tags_count_in_cloud']) && !empty($form['pun_tags_count_in_cloud']) && intval($form['pun_tags_count_in_cloud']) > 0)
 				$form['pun_tags_count_in_cloud'] = intval($form['pun_tags_count_in_cloud']);
 			else
@@ -288,17 +231,6 @@
 				<legend class="group-legend">
 					<span><?php echo $lang_pun_tags['Settings']; ?></span>
 				</legend>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box checkbox">
-						<span class="fld-input">
-							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="checkbox" <?php if ($forum_config['o_pun_tags_show'] == '1') echo ' checked="checked"' ?> value="1" name="form[pun_tags_show]"/>
-						</span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>">
-							<span><?php echo $lang_pun_tags['Show Pun Tags']; ?></span>
-							<?php echo $lang_pun_tags['Pun Tags notice']; ?>
-						</label>
-					</div>
-				</div>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<span class="fld-input">
@@ -324,19 +256,29 @@
 
 			define('PUN_TAGS_CACHE_UPDATE', 12);
 			require_once $ext_info['path'].'/functions.php';
-			@include FORUM_CACHE_DIR.'cache_pun_tags.php';
 
+			if (file_exists(FORUM_CACHE_DIR.'cache_pun_tags.php'))
+				include FORUM_CACHE_DIR.'cache_pun_tags.php';
 			// Regenerate cache if the it is more than $pun_cache_period hours old
 			if ((!defined('PUN_TAGS_LOADED') || $pun_tags['cached'] < (time() - 3600 * PUN_TAGS_CACHE_UPDATE)))
 			{
 				pun_tags_generate_cache();
 				require FORUM_CACHE_DIR.'cache_pun_tags.php';
 			}
+
+			if (file_exists(FORUM_CACHE_DIR.'cache_pun_tags_groups_perms.php'))
+				include FORUM_CACHE_DIR.'cache_pun_tags_groups_perms.php';
+			// Regenerate cache if the it is more than $pun_cache_period hours old
+			if ((!defined('PUN_TAGS_GROUPS_PERMS') || $pun_tags_groups_perms['cached'] < (time() - 3600 * PUN_TAGS_CACHE_UPDATE)))
+			{
+				pun_tags_generate_forum_perms_cache();
+				require FORUM_CACHE_DIR.'cache_pun_tags_groups_perms.php';
+			}
 		]]></hook>
 
 		<hook id="hd_head"><![CDATA[
 			// Aattach pun_tags CSS file
-			if ($forum_config['o_pun_tags_show'] == 1 && (FORUM_PAGE == 'index' || FORUM_PAGE == 'viewforum' || FORUM_PAGE == 'viewtopic' || FORUM_PAGE == 'searchtopics' || FORUM_PAGE == 'searchposts'))
+			if (in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
 			{
 				$forum_head['style_pun_tag'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/'.$forum_user['style'].'.css" />';
 				$forum_head['style_cs_pun_tag'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/'.$forum_user['style'].'_cs.css" />';
@@ -344,7 +286,7 @@
 		]]></hook>
 
 		<hook id="po_pre_post_contents" priority = "1"><![CDATA[
-			if ($fid && $forum_config['o_pun_tags_show'] == 1)
+			if ($fid)
 			{
 
 				?>
@@ -359,7 +301,7 @@
 			}
 		]]></hook>
 		<hook id="po_end_validation, mr_confirm_split_posts_form_submitted"><![CDATA[
-			if ($forum_config['o_pun_tags_show'] == 1 && isset($_POST['pun_tags']))
+			if (isset($_POST['pun_tags']))
 			{
 				if (utf8_strlen(forum_trim($_POST['pun_tags'])) > 100)
 					message($lang_pun_tags['Count error']);
@@ -377,7 +319,7 @@
 			}
 		]]></hook>
 		<hook id="mr_confirm_split_posts_pre_redirect"><![CDATA[
-			if ($forum_config['o_pun_tags_show'] == 1 && !empty($new_tags))
+			if (!empty($new_tags))
 			{
 				foreach ($new_tags as $pun_tag)
 					pun_tags_add_new($pun_tag,  $new_tid);
@@ -391,7 +333,7 @@
 			pun_tags_generate_cache();
 		]]></hook>
 		<hook id="ed_pre_message_box" priority = "1"><![CDATA[
-			if ($forum_config['o_pun_tags_show'] == 1 && $can_edit_subject)
+			if ($can_edit_subject)
 			{
 				$res_tags = array();
 				if (isset($pun_tags['topics'][$cur_post['tid']]))
@@ -413,7 +355,7 @@
 			}
 		]]></hook>
 		<hook id="ed_pre_post_edited"><![CDATA[
-			if ($can_edit_subject && $forum_config['o_pun_tags_show'] == 1)
+			if ($can_edit_subject)
 			{
 				if (utf8_strlen(forum_trim($_POST['pun_tags'])) > 100)
 					message($lang_pun_tags['Count error']);
@@ -484,9 +426,15 @@
 			);
 			$forum_db->query_build($query_tags) or error(__FILE__, __LINE__);
 		]]></hook>	
-		<hook id="acg_del_cat_pre_redirect, afo_del_forum_pre_redirect, mr_confirm_delete_topics_pre_redirect"><![CDATA[
+		<hook id="acg_del_cat_pre_redirect, mr_confirm_delete_topics_pre_redirect"><![CDATA[
 			pun_tags_remove_orphans();
 			pun_tags_generate_cache();
+		]]></hook>
+		<hook id="afo_del_forum_pre_redirect"><![CDATA[
+			pun_tags_remove_orphans();
+			pun_tags_generate_cache();
+			require_once $ext_info['path'].'/functions.php';
+			pun_tags_generate_forum_perms_cache();
 		]]></hook>
 		<hook id="mr_confirm_move_topics_pre_redirect"><![CDATA[
 			pun_tags_generate_cache();
@@ -508,7 +456,7 @@
 			pun_tags_generate_cache();
 		]]></hook>
 		<hook id="mr_confirm_split_posts_pre_confirm_checkbox"><![CDATA[
-			if ($fid && $forum_config['o_pun_tags_show'] == 1)
+			if ($fid)
 			{
 				$res_tags = array();
 				if (isset($pun_tags['topics'][$tid]))
@@ -530,49 +478,60 @@
 			}
 		]]></hook>
 		<hook id="se_post_results_fetched"><![CDATA[
-			if ($forum_config['o_pun_tags_show'] == 1 && !empty($search_set))
+			if (!empty($search_set))
 			{
-				$tags_results = array();
-				$forum_ids = pun_tags_forum_perms();
-				$tags_weights = array();
+				//Array with tags id
+				$tags = array();
+				//Array with processed topics
+				$processed_topics = array();
 				foreach ($search_set as $res)
 				{
-					if (!isset($pun_tags['topics'][ $res['tid'] ]))
+					if (!isset($pun_tags['topics'][$res['tid']]) || in_array($res['tid'], $processed_topics))
 						continue;
-					foreach ($pun_tags['topics'][ $res['tid'] ] as $tag_id)
-						foreach ($pun_tags['index'] as $tag)
-							if ($tag['tag_id'] == $tag_id)
-							{
-								$forum_count = 0;
-								foreach ($forum_ids as $forum_id)
-									if (in_array($tag['tag_id'], $pun_tags['forums'][$forum_id]))
-										$forum_count++;
-								if ($forum_count > 0)
-								{
-									$tags_results[$tag['tag']] = array('tag_id' => $tag['tag_id'], 'tag' => $tag['tag'], 'weight' => $forum_count);
-									$tags_weights[] = $forum_count;
-								}
-								break;
-							}
+
+					$processed_topics[] = $res['tid'];
+					$tags = array_merge($tags, array_diff($pun_tags['topics'][$res['tid']], $tags));
 				}
+				//Array with tags and weights
+				$tags_results = array();
+				if (!empty($tags))
+				{
+					//Calculation of tags weight
+					foreach ($pun_tags_groups_perms[$forum_user['group_id']] as $forum_id)
+					{
+						if (!isset($pun_tags['forums'][$forum_id]))
+							continue;
+						//Calcullate common keys in arrays						
+						$tmp = array_intersect($tags, array_keys($pun_tags['forums'][$forum_id]));						
+						foreach ($tmp as $cur_tag)
+						{
+							if (!isset($tags_results[$cur_tag]))
+								$tags_results[$cur_tag] = array('tag' => $pun_tags['index'][$cur_tag], 'weight' => $pun_tags['forums'][$forum_id][$cur_tag]);
+							else
+								$tags_results[$cur_tag]['weight'] += $pun_tags['forums'][$forum_id][$cur_tag];
+						}
+					}
+					unset($tmp);
+				}
+				unset($tags);
 				if (!empty($tags_results))
 				{
 					$minfontsize = 100;
 					$maxfontsize = 200;
-					$max_pop = max($tags_weights);
-					$min_pop = min($tags_weights);
+					list($min_pop, $max_pop) = min_max_tags_weights($tags_results);
 					if ($max_pop - $min_pop == 0)
 						$step = $maxfontsize - $minfontsize;
 					else
 						$step = ($maxfontsize - $minfontsize) / ($max_pop - $min_pop);
 
-					ksort($tags_results);
-					$tags_results = array_slice($tags_results, 0, $forum_config['o_pun_tags_count_in_cloud']);
+					uasort($tags_results, 'compare_tags');
+					$tags_results = array_tags_slice($tags_results);
 					$ouput_results = array();
-					foreach ($tags_results as $res)
-						$ouput_results[] = pun_tags_get_link(round(($res['weight'] - $min_pop) * $step + $minfontsize), $res['tag_id'], $res['weight'], $res['tag']);
+					foreach ($tags_results as $tag_id => $tag_info)
+						$ouput_results[] = pun_tags_get_link(round(($tag_info['weight'] - $min_pop) * $step + $minfontsize), $tag_id, $tag_info['weight'], $tag_info['tag']);
 					unset($minfontsize, $maxfontsize, $step, $tags_results, $min_pop, $max_pop);
 				}
+				unset($tags_results);
 			}
 		]]></hook>
 		<hook id="sf_fn_generate_action_search_query_end"><![CDATA[
@@ -636,6 +595,10 @@
 				else
 					echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
 			}
+		]]></hook>
+		<hook id="afo_save_forum_pre_redirect, afo_revert_perms_form_submitted, agr_add_edit_pre_redirect, agr_del_group_pre_redirect"><![CDATA[
+			require_once $ext_info['path'].'/functions.php';
+			pun_tags_generate_forum_perms_cache();
 		]]></hook>
 	</hooks>
 

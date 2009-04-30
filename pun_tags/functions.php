@@ -16,65 +16,103 @@ function pun_tags_generate_cache()
 {
 	global $forum_db;
 
-	$pun_tags = array();
-	$pun_tags['cached'] = time();
-
-	// Get all tags
+	//Fetch all topic tags
 	$query = array(
-		'SELECT'	=> 't.*, COUNT(tt.tag_id) AS cnt',
-		'FROM'		=> 'tags AS t',
-		'JOINS'		=> array(
+		'SELECT'	=>	'tt.topic_id, tt.tag_id, tg.tag, forum_id',
+		'FROM'		=>	'topic_tags AS tt',
+		'JOINS'		=>	array(
 			array(
-				'LEFT JOIN'		=> 'topic_tags AS tt',
-				'ON'			=> 't.id = tt.tag_id GROUP BY t.id'
-			)
-		),
-		'HAVING'	=> 'cnt > 0',
-		'ORDER BY'	=> 't.tag'
+				'LEFT JOIN'	=>	'topics AS t',
+				'ON'		=>	'tt.topic_id = t.id'
+			),
+			array(
+				'LEFT JOIN'	=>	'tags AS tg',
+				'ON'		=>	'tt.tag_id = tg.id'
+			)			
+		)
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	if ($forum_db->num_rows($result))
+	$pun_tags = array();
+	$pun_tags['cached'] = time();
+	if ($forum_db->num_rows($result) > 0)
 	{
+		$pun_tags['index'] = $pun_tags['topics'] = $pun_tags['forums'] = array();
+		//Process all topics
 		while ($cur_tag = $forum_db->fetch_assoc($result))
-			$pun_tags['index'][] = array('tag_id' => $cur_tag['id'], 'tag' => $cur_tag['tag']);
-
-		// Get tags for every tagged topic
-		$query = array(
-			'SELECT'	=> '*',
-			'FROM'		=> 'topic_tags'
-		);
-		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		while ($tag = $forum_db->fetch_assoc($result))
-			$pun_tags['topics'][ $tag['topic_id'] ][] = $tag['tag_id'];
-
-		// Get tags for every forum, which topics are tagged
-		$query = array(
-			'SELECT'	=> 	'id, forum_id',
-			'FROM'		=> 	'topics',
-			'WHERE'		=>	'id IN ('.implode(',', array_keys($pun_tags['topics'])).')'
-		);
-		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		while ($cur = $forum_db->fetch_assoc($result))
-			if (isset($pun_tags['forums'][$cur['forum_id']]))
-			{
-				for ($tag_num = 0; $tag_num < count($pun_tags['topics'][$cur['id']]); $tag_num++)
-					if (!in_array($pun_tags['topics'][$cur['id']][$tag_num], $pun_tags['forums'][$cur['forum_id']]))
-						$pun_tags['forums'][$cur['forum_id']][] = $pun_tags['topics'][$cur['id']][$tag_num];
-			}
+		{
+			if (!isset($pun_tags['index'][$cur_tag['tag_id']]))
+				$pun_tags['index'][$cur_tag['tag_id']] = $cur_tag['tag'];
+			if (!isset($pun_tags['topics'][$cur_tag['topic_id']]))
+				$pun_tags['topics'][$cur_tag['topic_id']] = array();
+			$pun_tags['topics'][$cur_tag['topic_id']][] = intval($cur_tag['tag_id']);
+			if (!isset($pun_tags['forums'][$cur_tag['forum_id']]))
+				$pun_tags['forums'][$cur_tag['forum_id']] = array();
+			if (!isset($pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']]))
+				$pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']] = 1;
 			else
-				$pun_tags['forums'][$cur['forum_id']] = $pun_tags['topics'][ $cur['id'] ];
+				$pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']]++;
+		}
 	}
-	else
-		$pun_tags['cached'] = 0;
 
 	// Output pun tags as PHP code
 	$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_tags.php', 'wb');
 	if (!$fh)
 		error('Unable to write tags cache file to cache directory. Please make sure PHP has write access to the directory \'cache\'.', __FILE__, __LINE__);
 	fwrite($fh, '<?php'."\n\n".'if (!defined(\'PUN_TAGS_LOADED\')) define(\'PUN_TAGS_LOADED\', 1);'."\n\n".'$pun_tags = '.var_export($pun_tags, true).';'."\n\n".'?>');
+	fclose($fh);
+}
+
+// Generate groups permissions cache 
+function pun_tags_generate_forum_perms_cache()
+{
+	global $forum_db;
+
+	$query = array(
+		'SELECT'	=>	'id',
+		'FROM'		=>	'forums'
+	);
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$forums = array();
+	if ($forum_db->num_rows($result) > 0)
+	{
+		while ($cur_forum = $forum_db->fetch_row($result))
+			$forums[] = $cur_forum[0];
+	}
+	if (!empty($forums))
+	{
+		$pun_tags_groups_perms = array();
+		$pun_tags_groups_perms['cached'] = time();
+		//Get all groups
+		$query = array(
+			'SELECT'	=>	'g_id',
+			'FROM'		=>	'groups'
+		);
+		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		while ($cur_group = $forum_db->fetch_row($result))
+			$pun_tags_groups_perms[$cur_group[0]] = $forums;
+
+		$query = array(
+			'SELECT'	=>	'group_id, forum_id',
+			'FROM'		=>	'forum_perms',
+			'WHERE'		=>	'read_forum = 0'
+		);
+		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($result) > 0)
+		{
+			while ($cur_perm = $forum_db->fetch_assoc($result))
+				unset($pun_tags_groups_perms[$cur_perm['group_id']][array_search($cur_perm['forum_id'], $forums)]);
+			foreach ($pun_tags_groups_perms as $group => $perms)
+				if ($group != 'cached')
+					$pun_tags_groups_perms[$group] = array_values($perms);
+		}
+	}
+
+	// Output pun tags as PHP code
+	$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_tags_groups_perms.php', 'wb');
+	if (!$fh)
+		error('Unable to write tags cache file to cache directory. Please make sure PHP has write access to the directory \'cache\'.', __FILE__, __LINE__);
+	fwrite($fh, '<?php'."\n\n".'if (!defined(\'PUN_TAGS_GROUPS_PERMS\')) define(\'PUN_TAGS_GROUPS_PERMS\', 1);'."\n\n".'$pun_tags_groups_perms = '.var_export($pun_tags_groups_perms, true).';'."\n\n".'?>');
 	fclose($fh);
 }
 
@@ -126,7 +164,7 @@ function pun_tags_parse_string($text)
 	$results = array();
 	foreach ($text as $tag)
 	{
-		$tmp_tag = trim($tag);
+		$tmp_tag = utf8_trim($tag);
 		if (!empty($tmp_tag))
 			$results[] = $tmp_tag;
 	}
@@ -181,28 +219,38 @@ function pun_tags_add_new( $pun_tag, $tid )
 	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
 }
 
-function pun_tags_forum_perms()
+function compare_tags($tag_info1, $tag_info2)
 {
-	global $forum_user, $forum_db, $pun_tags;
+	return strcmp($tag_info1['tag'], $tag_info2['tag']);
+}
 
-	$query = array(
-		'SELECT'	=> 'f.id',
-		'FROM'		=> 'forums AS f',
-		'JOINS'		=> array(
-			array(
-				'LEFT JOIN'		=> 'forum_perms AS fp',
-				'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
-			)
-		),
-		'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND id IN ('.implode(',', array_keys($pun_tags['forums'])).')'
-	);
-	$query_result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+function array_tags_slice($tags)
+{
+	global $forum_config;
 
-	$forum_ids = array();
-	while ($row = $forum_db->fetch_row($query_result))
-		$forum_ids[] = $row[0];
+	if (version_compare(PHP_VERSION, '5.02', '>='))
+		return array_slice($tags, 0, $forum_config['o_pun_tags_count_in_cloud'], TRUE);
 
-	return $forum_ids;
+	$counter = count($tags) - $forum_config['o_pun_tags_count_in_cloud'];
+	while ($counter > 0)
+	{
+		array_pop($tags);
+		$counter--;
+	}
+	return $tags;
+}
+
+function min_max_tags_weights($tags)
+{
+	$max_pop = -10000000;
+	foreach ($tags as $tag_id => $tag_info)
+		if ($tag_info['weight'] > $max_pop)
+			$max_pop = $tag_info['weight'];
+	$min_pop = 10000000;
+	foreach ($tags as $tag_id => $tag_info)
+		if ($tag_info['weight'] < $min_pop)
+			$min_pop = $tag_info['weight'];
+	return array($min_pop, $max_pop);
 }
 
 ?>
