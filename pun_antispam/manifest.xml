@@ -280,9 +280,9 @@ if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 {
 	define('PUN_EXTENSIONS_USED', 1);
 	if (count($pun_extensions_used) == 1)
-		echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+		echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
 	else
-		echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+		echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
 }
 		]]></hook>
 	</hooks>

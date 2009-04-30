@@ -591,9 +591,9 @@
 			{
 				define('PUN_EXTENSIONS_USED', 1);
 				if (count($pun_extensions_used) == 1)
-					echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+					echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
 				else
-					echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+					echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
 			}
 		]]></hook>
 		<hook id="afo_save_forum_pre_redirect, afo_revert_perms_form_submitted, agr_add_edit_pre_redirect, agr_del_group_pre_redirect"><![CDATA[
