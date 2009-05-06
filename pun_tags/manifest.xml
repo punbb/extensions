@@ -338,12 +338,10 @@
 				$res_tags = array();
 				if (isset($pun_tags['topics'][$cur_post['tid']]))
 				{
-	
 					foreach ($pun_tags['topics'][$cur_post['tid']] as $tag_id)
-						foreach ($pun_tags['index'] as $tag)
-							if ($tag['tag_id'] == $tag_id)
-								$res_tags[] = $tag['tag'];
+						$res_tags[] = $pun_tags['index'][$tag_id];
 				}
+
 			?>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required longtext">
@@ -362,60 +360,51 @@
 
 				//Parse the string
 				$new_tags = pun_tags_parse_string( censor_words(trim($_POST['pun_tags'])) );
-				$new_words = array();
-				$old_ids = array();
-				if (!empty($new_tags))
+				if (empty($new_tags))
 				{
-					if (!isset($pun_tags['topics'][$cur_post['tid']]))
-						$new_words = $new_tags;
-					else if (isset($pun_tags['index']))
+					if (isset($pun_tags['topics'][$cur_post['tid']]))
 					{
-						foreach ($new_tags as $tag)
-						{
-							//Determine id of the tag or that it is new
-							$is_old = false;
-							foreach ($pun_tags['index'] as $old_tag)
-								if ($old_tag['tag'] == $tag &&  in_array($old_tag['tag_id'], $pun_tags['topics'][$cur_post['tid']]))
-								{
-									$old_ids[] = $old_tag['tag_id'];
-									$is_old = true;
-									break;
-								}
-							if (!$is_old)
-								$new_words[] = $tag;
-						}
+						pun_tags_remove_topic_tags($cur_post['tid']);
+						$update_cache = true;
 					}
-					else
-						$new_words = $new_tags;
 				}
-				$update_cache = false;
-				if (!empty($new_words))
+				else
 				{
-					foreach ($new_words as $new_tag)
-						pun_tags_add_new($new_tag, $cur_post['tid']);
-					$update_cache = true;
-				}
+					$current_tags = array();
+					if (isset($pun_tags['topics'][$cur_post['tid']]))
+					{
+						foreach ($pun_tags['topics'][$cur_post['tid']] as $tag_id)
+							$current_tags[$tag_id] = $pun_tags['index'][$tag_id];
+					}
+					//Determine what tags should be added
+					$new_tags_words = array_diff($new_tags, $current_tags);
+					if (!empty($new_tags_words))
+					{
+						foreach ($new_tags_words as $new_tag)
+							pun_tags_add_new($new_tag, $cur_post['tid']);
+						$update_cache = true;
+					}
+					//Determine what tags should be removed
+					$old_tags_words = array_diff($current_tags, $new_tags);
+					if (!empty($old_tags_words) && array_diff($current_tags, $old_tags_words) != array())
+					{
+						$old_tag_ids = array_keys($old_tags_words);
+						$query = array(
+							'DELETE'	=>	'tags',
+							'WHERE'		=>	'id IN('.implode(',', $old_tag_ids).')'
+						);
+						$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-				//Determine tags id, which need to remove
-				$old_tags_id = isset($pun_tags['topics'][$cur_post['tid']]) ? ($pun_tags['topics'][$cur_post['tid']]) : (array());
-				$remove_ids = array_diff($old_tags_id, $old_ids);
-				if (!empty($remove_ids))
-				{
-					$query = array(
-						'DELETE'	=>	'tags',
-						'WHERE'		=>	'id IN('.implode(',', $remove_ids).')'
-					);
-					$forum_db->query_build($query) or error(__FILE__, __LINE__);
-	
-					$query = array(
-						'DELETE'	=>	'topic_tags',
-						'WHERE'		=>	'tag_id IN('.implode(',', $remove_ids).') AND topic_id = '.$cur_post['tid']
-					);
-					$forum_db->query_build($query) or error(__FILE__, __LINE__);
-					$update_cache = true;
+						$query = array(
+							'DELETE'	=>	'topic_tags',
+							'WHERE'		=>	'tag_id IN('.implode(',', $old_tag_ids).') AND topic_id = '.$cur_post['tid']
+						);
+						$forum_db->query_build($query) or error(__FILE__, __LINE__);
+						$update_cache = true;
+						unset($old_tag_ids);
+					}
 				}
-
-				if ($update_cache)
+				if (isset($update_cache))
 					pun_tags_generate_cache();
 			}
 		]]></hook>
