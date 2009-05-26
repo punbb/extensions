@@ -64,20 +64,18 @@
 			);
 			$forum_db->create_table('tags', $schema);
 		}
-		//In release add notice about removing optioin
-		//Add perehod so staroi versii upgrade
 		$query_pun_tags = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name = "o_pun_tags_show"'
 		);
 		$result_pun_tags = $forum_db->query_build($query_pun_tags) or error(__FILE__, __LINE__);
-		// Remove unnessary option pun_tags_show
-		if ($forum_db->num_rows($result_pun_tags) > 0)
+		if ($forum_db->num_rows($result_pun_tags) == 0)
 		{
 			$query = array(
-				'DELETE'	=>	'config',
-				'WHERE'		=>	'conf_name = "o_pun_tags_show"'
+				'INSERT'	=> 'conf_name, conf_value',
+				'INTO'		=> 'config',
+				'VALUES'	=> '\'o_pun_tags_show\', \'1\''
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
@@ -99,7 +97,6 @@
 	]]></install>
 	<uninstall>
 	<![CDATA[
-		//Add upgrade in where
 		// Delete extension options from config
 		$query = array(
 			'DELETE'	=> 'config',
@@ -119,7 +116,7 @@
 	<hooks>
 		<hook id="hd_main_elements"><![CDATA[
 			//Output of search results
-			if (in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
+			if ($forum_config['o_pun_tags_show'] == 1 && in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
 			{
 				$output_results = array();
 				switch (FORUM_PAGE)
@@ -214,6 +211,8 @@
 			}
 		]]></hook>
 		<hook id="aop_features_validation"><![CDATA[
+			if (!isset($form['pun_tags_show']) || $form['pun_tags_show'] != '1')
+				$form['pun_tags_show'] = '0';
 			if (isset($form['pun_tags_count_in_cloud']) && !empty($form['pun_tags_count_in_cloud']) && intval($form['pun_tags_count_in_cloud']) > 0)
 				$form['pun_tags_count_in_cloud'] = intval($form['pun_tags_count_in_cloud']);
 			else
@@ -231,6 +230,17 @@
 				<legend class="group-legend">
 					<span><?php echo $lang_pun_tags['Settings']; ?></span>
 				</legend>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"> 
+					<div class="sf-box checkbox"> 
+						<span class="fld-input">
+							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="checkbox" <?php if ($forum_config['o_pun_tags_show'] == '1') echo ' checked="checked"' ?> value="1" name="form[pun_tags_show]"/>
+						</span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"> 
+							<span><?php echo $lang_pun_tags['Show Pun Tags']; ?></span>
+							<?php echo $lang_pun_tags['Pun Tags notice']; ?>
+						</label>
+					</div>
+				</div> 
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<span class="fld-input">
@@ -572,10 +582,13 @@
 			}
 		]]></hook>
 		<hook id="ft_end"><![CDATA[
-			if (isset($ouput_results) && !empty($ouput_results))
-				$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '<div id="brd-pun_tags" class="gen-content">'.implode(' ', $ouput_results).'</div>', $tpl_main);
-			else
-				$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '', $tpl_main);
+			if ($forum_config['o_pun_tags_show'] == 1)
+			{
+				if (!empty($ouput_results))
+					$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '<div id="brd-pun_tags" class="gen-content">'.implode(' ', $ouput_results).'</div>', $tpl_main);
+				else
+					$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '', $tpl_main);
+			}
 		]]></hook>
 		<hook id="sf_fn_validate_actions_start"><![CDATA[
 			$valid_actions[] = 'tag';
