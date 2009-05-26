@@ -117,7 +117,7 @@
 	</uninstall>
 
 	<hooks>
-		<hook id="hd_gen_elements"><![CDATA[
+		<hook id="hd_main_elements"><![CDATA[
 			//Output of search results
 			if (in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
 			{
@@ -170,7 +170,7 @@
 					case 'searchtopics':
 					case 'searchposts':
 						//This string will be replaced after getting search results
-						$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content"></div>';
+						$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags" class="gen-content"></div>';
 						break;
 				}
 
@@ -189,7 +189,7 @@
 					$results = array();
 					foreach ($output_results as $tag_id => $tag_info)
 						$results[] = pun_tags_get_link(round(($tag_info['weight'] - $min_pop) * $step + $minfontsize), $tag_id, $tag_info['weight'], $tag_info['tag']);
-					$gen_elements['<!-- forum_announcement -->'] .= '<div id="brd-pun_tags" class="gen-content">'.implode('&nbsp;', $results).'</div>';
+					$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags" class="gen-content">'.implode('&nbsp;', $results).'</div>';
 					unset($minfontsize, $maxfontsize, $step, $results, $min_pop, $max_pop);
 				}
 				unset($output_results, $tags_weights);
@@ -301,20 +301,24 @@
 			}
 		]]></hook>
 		<hook id="po_end_validation, mr_confirm_split_posts_form_submitted"><![CDATA[
-			if (isset($_POST['pun_tags']))
-			{
-				if (utf8_strlen(forum_trim($_POST['pun_tags'])) > 100)
-					message($lang_pun_tags['Count error']);
-				$new_tags = pun_tags_parse_string( censor_words(trim($_POST['pun_tags'])) );
-			}
-		]]></hook>	
+			if (!empty($_POST['pun_tags']))
+				$new_tags = pun_tags_parse_string(trim($_POST['pun_tags']));
+		]]></hook>
 		<hook id="fn_add_topic_end"><![CDATA[
-			global $new_tags;
+			global $new_tags, $pun_tags;
 			// Add tags to DB
-			if (isset($new_tags) && !empty($new_tags))
+
+			if (!empty($new_tags))
 			{
+				$search_arr = isset($pun_tags['index']) ? $pun_tags['index'] : array();
 				foreach ($new_tags as $pun_tag)
-					pun_tags_add_new($pun_tag, $new_tid);
+				{
+					$tag_id = array_search($pun_tag, $search_arr);
+					if ($tag_id !== FALSE)
+						pun_tags_add_existing_tag($tag_id, $new_tid);
+					else
+						pun_tags_add_new($pun_tag, $new_tid);
+				}
 				pun_tags_generate_cache();
 			}
 		]]></hook>
@@ -355,57 +359,58 @@
 		<hook id="ed_pre_post_edited"><![CDATA[
 			if ($can_edit_subject)
 			{
-				if (utf8_strlen(forum_trim($_POST['pun_tags'])) > 100)
-					message($lang_pun_tags['Count error']);
-
 				//Parse the string
-				$new_tags = pun_tags_parse_string( censor_words(trim($_POST['pun_tags'])) );
+				if (isset($_POST['pun_tags']))
+					$new_tags = pun_tags_parse_string(trim($_POST['pun_tags']));
 				if (empty($new_tags))
 				{
 					if (isset($pun_tags['topics'][$cur_post['tid']]))
 					{
 						pun_tags_remove_topic_tags($cur_post['tid']);
-						$update_cache = true;
+						$update_cache = TRUE;
 					}
 				}
 				else
 				{
-					$current_tags = array();
-					if (isset($pun_tags['topics'][$cur_post['tid']]))
+					//Determine old tags
+					$old_tags = array();
+					if (!empty($pun_tags['topics'][$cur_post['tid']]))
 					{
-						foreach ($pun_tags['topics'][$cur_post['tid']] as $tag_id)
-							$current_tags[$tag_id] = $pun_tags['index'][$tag_id];
+						foreach ($pun_tags['topics'][$cur_post['tid']] as $old_tagid)
+							$old_tags[$old_tagid] = $pun_tags['index'][$old_tagid];
 					}
-					//Determine what tags should be added
-					$new_tags_words = array_diff($new_tags, $current_tags);
-					if (!empty($new_tags_words))
+	
+					//Tags for removing
+					$remove_tags = array_diff($old_tags, $new_tags);
+					if (!empty($remove_tags))
 					{
-						foreach ($new_tags_words as $new_tag)
-							pun_tags_add_new($new_tag, $cur_post['tid']);
-						$update_cache = true;
-					}
-					//Determine what tags should be removed
-					$old_tags_words = array_diff($current_tags, $new_tags);
-					if (!empty($old_tags_words) && array_diff($current_tags, $old_tags_words) != array())
-					{
-						$old_tag_ids = array_keys($old_tags_words);
-						$query = array(
-							'DELETE'	=>	'tags',
-							'WHERE'		=>	'id IN('.implode(',', $old_tag_ids).')'
-						);
-						$forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-						$query = array(
+						$pun_tags_query = array(
 							'DELETE'	=>	'topic_tags',
-							'WHERE'		=>	'tag_id IN('.implode(',', $old_tag_ids).') AND topic_id = '.$cur_post['tid']
+							'WHERE'		=>	'topic_id = '.$cur_post['tid'].' AND tag_id IN ('.implode(',', array_keys($remove_tags)).')'
 						);
-						$forum_db->query_build($query) or error(__FILE__, __LINE__);
-						$update_cache = true;
-						unset($old_tag_ids);
+						$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
+						$update_cache = TRUE;
+					}
+
+					$search_arr = isset($pun_tags['index']) ? $pun_tags['index'] : array();
+					foreach ($new_tags as $tag)
+					{
+						//Have we current tag?
+						if (in_array($tag, $old_tags))
+							continue;
+						$tag_id = array_search($tag, $search_arr);
+						if ($tag_id === FALSE)
+							pun_tags_add_new($tag, $cur_post['tid']);
+						else
+							pun_tags_add_existing_tag($tag_id, $cur_post['tid']);
+						$update_cache = TRUE;
+					}
+					if (!empty($update_cache))
+					{
+						pun_tags_remove_orphans();
+						pun_tags_generate_cache();
 					}
 				}
-				if (isset($update_cache))
-					pun_tags_generate_cache();
 			}
 		]]></hook>
 		<hook id="ca_fn_prune_qr_prune_subscriptions"><![CDATA[

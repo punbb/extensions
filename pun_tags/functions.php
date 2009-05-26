@@ -156,20 +156,25 @@ function pun_tags_get_link($size, $tag_id, $weight, $tag)
 // Get array of tags from input string
 function pun_tags_parse_string($text)
 {
+	global $lang_pun_tags;
+
+	if (utf8_strlen(forum_trim($text)) > 100)
+		message($lang_pun_tags['Count error']);
+
 	// Remove symbols and multiple whitespace
-	$text = preg_replace('/[\'\^\$&\(\)<>`"\|@_\?%~\+\[\]{}:=\/#\\\\;!\*\.]+/', '', $text);
-	$text = preg_replace('/[\s]+/', ' ', $text);
-	$text = array_unique(explode(',', $text));
+	$text = preg_replace('/[\'\^\$&\(\)<>`"\|@_\?%~\+\[\]{}:=\/#\\\\;!\*\.]+/', '', preg_replace('/[\s]+/', ' ', $text));
+	$text = censor_words($text);
+	$text = explode(',', $text);
 
 	$results = array();
 	foreach ($text as $tag)
 	{
 		$tmp_tag = utf8_trim($tag);
 		if (!empty($tmp_tag))
-			$results[] = $tmp_tag;
+			$results[] = utf8_substr_replace($tmp_tag, '', 50);
 	}
 
-	return $results;
+	return array_unique($results);
 }
 
 // Remove topic tags
@@ -184,37 +189,48 @@ function pun_tags_remove_topic_tags($topic_id)
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
-function pun_tags_add_new( $pun_tag, $tid )
+function pun_tags_add_new_tagid($tag_id, $topic_id)
 {
 	global $forum_db;
-
-	$pun_tags_query = array(
-		'SELECT'	=> 'id',
-		'FROM'		=> 'tags',
-		'WHERE'		=> 'tag = \''.$forum_db->escape(substr_replace($pun_tag, '', 50)).'\''
-	);
-
-	$result = $forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
-
-	if ($row = $forum_db->fetch_assoc($result))
-		$tag_id = $row['id'];
-	else
-	{
-		// Insert into tags table
-		$pun_tags_query = array(
-			'INSERT'	=> 'tag',
-			'INTO'		=> 'tags',
-			'VALUES'	=> '\''.$forum_db->escape(substr_replace($pun_tag, '', 50)).'\''
-		);
-		$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
-		$tag_id = $forum_db->insert_id();
-	}
 
 	// Insert into topic_tags table
 	$pun_tags_query = array(
 		'INSERT'	=> 'topic_id, tag_id',
 		'INTO'		=> 'topic_tags',
-		'VALUES'	=> $tid.', '.$tag_id
+		'VALUES'	=> $topic_id.', '.$tag_id
+	);
+	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
+}
+
+function pun_tags_add_new($tag, $topic_id)
+{
+	global $forum_db;
+
+	$pun_tags_query = array(
+		'INSERT'	=>	'tag',
+		'INTO'		=>	'tags',
+		'VALUES'	=>	'\''.$forum_db->escape($tag).'\''
+	);
+	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
+	$new_tagid = $forum_db->insert_id();
+
+	$pun_tags_query = array(
+		'INSERT'	=> 'topic_id, tag_id',
+		'INTO'		=> 'topic_tags',
+		'VALUES'	=> $topic_id.', '.$new_tagid
+	);
+	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
+}
+
+function pun_tags_add_existing_tag($tag_id, $topic_id)
+{
+	global $forum_db;
+
+	// Insert into topic_tags table
+	$pun_tags_query = array(
+		'INSERT'	=> 'topic_id, tag_id',
+		'INTO'		=> 'topic_tags',
+		'VALUES'	=> $topic_id.', '.$tag_id
 	);
 	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
 }
