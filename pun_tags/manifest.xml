@@ -317,7 +317,6 @@
 		<hook id="fn_add_topic_end"><![CDATA[
 			global $new_tags, $pun_tags;
 			// Add tags to DB
-
 			if (!empty($new_tags))
 			{
 				$search_arr = isset($pun_tags['index']) ? $pun_tags['index'] : array();
@@ -336,7 +335,7 @@
 			if (!empty($new_tags))
 			{
 				foreach ($new_tags as $pun_tag)
-					pun_tags_add_new($pun_tag,  $new_tid);
+					pun_tags_add_new($pun_tag, $new_tid);
 				pun_tags_generate_cache();
 			}
 		]]></hook>
@@ -364,6 +363,7 @@
 					</div>
 				</div>
 			<?php
+
 			}
 		]]></hook>
 		<hook id="ed_pre_post_edited"><![CDATA[
@@ -505,7 +505,7 @@
 					{
 						if (!isset($pun_tags['forums'][$forum_id]))
 							continue;
-						//Calcullate common keys in arrays						
+						//Calcullate common keys in arrays
 						$tmp = array_intersect($tags, array_keys($pun_tags['forums'][$forum_id]));						
 						foreach ($tmp as $cur_tag)
 						{
@@ -566,7 +566,8 @@
 							'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
 						)
 					),
-					'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND t.id IN('.implode(',', $search_ids).')'
+					'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND t.id IN('.implode(',', $search_ids).')',
+					'ORDER BY'	=> 't.last_post DESC'
 				);
 				// With "has posted" indication
 				if (!$forum_user['is_guest'] && $forum_config['o_show_dot'] == '1')
