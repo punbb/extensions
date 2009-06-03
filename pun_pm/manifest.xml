@@ -225,7 +225,7 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 	else
 		include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
-	$pun_pm_body = isset($_POST['pm_body']) ? $_POST['pm_body'] : '';
+	$pun_pm_body = isset($_POST['req_message']) ? $_POST['req_message'] : '';
 	$pun_pm_subject = isset($_POST['pm_subject']) ? $_POST['pm_subject'] : '';
 	$pun_pm_receiver_username = isset($_POST['pm_receiver']) ? $_POST['pm_receiver'] : '';
 	$pun_pm_message_id = isset($_POST['message_id']) ? $_POST['message_id'] : false;

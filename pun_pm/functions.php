@@ -1295,7 +1295,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 <?php
 	}
 ?>
-		<form class="frm-form" name="pun_pm_sendform" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
+		<form id="afocus" class="frm-form" name="pun_pm_sendform" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
 <?php
 	if ($notice !== false)
 		echo $notice;
@@ -1328,7 +1328,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div class="txt-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="txt-box textarea required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['Message'].' <em>'.$lang_common['Required'].'</em>' ?></span></label>
-						<div class="txt-input"><span class="fld-input"><textarea id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_body" rows="14" cols="95"><?php echo $body; ?></textarea></span></div>
+						<div class="txt-input"><span class="fld-input"><textarea id="fld<?php echo $forum_page['fld_count'] ?>" name="req_message" rows="14" cols="95"><?php echo $body; ?></textarea></span></div>
 					</div>
 				</div>
 <?php ($hook = get_hook('pun_pm_fn_send_form_pre_fieldset_end')) ? eval($hook) : null; ?>
