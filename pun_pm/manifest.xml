@@ -18,7 +18,7 @@
 	<description>Allows users to send private messages. This is the first simple version with minimum functions.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
-	<maxtestedon>1.3.2</maxtestedon>
+	<maxtestedon>1.3.4</maxtestedon>
 
 	<note type="uninstall" timing="pre">WARNING! All users' messages will be removed during the uninstall process. It is strongly recommended you to disable 'Private Messages' extension instead or to upgrade it without uninstalling.</note>
 
