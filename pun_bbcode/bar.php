@@ -48,7 +48,7 @@ foreach ($tags as $filename => $tag)
 		else
 			echo '<input type="button" value="'.ucfirst($tag).'" name="'.$tag.'"';
 
-		echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" pun_bbcode_tabindex="'.$pun_bbcode_tabindex.'"/>';
+		echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'"/>';
 	}
 
 	if (in_array($tag, $tags_with_attr))
@@ -58,7 +58,7 @@ foreach ($tags as $filename => $tag)
 		else
 			echo '<input type="button" value="'.ucfirst($tag).'=" name="'.$tag.'"';
 
-		echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" pun_bbcode_tabindex="'.$pun_bbcode_tabindex.'" />';
+		echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'" />';
 	}
 
 	$pun_bbcode_tabindex++;
@@ -71,7 +71,7 @@ foreach ($tags as $filename => $tag)
 
 // Display the smiley set
 foreach (array_unique($smilies) as $smile_text => $smile_file)
-	echo '<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\''.$smile_text.'\', \'\');" pun_bbcode_tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
+	echo '<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\''.$smile_text.'\', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
 
 ?>			</div>
 		</div>
