@@ -54,7 +54,19 @@ if ($forum_user['pun_bbcode_enabled'] == '1' && (FORUM_PAGE == 'viewtopic' || FO
 }
 		]]></hook>
 
-		<hook id="po_pre_post_contents, vt_quickpost_pre_message_box, ed_pre_message_box"><![CDATA[
+		<hook id="pun_pm_fn_send_form_pre_output"><![CDATA[
+if ($forum_user['pun_bbcode_enabled'] == '1')
+{
+	global $smilies, $base_url;
+	if (!defined('FORUM_PARSER_LOADED'))
+		require FORUM_ROOT.'include/parser.php';
+
+	$forum_head['style_pun_bbcode'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
+	$forum_head['js_pun_bbcode'] = '<script type="text/javascript" src="'.$ext_info['url'].'/scripts.js"></script>';
+}
+		]]></hook>
+
+		<hook id="po_pre_post_contents, vt_quickpost_pre_message_box, ed_pre_message_box, pun_pm_fn_send_form_pre_textarea_output"><![CDATA[
 if ($forum_user['pun_bbcode_enabled'] == '1')
 	include $ext_info['path'].'/bar.php';
 		]]></hook>
