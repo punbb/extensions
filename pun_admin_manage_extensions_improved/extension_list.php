@@ -3,7 +3,7 @@
 /**
  * pun_admin_manage_extensions_improved: page with list of extensions
  *
- * @copyright Copyright (C) 2008 PunBB
+ * @copyright Copyright (C) 2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_admin_manage_extensions_improved
  */
@@ -111,7 +111,7 @@ if ($section == 'hotfixes')
 	foreach ($inst_exts as $id => $ext)
 	{
 		if (strpos($id, 'hotfix_') !== 0)
-				continue;
+			continue;
 
 		$forum_page['ext_actions'] = array(
 			'flip'		=> '<span class="first-item"><a href="'.$base_url.'/admin/extensions.php?section=hotfixes&amp;flip='.$id.'&amp;csrf_token='.generate_form_token('flip'.$id).'">'.($ext['disabled'] != '1' ? $lang_admin_ext['Disable'] : $lang_admin_ext['Enable']).'</a></span>',
@@ -208,13 +208,13 @@ else
 	);
 
 	($hook = get_hook('aex_section_manage_pre_header_load')) ? eval($hook) : null;
-	
+
 	if (!defined('FORUM_PAGE_SECTION'))
 		define('FORUM_PAGE_SECTION', 'extensions');
 	if (!defined('FORUM_PAGE'))
 		define('FORUM_PAGE', 'admin-extensions-manage');
 	require FORUM_ROOT.'header.php';
-	
+
 	// START SUBST - <!-- forum_main -->
 	ob_start();
 
@@ -389,13 +389,13 @@ else
 		<div class="ct-box warn-box">
 			<p class="warn"><?php echo $lang_admin_ext['Installed extensions warn'] ?></p>
 		</div>
-		
-<?php			
-		
+
+<?php
+
 		if (isset($no_selected_extensions) && $no_selected_extensions)
 		{
 			$display_group_buttons = true;
-			echo '<div class="ct-box warn-box"><p class="warn">'.$lang_pun_man_ext_improved['No selected'].'</p></div>';		
+			echo '<div class="ct-box warn-box"><p class="warn">'.$lang_pun_man_ext_improved['No selected'].'</p></div>';
 		}
 		if (!empty($error_list))
 		{
@@ -405,20 +405,19 @@ else
 			<div class="ct-box warn-box">
 				<p class="warn"><?php echo $lang_pun_man_ext_improved['Warnings']; ?></p>
 				<ul>
-				
 <?php
-				
+
 					foreach ($error_list as $ext => $ext_list)
 						echo '<li class="warn"><span> '.sprintf($lang_pun_man_ext_improved['Work dependencies'], $ext, substr($ext_list, 0, -2)).'</span></li>';
-						
+
 ?>
 
 				</ul>
 			</div>
 
 <?php
-			
-		}			
+
+		}
 
 		echo "\t".implode("\n\t", $forum_page['ext_item'])."\n";
 	}
@@ -432,9 +431,8 @@ else
 <?php
 
 	}
-	
 	if (isset($display_group_buttons) && $display_group_buttons && !empty($inst_exts))
-	{	
+	{
 
 ?>
 
