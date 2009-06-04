@@ -107,7 +107,7 @@ $config = array(
 	'o_pun_pm_inbox_size'		=> '100',
 	'o_pun_pm_outbox_size'		=> '100',
 	'o_pun_pm_show_new_count'	=> '1',
-	'o_pun_pm_show_global_link'	=> '1',
+	'o_pun_pm_show_global_link'	=> '0',
 );
 foreach ($config as $conf_name => $conf_value)
 {
