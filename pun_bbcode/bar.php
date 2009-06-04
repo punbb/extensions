@@ -13,9 +13,9 @@ if (!defined('FORUM'))
 
 // NOTE: I couldn't find how to remove sf-set from here.
 ?>
-	<div class="sf-set" id="pun_bbcode_bar">
-		<div id="pun_bbcode_wrapper"<?php echo $forum_user['pun_bbcode_use_buttons']?' class="graphical"':'' ?>>
-			<div id="pun_bbcode_buttons">
+				<div class="sf-set" id="pun_bbcode_bar">
+					<div id="pun_bbcode_wrapper"<?php echo $forum_user['pun_bbcode_use_buttons']?' class="graphical"':'' ?>>
+						<div id="pun_bbcode_buttons">
 <?php
 
 // List of tags, which may have attribute
@@ -27,6 +27,8 @@ if ($forum_user['pun_bbcode_use_buttons'])
 else
 	$tags_with_attr = array('quote', 'color', 'url', 'email', 'img', 'list');
 
+($hook = get_hook('pun_bbcode_pre_tags_merge')) ? eval($hook) : null;
+
 // Let's get the list of all tags
 $tags = array_unique(array_merge($tags_without_attr, $tags_with_attr));
 
@@ -37,42 +39,54 @@ if ($forum_user['pun_bbcode_use_buttons'])
 	else
 		$buttons_path = $ext_info['url'].'/buttons/Oxygen';
 }
+
 $pun_bbcode_tabindex = 1;
+
+($hook = get_hook('pun_bbcode_pre_buttons_output')) ? eval($hook) : null;
 
 foreach ($tags as $filename => $tag)
 {
+	($hook = get_hook('pun_bbcode_buttons_output_loop_start')) ? eval($hook) : null;
+
 	if (in_array($tag, $tags_without_attr))
 	{
 		if ($forum_user['pun_bbcode_use_buttons'])
-			echo '<img src="'.$buttons_path.'/'.(is_numeric($filename)?$tag:$filename).'.png" alt="['.$tag.']" title="'.$tag.'"';
+			echo "\t\t\t\t\t\t\t".'<img src="'.$buttons_path.'/'.(is_numeric($filename) ? $tag : $filename).'.png" alt="['.$tag.']" title="'.$tag.'"';
 		else
-			echo '<input type="button" value="'.ucfirst($tag).'" name="'.$tag.'"';
+			echo "\t\t\t\t\t\t\t".'<input type="button" value="'.ucfirst($tag).'" name="'.$tag.'"';
 
-		echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'"/>';
+		echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'"/>'."\n";
 	}
 
 	if (in_array($tag, $tags_with_attr))
 	{
 		if ($forum_user['pun_bbcode_use_buttons'])
-			echo '<img src="'.$buttons_path.'/'.(is_numeric($filename)?$tag:$filename).'.png" alt="['.$tag.'=]" title="'.$tag.'="';
+			echo "\t\t\t\t\t\t\t".'<img src="'.$buttons_path.'/'.(is_numeric($filename)?$tag:$filename).'.png" alt="['.$tag.'=]" title="'.$tag.'="';
 		else
-			echo '<input type="button" value="'.ucfirst($tag).'=" name="'.$tag.'"';
+			echo "\t\t\t\t\t\t\t".'<input type="button" value="'.ucfirst($tag).'=" name="'.$tag.'"';
 
-		echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'" />';
+		echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'" />'."\n";
 	}
 
 	$pun_bbcode_tabindex++;
 }
 
 ?>
-			</div>
-			<div id="pun_bbcode_smilies">
+						</div>
+						<div id="pun_bbcode_smilies">
 <?php
+
+($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
 
 // Display the smiley set
 foreach (array_unique($smilies) as $smile_text => $smile_file)
-	echo '<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\''.$smile_text.'\', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
+{
+	($hook = get_hook('pun_bbcode_smilies_output_loop_start')) ? eval($hook) : null;
 
-?>			</div>
-		</div>
-	</div>
+	echo "\t\t\t\t\t\t\t".'<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\''.$smile_text.'\', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
+}
+
+?>
+						</div>
+					</div>
+				</div>
