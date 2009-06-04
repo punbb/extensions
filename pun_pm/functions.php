@@ -335,6 +335,8 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 
 	$errors = array();
 
+	($hook = get_hook('pun_pm_fn_send_message_pre_validation')) ? eval($hook) : null;
+
 	$receiver_id = pun_pm_get_receiver_id($receiver_username, $errors);
 	if ($receiver_id == 'NULL' && empty($errors))
 		$errors[] = $lang_pun_pm['Empty receiver'];
@@ -352,6 +354,7 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 	// Validate BBCode syntax
 	if ($forum_config['p_message_bbcode'] == '1' || $forum_config['o_make_links'] == '1')
 	{
+		global $smilies;
 		if (!defined('FORUM_PARSER_LOADED'))
 			require FORUM_ROOT.'include/parser.php';
 		$body = preparse_bbcode($body, $errors);
@@ -423,6 +426,8 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 
 	$errors = array();
 
+	($hook = get_hook('pun_pm_fn_save_message_pre_validation')) ? eval($hook) : null;
+
 	$receiver_id = pun_pm_get_receiver_id($receiver_username, $errors);
 
 	// Clean up body from POST
@@ -436,6 +441,7 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 	// Validate BBCode syntax
 	if ($forum_config['p_message_bbcode'] == '1' || $forum_config['o_make_links'] == '1')
 	{
+		global $smilies;
 		if (!defined('FORUM_PARSER_LOADED'))
 			require FORUM_ROOT.'include/parser.php';
 		$body = preparse_bbcode($body, $errors);
@@ -1084,7 +1090,6 @@ function pun_pm_message($message, $type)
 	if (!isset($message['id']))
 		$forum_page['heading'] = $lang_pun_pm['Preview message'];
 
-	/// some if required...
 	global $smilies;
 	if (!defined('FORUM_PARSER_LOADED'))
 		require FORUM_ROOT.'include/parser.php';
