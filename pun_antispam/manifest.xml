@@ -17,52 +17,35 @@
 	<version>1.2</version>
 	<description>Adds CAPTCHA to the register, login and guest post form.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3dev</minversion>
-	<maxtestedon>1.3</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
 
 	<install><![CDATA[
 
-if(!function_exists('imagejpeg'))
+// We do need the GD installed
+if (!function_exists('imagejpeg'))
 	message('This extension requires the <a href="http://www.php.net/gd">PHP GD library</a> to be installed.');
 
-if (!isset($forum_config['o_pun_antispam_captcha_register']))
-{
-	$query = array(
-		'INSERT'	=> 'conf_name, conf_value',
-		'INTO'		=> 'config',
-		'VALUES'	=> '\'o_pun_antispam_captcha_register\', \'1\''
-	);
-	$forum_db->query_build($query) or error(__FILE__, __LINE__);
-}
+// Add extension options to the config table
+$pun_antispam_config = array(
+	'o_pun_antispam_captcha_register'		=> '1',
+	'o_pun_antispam_captcha_guestpost'		=> '1',
+	'o_pun_antispam_captcha_login'			=> '1',
+	'o_pun_antispam_captcha_restorepass'	=> '1',
+);
 
-if (!isset($forum_config['o_pun_antispam_captcha_guestpost']))
+foreach ($pun_antispam_config as $conf_name => $conf_value)
 {
-	$query = array(
-		'INSERT'	=> 'conf_name, conf_value',
-		'INTO'		=> 'config',
-		'VALUES'	=> '\'o_pun_antispam_captcha_guestpost\', \'1\''
-	);
-	$forum_db->query_build($query) or error(__FILE__, __LINE__);
-}
+	if (!array_key_exists($conf_name, $forum_config))
+	{
+		$query = array(
+			'INSERT'	=> 'conf_name, conf_value',
+			'INTO'		=> 'config',
+			'VALUES'	=> '\''.$conf_name.'\', \''.$conf_value.'\''
+		);
 
-if (!isset($forum_config['o_pun_antispam_captcha_login']))
-{
-	$query = array(
-		'INSERT'	=> 'conf_name, conf_value',
-		'INTO'		=> 'config',
-		'VALUES'	=> '\'o_pun_antispam_captcha_login\', \'1\''
-	);
-	$forum_db->query_build($query) or error(__FILE__, __LINE__);
-}
-
-if (!isset($forum_config['o_pun_antispam_captcha_restorepass']))
-{
-	$query = array(
-		'INSERT'	=> 'conf_name, conf_value',
-		'INTO'		=> 'config',
-		'VALUES'	=> '\'o_pun_antispam_captcha_restorepass\', \'1\''
-	);
-	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	}
 }
 	]]></install>
 
@@ -75,7 +58,7 @@ $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	]]></uninstall>
 
 	<hooks>
-		<hook id="rg_start,aop_start,li_start,po_start"><![CDATA[
+		<hook id="rg_start, aop_start, li_start, po_start"><![CDATA[
 // Load the captcha language file
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';

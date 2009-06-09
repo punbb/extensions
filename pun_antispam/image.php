@@ -15,7 +15,7 @@ function pun_antispam_rand_str ()
 }
 
 // Output CAPTCHA string into an image
-function pun_antispam_image($string)
+function pun_antispam_image ($string)
 {
 	$im = imagecreate(100, 18);
 
@@ -35,8 +35,6 @@ function pun_antispam_image($string)
 
 	imagejpeg($im, null, 30);
 	imagedestroy($im);
-
-	return $string;
 }
 
 session_start();
