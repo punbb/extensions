@@ -4,7 +4,7 @@
 <!--
 ***********************************************************************
 
-	Copyright (C) 2008  PunBB
+	Copyright (C) 2009 PunBB
 
 	Partially based on Attachment Mod by Frank Hagstrom
 
@@ -39,12 +39,8 @@
 
 	<install><![CDATA[
 
-		require FORUM_ROOT.'/extensions/'.$id.'/install_function.php';
-		
-		if (file_exists(FORUM_ROOT.'/extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php'))
-			require FORUM_ROOT.'/extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php';
-		else
-			require FORUM_ROOT.'/extensions/'.$id.'/lang/English/'.$id.'.php';
+		require FORUM_ROOT.'extensions/'.$id.'/include/attach_func.php';
+		require FORUM_ROOT.'extensions/'.$id.'/lang/'.$forum_user['language'].'/'.$id.'.php';
 
 		if (!$forum_db->table_exists('attach_files'))
 		{
@@ -118,26 +114,36 @@
 			$query = array(
 				'UPDATE'	=> 'groups',
 				'SET'		=> 'g_pun_attachment_allow_download = 1, g_pun_attachment_allow_upload = 1, g_pun_attachment_allow_delete = 1, g_pun_attachment_allow_delete_own = 1, g_pun_attachment_upload_max_size = 0, g_pun_attachment_files_per_post = -1, g_pun_attachment_disallowed_extensions=\'\'',
-				'WHERE'		=> 'g_id = 1'
+				'WHERE'		=> 'g_id = '.FORUM_ADMIN
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
-		}
-		
-		if (!$exist)			
-		{
+
 			$query = array(
 				'UPDATE'	=> 'groups',
 				'SET'		=> 'g_pun_attachment_allow_download = 0, g_pun_attachment_allow_upload = 0, g_pun_attachment_allow_delete = 0, g_pun_attachment_allow_delete_own = 0, g_pun_attachment_upload_max_size = 0, g_pun_attachment_files_per_post = 0, g_pun_attachment_disallowed_extensions = \'\'',
-				'WHERE'		=> 'g_id = 2'
+				'WHERE'		=> 'g_id = '.FORUM_GUEST
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
 
-		$basepath = realpath(FORUM_ROOT.'/extensions/'.$id.'/attachments').'/';
+		$basepath = implode(DIRECTORY_SEPARATOR, array('extensions', $id, 'attachments')).DIRECTORY_SEPARATOR ;		
 		$newname = attach_generate_pathname($basepath);
+		if (!is_dir($basepath.$newname))
+		{
+			$errors = array();
+			if (!is_writable(FORUM_ROOT.$basepath))
+				$errors['Permission denied'] = '<li>'.$lang_attach['Permission denied'].'</li>';
+			if (!file_exists(FORUM_ROOT.$basepath.'.htaccess'))
+				$errors['Htaccess fail'] = '<li>'.$lang_attach['Htaccess fail'].'</li>';
+			if (!file_exists(FORUM_ROOT.$basepath.'index.html'))
+				$errors['Index fail'] = '<li>'.$lang_attach['Index fail'].'</li>';
+			if (!empty($errors))
+				message($lang_attach['Errors notice'].'<ul>'.implode('</br>', $errors).'</ul>');
 
-		if (!attach_create_subfolder($newname, $basepath))
-			error('Unable to create new subfolder with name "'.$newname.'", make sure php has write access to that folder!',__FILE__,__LINE__);
+			mkdir(FORUM_ROOT.$basepath.$newname, 0750) or error($lang_attach['Error: mkdir'].' "'.FORUM_ROOT.$basepath.$newname.'" '.$lang_attach['Error: 0750'], __FILE__, __LINE__);
+			copy(FORUM_ROOT.$basepath.'.htaccess', FORUM_ROOT.$basepath.$newname.'/.htaccess') or error($lang_attach['Error: .htaccess'].' "'.FORUM_ROOT.$basepath.$newname.'"', __FILE__, __LINE__);
+			copy(FORUM_ROOT.$basepath.'index.html', FORUM_ROOT.$basepath.$newname.'/index.html') or error($lang_attach['Error: index.html'].' "'.FORUM_ROOT.$basepath.$newname.'"', __FILE__, __LINE__);
+		}
 
 		$query = array(
 			'SELECT'	=> '1',
@@ -164,7 +170,6 @@
 				'attach_small_width'		=> '60',
 				'attach_disable_attach'		=> '0'
 			);
-
 			foreach ($attach_config as $key => $value)
 			{
 				$query_attach = array(
@@ -190,14 +195,13 @@
 		$forum_db->drop_field('groups', 'g_pun_attachment_upload_max_size');
 		$forum_db->drop_field('groups', 'g_pun_attachment_files_per_post');
 		$forum_db->drop_field('groups', 'g_pun_attachment_disallowed_extensions');
-		
-		$config_names  =  array('conf_name = \'attach_always_deny\'', 'conf_name = \'attach_basefolder\'', 'conf_name = \'attach_create_orphans\'', 'conf_name = \'attach_cur_version\'', 'conf_name = \'attach_icon_folder\'', 'conf_name = \'attach_icon_extension\'', 'conf_name = \'attach_icon_name\'', 'conf_name = \'attach_subfolder\'', 'conf_name = \'attach_use_icon\'', 'conf_name = \'attach_disable_attach\'', 'conf_name = \'attach_disp_small\'', 'conf_name = \'attach_small_height\'', 'conf_name = \'attach_small_width\'');
+
+		$config_names  =  array('attach_always_deny', 'attach_basefolder', 'attach_create_orphans', 'attach_cur_version', 'attach_icon_folder', 'attach_icon_extension', 'attach_icon_name', 'attach_subfolder', 'attach_use_icon', 'attach_disable_attach', 'attach_disp_small', 'attach_small_height', 'attach_small_width');
 		$query_attach = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> implode(' OR ', $config_names)
-			
+			'WHERE'		=> 'conf_name IN (\''.implode('\', \'', $config_names).'\')'
 		);
-		$forum_db->query_build($query_attach) or error(__FILE__, __LINE__);		
+		$forum_db->query_build($query_attach) or error(__FILE__, __LINE__);	
 	]]></uninstall>
 
 	<hooks>

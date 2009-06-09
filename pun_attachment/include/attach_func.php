@@ -2,7 +2,7 @@
 
 /***********************************************************************
 
-	Copyright (C) 2008 PunBB
+	Copyright (C) 2009 PunBB
 
 	Partially based on Attachment Mod by Frank Hagstrom
 
@@ -78,18 +78,11 @@ function attach_generate_pathname($storagepath = '')
 {
 	global $lang_attach;
 
-	if (!empty($storagepath))
-	{
-		while (1)
-		{
-			$newdir = attach_generate_pathname();
+	if (empty($storagepath))
+		return md5(time().$lang_attach['Put salt'].rand(0, 1E6));
 
-			if (!is_dir($storagepath.$newdir))
-				return $newdir;
-		}
-	}
-	else
-		return substr(md5(time().$lang_attach['Salt keyword']), 0, 32);
+	while (($newdir = attach_generate_pathname()) && is_dir(FORUM_ROOT.$storagepath.$newdir));
+	return $newdir;
 }
 
 
@@ -98,13 +91,8 @@ function attach_generate_filename($storagepath, $messagelenght=0, $filesize=0)
 {
 	global $lang_attach;
 
-	while (1)
-	{
-		$newfile = md5(attach_generate_pathname().$messagelenght.$filesize.$lang_attach['Some more salt keywords']).'.attach';
-
-		if (!is_file($storagepath.$newfile))
-			return $newfile;
-	}
+	while (($newfile = md5(attach_generate_pathname().$messagelenght.$filesize.$lang_attach['Some more salt keywords']).'.attach') && is_file(FORUM_ROOT.$storagepath.$newfile));
+	return $newfile;
 }
 
 function attach_create_attachment($name, $file_mime_type, $size, $tmp_name, $messagelenght, $time, $post_id = 0)
@@ -167,50 +155,6 @@ function attach_create_attachment($name, $file_mime_type, $size, $tmp_name, $mes
 	$id = $forum_db->result($id, 0);
 
 	return $id;
-}
-
-function attach_create_subfolder($newfolder)
-{
-	global $forum_db, $forum_config, $forum_user;
-
-	if (empty($newfolder) || $forum_user['g_id'] != FORUM_ADMIN)
-		return false;
-
-	if (!is_dir($forum_config['attach_basefolder'].$newfolder))
-	{
-		if(!mkdir($forum_config['attach_basefolder'].$newfolder, 0750))
-			error('Unable to create new subfolder with name \''.$forum_config['attach_basefolder'].$newfolder.'\' with mode 0750', __FILE__ ,__LINE__);
-		if(!copy($forum_config['attach_basefolder'].'.htaccess', $forum_config['attach_basefolder'].$newfolder.'/.htaccess'))
-			error('Unable to copy .htaccess file to new subfolder with name \''.$forum_config['attach_basefolder'].$newfolder.'\'', __FILE__, __LINE__);
-		if(!copy($forum_config['attach_basefolder'].'index.html', $forum_config['attach_basefolder'].$newfolder.'/index.html'))
-			error('Unable to copy index.html file to new subfolder with name \''.$forum_config['attach_basefolder'].$newfolder.'\'', __FILE__, __LINE__);
-	}
-
-	$form = array('subfolder' => $newfolder);
-
-	while (list($key, $input) = @each($form))
-	{
-		if ($forum_config['attach_'.$key] == $input)
-			continue;
-
-		if (!empty($input) || is_int($input))
-			$value = '\''.$forum_db->escape($input).'\'';
-		else
-			$value = 'NULL';
-
-		$query = array(
-			'UPDATE'	=> 'config',
-			'SET'		=> 'conf_value = '.$value,
-			'WHERE'		=> 'conf_name = \'attach_'.$key.'\''
-		);
-
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);		
-	}
-	
-	require_once FORUM_ROOT.'include/cache.php';
-	generate_config_cache();
-
-	return true;
 }
 
 function attach_create_mime($file_ext = '')

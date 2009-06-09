@@ -2,7 +2,7 @@
 
 /***********************************************************************
 
-	Copyright (C) 2008  PunBB
+	Copyright (C) 2009  PunBB
 
 	Partially based on Attachment Mod by Frank Hagstrom
 
@@ -158,6 +158,11 @@ $lang_attach = array(
 'Image preview'			=>	'Preview image',
 
 'Manage attahcments'	=>	'Manage attachments',
-'Manage id'				=>	'Manage attachment %s'
+'Manage id'				=>	'Manage attachment %s',
+
+'Permission denied'		=>	'The directory "FORUM_ROOT/extensions/pun_attachment/attachments" is not writable for Web-server!',
+'Htaccess fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/.htaccess" does not exist.',
+'Index fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/index.html" does not exist.',
+'Errors notice'			=>	'Following errors was encountered:'
 
 );
