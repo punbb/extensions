@@ -25,16 +25,8 @@
 
 if (!defined('FORUM')) exit;
 
-//These constants are used when performing security checks
-
-define('MBYTE', 1048576);
-define('KBYTE',	1024);
-
 $attach_icons = array();
 
 require $ext_info['path'].'/include/attach_func.php';
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 require $ext_info['path'].'/url.php';

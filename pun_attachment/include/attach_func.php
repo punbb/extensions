@@ -25,6 +25,9 @@
 
 if (!defined('FORUM')) exit;
 
+define('MBYTE', 1048576);
+define('KBYTE', 1024);
+
 function attach_allow_upload($upload, $max_size, $file_ext, $upload_size, $upload_name)
 {
 	global $forum_user, $forum_config, $ext_info, $lang_attach;
@@ -87,74 +90,117 @@ function attach_generate_pathname($storagepath = '')
 
 
 
-function attach_generate_filename($storagepath, $messagelenght=0, $filesize=0)
+function attach_generate_filename($messagelenght=0, $filesize=0)
 {
-	global $lang_attach;
+	global $lang_attach, $forum_config;
 
-	while (($newfile = md5(attach_generate_pathname().$messagelenght.$filesize.$lang_attach['Some more salt keywords']).'.attach') && is_file(FORUM_ROOT.$storagepath.$newfile));
+	while (($newfile = md5(attach_generate_pathname().$messagelenght.$filesize.$lang_attach['Some more salt keywords']).'.attach') && is_file(FORUM_ROOT.$forum_config['attach_basefolder'].$forum_config['attach_subfolder'].'/'.$newfile));
 	return $newfile;
 }
 
-function attach_create_attachment($name, $file_mime_type, $size, $tmp_name, $messagelenght, $time, $post_id = 0)
+function attach_create_attachment($attach_secure_str, $cur_posting)
 {
-	global $forum_db, $forum_user, $forum_config;
-	
-	//attach_get_extension($name)
-	$unique_name = attach_generate_filename($forum_config['attach_basefolder'].$forum_config['attach_subfolder'].'/', $messagelenght, $size, $time);
+	global $forum_db, $forum_user, $forum_config, $errors, $uploaded_list;
 
-	if (!move_uploaded_file($tmp_name, $forum_config['attach_basefolder'].$forum_config['attach_subfolder'].'/'.$unique_name))
-		error('Unable to move file from: '.$tmp_name.' to '.$forum_config['attach_basefolder'].$forum_config['attach_subfolder'].'/'.$unique_name.'',__FILE__,__LINE__);
-
-	$file_mime_type = attach_create_mime(strpos($name, '.') !== false ? substr($name, -strpos(strrev($name), '.')) : '');
-
-	if ($post_id)
+	if ($cur_posting['g_pun_attachment_allow_upload'] == 1)
 	{
-		$query = array(
-			'SELECT'	=> 'topic_id, poster_id',
-			'FROM'		=> 'posts',
-			'WHERE'		=> 'id = '.$post_id
-		);
-		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		if ($forum_db->num_rows($result))
+		if (count($uploaded_list) + 1 > $cur_posting['g_pun_attachment_files_per_post'])
+			$errors[] = sprintf($lang_attach['Attach limit error'], $cur_posting['g_pun_attachment_files_per_post']);
+		else
 		{
-			$rules = $forum_db->fetch_assoc($result);
+			// Load the profile.php language file
+			require FORUM_ROOT.'lang/'.$forum_user['language'].'/profile.php';
+			if (!isset($_FILES['attach_file']))
+				$errors[] = $lang_profile['No file'];
+			else
+				$uploaded_file = $_FILES['attach_file'];
 
-			$topic = $rules['topic_id'];
-			$owner_id = $rules['poster_id'];
+			// Make sure the upload went smooth
+			if (isset($uploaded_file['error']) && empty($errors))
+			{
+				switch ($uploaded_file['error'])
+				{
+					case 1:	// UPLOAD_ERR_INI_SIZE
+					case 2:	// UPLOAD_ERR_FORM_SIZE
+						$errors[] = $lang_profile['Too large ini'];
+						break;
+		
+					case 3:	// UPLOAD_ERR_PARTIAL
+						$errors[] = $lang_profile['Partial upload'];
+						break;
+		
+					case 4:	// UPLOAD_ERR_NO_FILE
+						$errors[] = $lang_profile['No file'];
+						break;
+		
+					case 6:	// UPLOAD_ERR_NO_TMP_DIR
+						$errors[] = $lang_profile['No tmp directory'];
+						break;
+		
+					default:
+						// No error occured, but was something actually uploaded?
+						if ($uploaded_file['size'] == 0)
+							$errors[] = $lang_profile['No file'];
+						break;
+				}
+			}
+			if (empty($errors))
+			{
+				$file_ext = attach_get_extension($uploaded_file['name']);
+				if (in_array($file_ext, explode(',', $cur_posting['g_pun_attachment_disallowed_extensions'])) || (empty($cur_posting['g_pun_attachment_disallowed_extensions']) && in_array($file_ext, explode(',', $forum_config['attach_always_deny']))))
+					$errors[] = sprintf($lang_attach['Ext error'], $file_ext);
+				if ($uploaded_file['size'] > $cur_posting['g_pun_attachment_upload_max_size'])
+					$errors[] = sprintf($lang_attach['Filesize error'], $cur_posting['g_pun_attachment_upload_max_size']);
+			}
+		}			
+	}
+	else
+		$errors[] = $lang_attach['Up perm error'];
+
+	if (empty($errors))
+	{
+		if (is_uploaded_file($uploaded_file['tmp_name']) )
+		{		
+			$attach_name = attach_generate_filename();
+			if (!move_uploaded_file($uploaded_file['tmp_name'], $forum_config['attach_basefolder'].$forum_config['attach_subfolder'].'/'.$attach_name))
+				$errors[] = sprintf($lang_profile['Move failed'], '<a href="mailto:'.forum_htmlencode($forum_config['o_admin_email']).'">'.forum_htmlencode($forum_config['o_admin_email']).'</a>');
+			if (empty($errors))
+			{
+				$attach_record = array('owner_id' => 0, 'post_id' => 0, 'topic_id' => 0, 'filename' => '\''.$forum_db->escape($uploaded_file['name']).'\'', 'file_ext' => '\''.$forum_db->escape($file_ext).'\'', 'file_mime_type' => '\''.attach_create_mime($file_ext).'\'', 'file_path' => '\''.$forum_db->escape($forum_config['attach_subfolder'].'/'.$attach_name).'\'', 'size' => $uploaded_file['size'], 'download_counter' => 0, 'uploaded_at' => time(), 'secure_str' => '\''.$forum_db->escape($attach_secure_str).'\'');
+
+				if (in_array($file_ext, array('gif', 'jpg', 'png')))
+				{
+					list($width, $height,,) = getimagesize(FORUM_ROOT.$forum_config['attach_basefolder'].$forum_config['attach_subfolder'].'/'.$attach_name);
+					if (empty($width) || empty($height))
+						$errors[] = $lang_attach['Bad image'];
+					else
+					{
+						$attach_record['img_width'] = $width;
+						$attach_record['img_height'] = $height;
+					}
+				}
+				else
+				{
+					$attach_record['img_width'] = 'NULL';
+					$attach_record['img_height'] = 'NULL';
+				}
+				if (empty($errors))
+				{
+					$attach_query = array(
+						'INSERT'	=>	implode(',', array_keys($attach_record)),
+						'INTO'		=>	'attach_files',
+						'VALUES'	=>	implode(',', array_values($attach_record))
+					);
+					$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+					$attach_record['id'] = $forum_db->insert_id();
+					$attach_record['filename'] = $forum_db->escape($uploaded_file['name']);
+					$attach_record['file_ext'] = $forum_db->escape($file_ext);
+					$attach_record['secure_str'] = $attach_secure_str;
+					$uploaded_list[] = $attach_record;
+				}
+			}
 		}
 	}
-
-	$query = array(
-		'INSERT'	=> 'post_id, filename, file_ext, file_mime_type, file_path, size, uploaded_at',
-		'INTO'		=> 'attach_files',
-		'VALUES'	=> $post_id.', \''.$forum_db->escape($name).'\',\''.attach_get_extension($name).'\',\''.$forum_db->escape($file_mime_type).'\',\''.$forum_db->escape($forum_config['attach_subfolder'].'/'.$unique_name).'\', '.$size.', '.$time
-	);
-
-	if (isset($topic))
-	{
-		$query['INSERT'] .= ', topic_id';
-		$query['VALUES'] .= ', '.$topic;
-	}
-	if (isset($owner_id))
-	{
-		$query['INSERT'] .= ', owner_id';
-		$query['VALUES'] .= ', '.$owner_id;
-	}
-
-	$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
-
-	$query = array(
-		'SELECT'	=> 'id',
-		'FROM'		=> 'attach_files',
-		'WHERE'		=> 'file_path=\''.$forum_db->escape($forum_config['attach_subfolder'].'/'.$unique_name).'\''
-	);
-
-	$id = $forum_db->query_build($query) or error(__FILE__,__LINE__);
-
-	$id = $forum_db->result($id, 0);
-
-	return $id;
 }
 
 function attach_create_mime($file_ext = '')
@@ -256,14 +302,14 @@ function attach_delete_attachment($item, $orphans)
 
 		if ($forum_db->num_rows($result) || $forum_db->num_rows($owner_result))
 		{
-			$attach_info = $forum_db->fetch_assoc($result);
+			$attach = $forum_db->fetch_assoc($result);
 			$owner_id = $forum_db->fetch_assoc($owner_result);
 
-			if ($attach_info['g_pun_attachment_allow_delete'])
+			if ($attach['g_pun_attachment_allow_delete'])
 			{
 				$attach_allowed_delete = '1';
 			}
-			else if ($forum_db->num_rows($owner_result) && $attach_info['g_pun_attachment_allow_delete_own'])
+			else if ($forum_db->num_rows($owner_result) && $attach['g_pun_attachment_allow_delete_own'])
 			{
 				$attach_allowed_delete = '1';
 			}
@@ -285,9 +331,9 @@ function attach_delete_attachment($item, $orphans)
 
 		if ($forum_db->num_rows($result))
 		{
-			$attach_info = $forum_db->fetch_assoc($result);
+			$attach = $forum_db->fetch_assoc($result);
 
-			$fp = fopen($forum_config['attach_basefolder'].$attach_info['file_path'], 'wb');
+			$fp = fopen($forum_config['attach_basefolder'].$attach['file_path'], 'wb');
 
 			if (!$fp)
 				message(sprintf($lang_attach['Bad filepointer'], $item));
@@ -412,4 +458,62 @@ function format_size($size)
 		$size = $size.$lang_attach['B'];
 
 	return $size;
+}
+
+function show_attachments($attach_list, $cur_posting)
+{
+	global $lang_attach, $forum_page, $forum_config, $attach_url;
+echo 'sdsd';
+	if (!empty($attach_list))
+	{
+		$num = 0;
+
+		foreach ($attach_list as $attach)
+		{
+			++$num;
+			$show_image = in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff')) && ($forum_config['attach_disp_small'] == '1') && ($attach['img_height'] <= $forum_config['attach_small_height']) && ($attach['img_width'] <= $forum_config['attach_small_width']);
+			$download_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_show_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_download'], $attach['id']);
+			$preview_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_preview_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_preview'], $attach['id']);
+			$attach_info = format_size($attach['size']).', '.($attach['download_counter'] ? sprintf($lang_attach['Since'], $attach['download_counter'], date('Y-m-d', $attach['uploaded_at'])) : $lang_attach['Never download']).'&nbsp;';
+
+			?>
+			<div class="<?php echo $show_image ? 'ct-set' : 'sf-set'; ?> set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="<?php echo $show_image ? 'ct' : 'sf'; ?>-box text">
+				<?php if ($show_image):	?>
+					<h3 class="hn ct-legend"><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></h3>
+						<p class="avatar-demo"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $download_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.$attach['size'].', '.$attach['img_width'].' x '.$attach['img_height']; ?>" /></a></span></p>
+						<p><?php echo $attach_info; ?><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete']; ?>"/></p>
+				<?php else: ?>
+						<label for="fld<?php echo ++$forum_page['fld_count']; ?>"><span><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></span></label>
+						<?php if (in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff'))): ?>
+							<a href="<?php echo $preview_link; ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']); ?></a>
+						<?php else: ?>
+							<a href="<?php echo $download_link; ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']);?></a>
+						<?php endif; ?>
+						<?php echo $attach_info; ?>
+						<input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete']; ?>"/>
+				<?php endif; ?>
+				</div>
+			</div>
+		<?php
+	
+		}
+	}
+	if ($cur_posting['g_pun_attachment_allow_upload'] && count($attach_list) < $cur_posting['g_pun_attachment_files_per_post'])
+	{
+
+	?>
+		<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+			<div class="sf-box text">
+				<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Attachment'] ?></span></label><br />
+				<span class="fld-input">
+					<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $cur_posting['g_pun_attachment_upload_max_size']; ?>" />
+					<input type="file" id="fld<?php echo $forum_page['fld_count'] ?>" name="attach_file" />
+					<input type="submit" name="add_file" value="<?php echo $lang_attach['Add file']; ?>"/>
+				</span>
+			</div>
+		</div>
+	<?php
+
+	}
 }

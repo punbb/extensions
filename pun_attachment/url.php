@@ -37,9 +37,13 @@ $attach_url = array(
 	'admin_options_attach'		=>	'admin/settings.php?section=pun_attach',
 	'admin_attachment_edit'		=>	'admin/settings.php?section=pun_list_attach&amp;id=$1',
 	'misc_download'				=>	'misc.php?item=$1&amp;download=0',
-	'misc_preview'				=>	'misc.php?item=$1&amp;download=1&amp;back=$2&amp;id=$3&amp;topic=$4',
+	'misc_preview'				=>	'misc.php?item=$1&amp;preview',
+	'misc_preview_secure'		=>	'misc.php?item=$1&amp;preview&amp;secure_str=$2',
 	'misc_vt_down'				=>	'misc.php?item=$1&amp;download=$2',
-	'misc_admin'				=>	'misc.php?item=$1'
+	'misc_admin'				=>	'misc.php?item=$1',
+	'misc_download_secure'		=>	'misc.php?item=$1&amp;download&amp;secure_str=$2',
+	'misc_show_secure'			=>	'misc.php?item=$1&amp;show&amp;secure_str=$2',
+	
 );
 
 ?>

@@ -103,12 +103,8 @@ $lang_attach = array(
 'Wrong post'			=>	'You have entered wrong post id. Please correct.',
 'Forbid delete'			=>	'You do not have permissions to delete attachments.',
 'Forbid upload'			=>	'You do not have permissions to upload files.',
-'No file'				=>	'You did not select a file for upload.',
-'Too large ini'			=>	'The selected file was too large to upload. The server didn\'t allow the upload.',
 'Bad type'				=>	'The file you tried to upload is not of an allowed type.',
 'Too large ini'			=>	'The selected file was too large to upload. The server didn\'t allow the upload.',
-'Partial upload'		=>	'The selected file was only partially uploaded. Please try again.',
-'No tmp directory'		=>	'PHP was unable to save the uploaded file to a temporary location.',
 'Wrong icon/name'		=>	'You have entered wrong extension/icon name',
 'No icons'				=>	'You have entered empty value of extension/icon name. Please, go back and correct.',
 'Wrong deny'			=>	'You have entered wrong list of denied extensions. Please, go back and correct.',
@@ -163,6 +159,15 @@ $lang_attach = array(
 'Permission denied'		=>	'The directory "FORUM_ROOT/extensions/pun_attachment/attachments" is not writable for Web-server!',
 'Htaccess fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/.htaccess" does not exist.',
 'Index fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/index.html" does not exist.',
-'Errors notice'			=>	'Following errors was encountered:'
+'Errors notice'			=>	'Following errors was encountered:',
+
+'Del perm error'		=>	'You don\'t have permission to delete this file.',
+'Up perm error'			=>	'You don\'t have permission to upload file to this post.',
+
+'Attach limit error'	=>	'You can add only %s attachments to this post.',
+'Ext error'				=>	'You can\'t add attachment with "%s" extension.',
+'Filesize error'		=>	'You can\'t upload file, which size more than "%s" bytes.',
+'Bad image'				=>	'Bad image! Try upload it again.',
+'Add file'				=>	'Add file',
 
 );
