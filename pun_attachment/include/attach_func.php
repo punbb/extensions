@@ -463,7 +463,7 @@ function format_size($size)
 function show_attachments($attach_list, $cur_posting)
 {
 	global $lang_attach, $forum_page, $forum_config, $attach_url;
-echo 'sdsd';
+
 	if (!empty($attach_list))
 	{
 		$num = 0;
