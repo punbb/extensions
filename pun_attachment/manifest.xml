@@ -494,153 +494,46 @@ if ($forum_config['attach_disable_attach'] != '1')
 			
 		]]></hook>
 
-		<hook id="hd_head"><![CDATA[
-			
-			if (file_exists($ext_info['path'].'/attach_style.css'))
-			{
-				ob_start();
-				
-				$forum_head['attach_style'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.forum_link('extensions/pun_attachment/attach_style.css').'" />';
-				
-				ob_end_clean();
-			}
-			
-		]]></hook>
-		
 		<hook id="vt_start"><![CDATA[
-
-			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
-			{
-				require $ext_info['path'].'/include/attach_incl.php';
-			}
-
-
+if ($forum_config['attach_disable_attach'] != '1')
+	require $ext_info['path'].'/include/attach_incl.php';
 		]]></hook>
 
-		<hook id="vt_pre_header_load"><![CDATA[
-
-			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
-			{
-				$query = array(
-					'SELECT'	=> 'af.id, af.filename, af.file_ext, af.file_path, af.size, af.download_counter, af.uploaded_at, p.id AS post_id, g.g_pun_attachment_allow_download, g.g_pun_attachment_allow_upload, g.g_pun_attachment_allow_delete, g.g_pun_attachment_allow_delete_own, g.g_pun_attachment_upload_max_size, g.g_pun_attachment_disallowed_extensions',
-					'FROM'		=> 'attach_files AS af',
-					'JOINS'		=> array(
-						array(
-							'JOIN'	=> 'posts p',
-							'ON'	=> 'af.post_id=p.id'
-						),
-						array(
-							'JOIN'	=> 'groups g',
-							'ON'	=> 'g_id='.$forum_user['g_id']
-						)
-					),
-					'ORDER BY'	=> 'p.id',
-					'LIMIT'		=> $forum_page['start_from'].','.$forum_user['disp_posts']
-				);
-
-				$result_attach = $forum_db->query_build($query) or error(__FILE__,__LINE__);
-
-				while ($cur_attach = $forum_db->fetch_assoc($result_attach))
-				{
-					$allowed_down = ($cur_attach['g_pun_attachment_allow_download'] == '1') ? '1' : '0';
-
-					$post_content[$cur_attach['post_id']][$cur_attach['id']] = array();
-
-					$post_content[$cur_attach['post_id']][$cur_attach['id']]['filename'] = $cur_attach['filename'];
-					$post_content[$cur_attach['post_id']][$cur_attach['id']]['file_ext'] = attach_get_extension($cur_attach['filename']);
-					$post_content[$cur_attach['post_id']][$cur_attach['id']]['file_path'] = $cur_attach['file_path'];
-					$post_content[$cur_attach['post_id']][$cur_attach['id']]['size'] = $cur_attach['size'];
-					$post_content[$cur_attach['post_id']][$cur_attach['id']]['download_counter'] = $cur_attach['download_counter'];
-					$post_content[$cur_attach['post_id']][$cur_attach['id']]['uploaded_at'] = $cur_attach['uploaded_at'];
-				}
-			}
-
+		<hook id="vt_qr_get_topic_info"><![CDATA[
+if ($forum_config['attach_disable_attach'] != '1')
+{
+	$query['SELECT'] .= ', g_pun_attachment_allow_download';
+	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
+}
 		]]></hook>
-
+		<hook id="vt_main_output_start"><![CDATA[
+if ($forum_config['attach_disable_attach'] != '1')
+{
+	$attach_query = array(
+		'SELECT'	=>	'id, post_id, filename, file_ext, file_mime_type, size, download_counter, uploaded_at, img_width, img_height',
+		'FROM'		=>	'attach_files',
+		'WHERE'		=>	'topic_id = '.$id,
+		'ORDER BY'	=>	'filename'
+	);
+	$attach_result = $forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+	$attach_list = array();
+	while ($cur_attach = $forum_db->fetch_assoc($attach_result))
+	{
+		if (!isset($attach_list[$cur_attach['post_id']]))
+			$attach_list[$cur_attach['post_id']] = array();
+		$attach_list[$cur_attach['post_id']][] = $cur_attach;
+	}
+}
+		]]></hook>
 
 		<hook id="vt_row_pre_display"><![CDATA[
-
-			if (($forum_config['attach_disable_attach'] != '1') || ($forum_user['is_admmod'] == '1'))
-			{
-				$images = array();
-
-				if (isset($post_content[$cur_post['id']]))
-				{
-					
-					$forum_page['message'][] .= '
-						<fieldset class="brd attachments">
-						';
-					
-					foreach ($post_content[$cur_post['id']] as $key => $value)
-					{
-						$attach_img = '0';
-						$attach_id = $key;
-						$name = $post_content[$cur_post['id']][$attach_id]['filename'];
-						$ext = $post_content[$cur_post['id']][$attach_id]['file_ext'];
-						$size = $post_content[$cur_post['id']][$attach_id]['size'];
-						$file_path = $post_content[$cur_post['id']][$attach_id]['file_path'];
-						$download_counter = $post_content[$cur_post['id']][$attach_id]['download_counter'];
-						$date = $post_content[$cur_post['id']][$attach_id]['uploaded_at'];
-
-						$size = format_size($size);
-						$download = 1;
-						$show = 0;
-
-						if (in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
-						{
-							list ($width, $height, , ) = getimagesize($ext_info['path'].'/attachments/'.$file_path);
-
-							$download = '0';
-
-							if (($height <= $forum_config['attach_small_height']) && ($width <= $forum_config['attach_small_width']))
-							{
-								$images[] = '<a href="'.forum_link($attach_url['misc_download'], $attach_id).'"><img src="'.forum_link($attach_url['misc_download'], $attach_id).'" title="'.$name.', '.$size.', '.$width.' x '.$height.'" /></a>&nbsp;&nbsp;&nbsp;';
-								$download = '1';
-								$show = 1;
-							}
-						}
-
-						if (!$show)
-						{
-							if ($download_counter)
-								$download_counter = sprintf($lang_attach['Since'], $download_counter, date('Y-m-d', $date));
-							else
-								$download_counter = $lang_attach['Never download'];
-
-							$args = array();
-							$args[] = $attach_id;
-							$args[] = $download;
-							
-							if ($allowed_down)
-							{
-								if (in_array(strtolower($ext), array('jpg', 'jpeg', 'gif', 'png')) && $forum_config['attach_disp_small'] && $allowed_down)
-								{
-									list ($width, $height, , ) = getimagesize($ext_info['path'].'/attachments/'.$file_path);
-
-									$download = '0';
-
-									if (($height > $forum_config['attach_small_height']) && ($width > $forum_config['attach_small_width']))
-									{
-										$forum_page['message'][] .= '<div class="post-signature"><a href="'.forum_link($attach_url['misc_admin'], $args).'">'.attach_icon($ext).$name.'</a>, '.$size.', '.$download_counter.'</div><br>';
-									}
-								}
-								else
-									$forum_page['message'][] .= '<div class="post-signature"><a href="'.forum_link($attach_url['misc_vt_down'], $args).'">'.attach_icon($ext).$name.'</a>, '.$size.', '.$download_counter.'</div><br>';
-							}
-							else
-								$forum_page['message'][] .= '<div class="post-signature">'.attach_icon($ext).'&nbsp;'.$name.', '.$size.', '.$download_counter.'</div><br>';
-						}
-					}
-
-					if (isset($images))
-					{
-						$forum_page['message'][].= implode(' ', $images);
-					}
-					
-					$forum_page['message'][] .= '</fieldset>';
-				}
-			}
-
+if ($forum_config['attach_disable_attach'] != '1' && isset($attach_list[$cur_post['id']]))
+{
+	if (isset($forum_page['message']['signature']))
+		$forum_page['message']['signature'] = show_attachments_post($attach_list[$cur_post['id']], $cur_post['id'], $cur_topic).$forum_page['message']['signature'];
+	else
+		$forum_page['message']['attachments'] = show_attachments_post($attach_list[$cur_post['id']], $cur_post['id'], $cur_topic);
+}
 		]]></hook>
 
 		<hook id="ed_start"><![CDATA[

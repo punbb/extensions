@@ -100,7 +100,7 @@ function attach_generate_filename($messagelenght=0, $filesize=0)
 
 function attach_create_attachment($attach_secure_str, $cur_posting)
 {
-	global $forum_db, $forum_user, $forum_config, $errors, $uploaded_list;
+	global $forum_db, $forum_user, $forum_config, $errors, $uploaded_list, $lang_attach;
 
 	if ($cur_posting['g_pun_attachment_allow_upload'] == 1)
 	{
@@ -481,7 +481,7 @@ function show_attachments($attach_list, $cur_posting)
 				<div class="<?php echo $show_image ? 'ct' : 'sf'; ?>-box text">
 				<?php if ($show_image):	?>
 					<h3 class="hn ct-legend"><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></h3>
-						<p class="avatar-demo"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $download_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.$attach['size'].', '.$attach['img_width'].' x '.$attach['img_height']; ?>" /></a></span></p>
+						<p class="avatar-demo"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $download_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $download_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" /></a></span></p>
 						<p><?php echo $attach_info; ?><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete']; ?>"/></p>
 				<?php else: ?>
 						<label for="fld<?php echo ++$forum_page['fld_count']; ?>"><span><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></span></label>
@@ -516,4 +516,34 @@ function show_attachments($attach_list, $cur_posting)
 	<?php
 
 	}
+}
+function show_attachments_post($attach_list, $post_id, $cur_topic)
+{
+	global $lang_attach, $forum_page, $forum_config, $attach_url;
+	
+	$result = '<div class="attachments"><strong id="attach'.$post_id.'">'.$lang_attach['Post attachs'].'</strong>';
+	if ($cur_topic['g_pun_attachment_allow_download'])
+		foreach ($attach_list as $attach)
+		{
+			$show_image = in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff')) && ($forum_config['attach_disp_small'] == '1') && ($attach['img_height'] <= $forum_config['attach_small_height']) && ($attach['img_width'] <= $forum_config['attach_small_width']);
+			$download_link = forum_link($attach_url['misc_download'], $attach['id']);
+			$attach_info = format_size($attach['size']).', '.($attach['download_counter'] ? sprintf($lang_attach['Since'], $attach['download_counter'], date('Y-m-d', $attach['uploaded_at'])) : $lang_attach['Never download']).'&nbsp;';
+			if ($show_image)
+				$link = '<a href="'.$download_link.'"><img src="'.$download_link.'" title="'.forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height'].'" alt="'.forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height'].'" /></a>';
+			else if (in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff')))
+				$link = '<a href="'.forum_link($attach_url['misc_preview'], $attach['id']).'">'.attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']).'</a>';
+			else
+				$link = '<a href="'.$download_link.'">'.attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']).'</a>';
+			$result .= '<p>'.$link;
+			if ($show_image)
+				$result .= '<br/>'.$attach_info;
+			else
+				$result .= '&nbsp;'.$attach_info;
+			$result .= '</p>';
+		}
+	else
+		$result .= $lang_attach['Download perm error'];
+	$result .= '</div>';
+
+	return $result;
 }

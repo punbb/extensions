@@ -169,5 +169,7 @@ $lang_attach = array(
 'Filesize error'		=>	'You can\'t upload file, which size more than "%s" bytes.',
 'Bad image'				=>	'Bad image! Try upload it again.',
 'Add file'				=>	'Add file',
+'Post attachs'			=>	'Post\'s attachments',
+'Download perm error'	=>	'You don\'t have permssions to download the attachments of this post.'
 
 );
