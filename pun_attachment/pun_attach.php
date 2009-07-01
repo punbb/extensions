@@ -3,39 +3,32 @@
 /**
  * Main attachment settings
  *
- * @copyright Copyright (C) 2008 PunBB, partially based on Attachment Mod by Frank Hagstrom
+ * @copyright Copyright (C) 2009 PunBB, partially based on Attachment Mod by Frank Hagstrom
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_attachment
  */
 
-	if (!defined('FORUM')) die();
+if (!defined('FORUM')) die();
 
-	$names = explode(',',$forum_config['attach_icon_name']);
-	$icons = explode(',',$forum_config['attach_icon_extension']);
+$names = explode(',', $forum_config['attach_icon_name']);
+$icons = explode(',', $forum_config['attach_icon_extension']);
 
-	$missing_files = array();
-	$big_images = array();
-	$pun_attach_errors = array();
+$missing_files = array();
+$big_images = array();
+$pun_attach_errors = array();
 
-	// TODO: Fix path handlng
-	
-	for ($i=0; $i<count($names); $i++)
+foreach ($names as $icon_name)
+{
+	if (!file_exists($ext_info['path'].'/img/'.$icon_name))
+		$pun_attach_errors['missing_files'][] = '<li class="warn"><span>'.$forum_config['attach_icon_folder'].$icon_name.'</span></li>';
+	else
 	{
-		if (!file_exists($ext_info['path'].'/img/'.$names[$i]))
-		{
-			$pun_attach_errors['missing_files'][] = '<li class="warn"><span>'.$forum_config['attach_icon_folder'].$names[$i].'</span></li>';
-		}
-		else
-		{
-			list($width, $height, , ) = getimagesize($forum_config['attach_icon_folder'].$names[$i]);
+		list($width, $height,,) = getimagesize($forum_config['attach_icon_folder'].$icon_name);
 
-			if (($width > 20) || ($height > 20))
-				$pun_attach_errors['big_images'][] = '<li class="warn"><span>'.$forum_config['attach_icon_folder'].$names[$i].'</span></li>';
-		}
+		if (($width > 20) || ($height > 20))
+			$pun_attach_errors['big_images'][] = '<li class="warn"><span>'.$forum_config['attach_icon_folder'].$icon_name.'</span></li>';
 	}
-	
-	@$pun_attach_errors['missing_files'] = array_unique($pun_attach_errors['missing_files']);
-	@$pun_attach_errors['big_images'] = array_unique($pun_attach_errors['big_images']);
+}
 
 	// Setup the form
 	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
@@ -44,7 +37,8 @@
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-		$lang_attach['Attachment']
+		array($lang_admin_common['Settings'], forum_link($forum_url['admin_settings_setup'])),
+		array($lang_attach['Attachment'], forum_link($attach_url['admin_options_attach']))		
 	);
 	
 	define('FORUM_PAGE_SECTION', 'settings');
@@ -119,7 +113,7 @@
 ?>
 			<h2 class="warn hn"><?php echo $lang_attach['Missing icons'] ?></h2>
 			<ul class="error-list">
-				<?php echo implode("\n\t\t\t\t", $pun_attach_errors['missing_files'])."\n" ?>
+				<?php echo implode("\n\t\t\t\t", array_unique($pun_attach_errors['missing_files']))."\n" ?>
 			</ul>
 <?php
 
@@ -131,7 +125,7 @@
 ?>
 			<h2 class="warn hn"><?php echo $lang_attach['Big icons'] ?></h2>
 			<ul class="error-list">
-				<?php echo implode("\n\t\t\t\t", $pun_attach_errors['missing_files'])."\n" ?>
+				<?php echo implode("\n\t\t\t\t", array_unique($pun_attach_errors['big_images']))."\n" ?>
 			</ul>
 <?php
 

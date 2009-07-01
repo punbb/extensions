@@ -141,7 +141,8 @@
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-		$lang_attach['Manage attahcments']
+		array($lang_admin_common['Management'], forum_link($forum_url['admin_reports'])),
+		array($lang_attach['Manage attahcments'], forum_link($attach_url['admin_attachment_manage']))
 	);
 
 	define('FORUM_PAGE_SECTION', 'management');
