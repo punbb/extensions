@@ -242,19 +242,19 @@
 				<legend><span><?php echo $lang_attach['Attachment rules'] ?></span></legend>
 				<div class="mf-box">
 					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="download" value="1"<?php if ($group['g_pun_attachment_allow_download'] == '1') echo ' checked="checked"' ?> /></span>
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="download" value="1"<?php if ($group['g_pun_attachment_allow_download'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Download']?></label>
 					</div>
 					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="upload" value="1"<?php if ($group['g_pun_attachment_allow_upload'] == '1') echo ' checked="checked"' ?> /></span>
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="upload" value="1"<?php if ($group['g_pun_attachment_allow_upload'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Upload'] ?></label>
 					</div>
 					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="delete" value="1"<?php if ($group['g_pun_attachment_allow_delete'] == '1') echo ' checked="checked"' ?> /></span>
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="delete" value="1"<?php if ($group['g_pun_attachment_allow_delete'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Delete'] ?></label>
 					</div>
 					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="owner_delete" value="1"<?php if ($group['g_pun_attachment_allow_delete_own'] == '1') echo ' checked="checked"' ?> /></span>
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="owner_delete" value="1"<?php if ($group['g_pun_attachment_allow_delete_own'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Owner delete'] ?></label>
 					</div>
 				</div>
