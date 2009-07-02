@@ -94,14 +94,6 @@
 					'secure_str'		=> array(
 						'datatype'		=> 'VARCHAR(32)',
 						'allow_null'	=> true
-					),
-					'img_width'			=> array(
-						'datatype'		=> 'INT(10)',
-						'allow_null'	=> true
-					),
-					'img_height'		=> array(
-						'datatype'		=> 'INT(10)',
-						'allow_null'	=> true
 					)
 				),
 				'PRIMARY KEY'	=> array('id')
@@ -112,8 +104,6 @@
 		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '<'))
 		{
 			$forum_db->add_field('attach_files', 'secure_str', 'VARCHAR(32)', true);
-			$forum_db->add_field('attach_files', 'img_width', 'INT(10)', true);
-			$forum_db->add_field('attach_files', 'img_height', 'INT(10)', true);
 		}
 
 		//Check up for existing column for attachments, it will be nessecary to determine needing of updating permissions to groups
@@ -226,92 +216,85 @@
 	<hooks>
 
 		<hook id="agr_start"><![CDATA[
-
-			require $ext_info['path'].'/include/attach_incl.php';
-
+require $ext_info['path'].'/include/attach_incl.php';
 		]]></hook>
 
 		<hook id="agr_add_edit_group_flood_fieldset_end"><![CDATA[
-		
-		?>
 
-			<div class="content-head">
-				<h3 class="hn"><span><?php echo $lang_attach['Group attach part'] ?></span></h3>
+?>
+
+	<div class="content-head">
+		<h3 class="hn"><span><?php echo $lang_attach['Group attach part'] ?></span></h3>
+	</div>
+	<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
+		<legend><span><?php echo $lang_attach['Attachment rules'] ?></span></legend>
+		<div class="mf-box">
+			<div class="mf-item">
+				<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="download" value="1"<?php if ($group['g_pun_attachment_allow_download'] == '1') echo ' checked="checked"' ?> /></span>
+				<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Download']?></label>
 			</div>
-			<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
-				<legend><span><?php echo $lang_attach['Attachment rules'] ?></span></legend>
-				<div class="mf-box">
-					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="download" value="1"<?php if ($group['g_pun_attachment_allow_download'] == '1') echo ' checked="checked"' ?> /></span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Download']?></label>
-					</div>
-					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="upload" value="1"<?php if ($group['g_pun_attachment_allow_upload'] == '1') echo ' checked="checked"' ?> /></span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Upload'] ?></label>
-					</div>
-					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="delete" value="1"<?php if ($group['g_pun_attachment_allow_delete'] == '1') echo ' checked="checked"' ?> /></span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Delete'] ?></label>
-					</div>
-					<div class="mf-item">
-						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="owner_delete" value="1"<?php if ($group['g_pun_attachment_allow_delete_own'] == '1') echo ' checked="checked"' ?> /></span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Owner delete'] ?></label>
-					</div>
-				</div>
-			</fieldset>
-			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-				<div class="sf-box text">
-					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Size'] ?></span> <small><?php echo $lang_attach['Size comment'] ?></small></label><br />
-					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="max_size" size="15" maxlength="15" value="<?php echo $group['g_pun_attachment_upload_max_size'] ?>" /></span>
-				</div>
-				<div class="sf-box text">
-					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Per post'] ?></span></label><br />
-					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="per_post" size="15" maxlength="15" value="<?php echo $group['g_pun_attachment_files_per_post'] ?>" /></span>
-				</div>
-				<div class="sf-box text">
-					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Allowed files'] ?></span><small><?php echo $lang_attach['Allowed comment'] ?></small></label><br />
-					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="file_ext" size="80" maxlength="80" value="<?php echo $group['g_pun_attachment_disallowed_extensions'] ?>" /></span>
-				</div>
+			<div class="mf-item">
+				<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="upload" value="1"<?php if ($group['g_pun_attachment_allow_upload'] == '1') echo ' checked="checked"' ?> /></span>
+				<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Upload'] ?></label>
 			</div>
-			
-		<?php
+			<div class="mf-item">
+				<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="delete" value="1"<?php if ($group['g_pun_attachment_allow_delete'] == '1') echo ' checked="checked"' ?> /></span>
+				<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Delete'] ?></label>
+			</div>
+			<div class="mf-item">
+				<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="owner_delete" value="1"<?php if ($group['g_pun_attachment_allow_delete_own'] == '1') echo ' checked="checked"' ?> /></span>
+				<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_attach['Owner delete'] ?></label>
+			</div>
+		</div>
+	</fieldset>
+	<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+		<div class="sf-box text">
+			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Size'] ?></span> <small><?php echo $lang_attach['Size comment'] ?></small></label><br />
+			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="max_size" size="15" maxlength="15" value="<?php echo $group['g_pun_attachment_upload_max_size'] ?>" /></span>
+		</div>
+		<div class="sf-box text">
+			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Per post'] ?></span></label><br />
+			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="per_post" size="15" maxlength="15" value="<?php echo $group['g_pun_attachment_files_per_post'] ?>" /></span>
+		</div>
+		<div class="sf-box text">
+			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Allowed files'] ?></span><small><?php echo $lang_attach['Allowed comment'] ?></small></label><br />
+			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="file_ext" size="80" maxlength="80" value="<?php echo $group['g_pun_attachment_disallowed_extensions'] ?>" /></span>
+		</div>
+	</div>
+
+<?php
 
 		]]></hook>
+		<hook id="agr_add_edit_end_validation"><![CDATA[
+$group_id = isset($_POST['group_id']) ? intval($_POST['group_id']) : '';
+if ($_POST['mode'] == 'add' || (!empty($group_id) && $group_id != FORUM_ADMIN && $group_id != FORUM_GUEST))
+{
+	$allow_down = isset($_POST['download']) && $_POST['download'] == '1' ? '1' : '0';
+	$allow_upl = isset($_POST['upload']) && $_POST['upload'] == '1' ? '1' : '0';
+	$allow_del = isset($_POST['delete']) && $_POST['delete'] == '1' ? '1' : '0';
+	$allow_del_own = isset($_POST['owner_delete']) && $_POST['owner_delete'] == '1' ? '1' : '0';
+	$size = isset($_POST['max_size']) ? intval($_POST['max_size']) : '0';
 
-		<hook id="agr_add_edit_pre_redirect"><![CDATA[
+	$per_post = isset($_POST['per_post']) ? intval($_POST['per_post']) : '1';
+	$file_ext = isset($_POST['file_ext']) ? trim($_POST['file_ext']) : '';
 
-			$group_id = intval($_POST['group_id']);
+	if (!empty($file_ext))
+	{
+		$file_ext = preg_replace('/\s/', '', $file_ext);
+		$match = preg_match('/(^[a-zA-Z0-9])+(([a-zA-Z0-9]+\,)|([a-zA-Z0-9]))+([a-zA-Z0-9]+$)/', $file_ext);
 
-			if (($group_id != '2') && ($group_id != '1'))
-			{
-				$allow_down = isset($_POST['download']) ? '1' : '0';
-				$allow_upl = isset($_POST['upload']) ? '1' : '0';
-				$allow_del = isset($_POST['delete']) ? '1' : '0';
-				$allow_del_own = isset($_POST['owner_delete']) ? '1' : '0';
-
-				if (isset($_POST['max_size']))
-					$size = intval($_POST['max_size']);
-
-				$per_post = isset($_POST['per_post']) ? intval($_POST['per_post']) : '1';
-				$file_ext = isset($_POST['file_ext']) ? trim($_POST['file_ext']) : '';
-
-				if (!empty($file_ext))
-				{
-					$file_ext = preg_replace('/\s/', '', $file_ext);
-					$match = preg_match('/(^[a-zA-Z0-9])+(([a-zA-Z0-9]+\,)|([a-zA-Z0-9]))+([a-zA-Z0-9]+$)/', $file_ext);
-
-					if (!$match)
-						message($lang_attach['Wrong allowed']);
-				}
-
-				$query = array(
-					'UPDATE'	=> 'groups',
-					'SET'		=> 'g_pun_attachment_allow_download = '.$allow_down.', g_pun_attachment_allow_upload = '.$allow_upl.', g_pun_attachment_allow_delete = '.$allow_del.', g_pun_attachment_allow_delete_own = '.$allow_del_own.', g_pun_attachment_upload_max_size = '.$size.', g_pun_attachment_files_per_post = '.$per_post.', g_pun_attachment_disallowed_extensions = \''.$forum_db->escape($file_ext).'\'',
-					'WHERE'		=> 'g_id = '.$group_id
-				);
-				$forum_db->query_build($query) or error(__FILE__,__LINE__);
-			}
-
+		if (!$match)
+			message($lang_attach['Wrong allowed']);
+	}
+}
+		]]></hook>
+		<hook id="agr_add_end_qr_add_group"><![CDATA[
+$query['INSERT'] .= ', g_pun_attachment_allow_download, g_pun_attachment_allow_upload, g_pun_attachment_allow_delete, g_pun_attachment_allow_delete_own, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions';
+$query['VALUES'] .= ', '.implode(',', array($allow_down, $allow_upl, $allow_del, $allow_del_own, $size, $per_post, '\''.$forum_db->escape($file_ext).'\''));
+		]]></hook>
+		<hook id="agr_edit_end_qr_update_group"><![CDATA[
+if (isset($allow_down))
+	$query['SET'] .= ', g_pun_attachment_allow_download = '.$allow_down.', g_pun_attachment_allow_upload = '.$allow_upl.', g_pun_attachment_allow_delete = '.$allow_del.', g_pun_attachment_allow_delete_own = '.$allow_del_own.', g_pun_attachment_upload_max_size = '.$size.', g_pun_attachment_files_per_post = '.$per_post.', g_pun_attachment_disallowed_extensions = \''.$forum_db->escape($file_ext).'\'';
 		]]></hook>
 
 		<hook id="po_start"><![CDATA[
@@ -332,7 +315,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 	$attach_secure_str = $forum_user['id'].($tid ? 't'.$tid : 'f'.$fid);
 	$uploaded_list = array();
 	$attach_query = array(
-		'SELECT'	=>	'id, owner_id, post_id, topic_id, filename, file_ext, file_mime_type, file_path, size, download_counter, uploaded_at, img_height, img_width, secure_str',
+		'SELECT'	=>	'id, owner_id, post_id, topic_id, filename, file_ext, file_mime_type, file_path, size, download_counter, uploaded_at, secure_str',
 		'FROM'		=>	'attach_files',
 		'WHERE'		=>	'secure_str = \''.$forum_db->escape($attach_secure_str).'\''
 	);
@@ -424,7 +407,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 if ($forum_config['attach_disable_attach'] != '1')
 {
 	$attach_query = array(
-		'SELECT'	=>	'id, post_id, filename, file_ext, file_mime_type, size, download_counter, uploaded_at, img_width, img_height',
+		'SELECT'	=>	'id, post_id, filename, file_ext, file_mime_type, size, download_counter, uploaded_at, file_path',
 		'FROM'		=>	'attach_files',
 		'WHERE'		=>	'topic_id = '.$id,
 		'ORDER BY'	=>	'filename'
@@ -469,7 +452,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 	$attach_secure_str = $forum_user['id'].'t'.$cur_post['tid'];
 	$uploaded_list = array();
 	$attach_query = array(
-		'SELECT'	=>	'id, owner_id, post_id, topic_id, filename, file_ext, file_mime_type, file_path, size, download_counter, uploaded_at, img_height, img_width, secure_str',
+		'SELECT'	=>	'id, owner_id, post_id, topic_id, filename, file_ext, file_mime_type, file_path, size, download_counter, uploaded_at, secure_str',
 		'FROM'		=>	'attach_files',
 		'WHERE'		=>	'post_id = '.$id.' OR secure_str = \''.$attach_secure_str.'\''
 	);
@@ -780,7 +763,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 		if (preg_match('~(\d+)f(\d+)~', $_GET['secure_str'], $match))
 		{
 			$query = array(
-				'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, img_width, img_height, secure_str',
+				'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
 				'FROM'		=>	'attach_files AS a',
 				'JOINS'		=>	array(
 					array(
@@ -798,7 +781,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 		else if (preg_match('~(\d+)t(\d+)~', $_GET['secure_str'], $match))
 		{
 			$query = array(
-				'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, img_width, img_height, secure_str',
+				'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
 				'FROM'		=>	'attach_files AS a',
 				'JOINS'		=>	array(
 					array(
@@ -824,7 +807,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 	}
 	else
 		$query = array(
-			'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, img_width, img_height, secure_str',
+			'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
 			'FROM'		=>	'attach_files AS a',
 			'JOINS'		=>	array(
 				array(
