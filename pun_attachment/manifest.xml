@@ -354,12 +354,12 @@ if ($forum_config['attach_disable_attach'] != '1')
 				$attach_delete_index = $attach_index;
 				break;
 			}
-		if (isset($delete_attach) && $cur_posting['g_pun_attachment_allow_delete_own'])
+		if (isset($delete_attach) && ($forum_user['g_id'] == FORUM_ADMIN || $cur_posting['g_pun_attachment_allow_delete_own']))
 		{
 			$attach_query = array(
 				'DELETE'	=>	'attach_files',
 				'WHERE'		=>	'id = '.$delete_attach['id']
-			);		
+			);
 			$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 			unset($uploaded_list[$attach_delete_index]);
 			if ($forum_config['attach_create_orphans'] == '0')
@@ -491,12 +491,12 @@ if ($forum_config['attach_disable_attach'] != '1')
 				$attach_delete_index = $attach_index;
 				break;
 			}
-		if (isset($delete_attach) && ($cur_post['g_pun_attachment_allow_delete'] || ($cur_post['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $delete_attach['owner_id'])))
+		if (isset($delete_attach) && ($forum_user['g_id'] == FORUM_ADMIN || $cur_post['g_pun_attachment_allow_delete'] || ($cur_post['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $delete_attach['owner_id'])))
 		{
 			$attach_query = array(
 				'DELETE'	=>	'attach_files',
 				'WHERE'		=>	'id = '.$delete_attach['id']
-			);		
+			);
 			$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 			unset($uploaded_list[$attach_delete_index]);
 			if ($forum_config['attach_create_orphans'] == '0')
@@ -840,7 +840,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	if (!$forum_db->num_rows($result))
+	if ($forum_user['g_id'] != FORUM_ADMIN && !$forum_db->num_rows($result))
 		message($lang_common['Bad request']);
 
 	if (isset($_GET['preview']) && in_array($attach_info['file_ext'], array('png', 'jpg', 'gif', 'tiff')))

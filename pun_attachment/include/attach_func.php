@@ -75,9 +75,9 @@ function attach_create_attachment($attach_secure_str, $cur_posting)
 {
 	global $forum_db, $forum_user, $forum_config, $errors, $uploaded_list, $lang_attach;
 
-	if ($cur_posting['g_pun_attachment_allow_upload'] == 1)
+	if ($forum_user['g_id'] == FORUM_ADMIN || $cur_posting['g_pun_attachment_allow_upload'] == 1)
 	{
-		if (count($uploaded_list) + 1 > $cur_posting['g_pun_attachment_files_per_post'])
+		if ($forum_user['g_id'] != FORUM_ADMIN && count($uploaded_list) + 1 > $cur_posting['g_pun_attachment_files_per_post'])
 			$errors[] = sprintf($lang_attach['Attach limit error'], $cur_posting['g_pun_attachment_files_per_post']);
 		else
 		{
@@ -122,10 +122,10 @@ function attach_create_attachment($attach_secure_str, $cur_posting)
 				$file_ext = attach_get_extension($uploaded_file['name']);
 				if (in_array($file_ext, explode(',', $cur_posting['g_pun_attachment_disallowed_extensions'])) || (empty($cur_posting['g_pun_attachment_disallowed_extensions']) && in_array($file_ext, explode(',', $forum_config['attach_always_deny']))))
 					$errors[] = sprintf($lang_attach['Ext error'], $file_ext);
-				if ($uploaded_file['size'] > $cur_posting['g_pun_attachment_upload_max_size'])
+				if ($forum_user['g_id'] != FORUM_ADMIN && $uploaded_file['size'] > $cur_posting['g_pun_attachment_upload_max_size'])
 					$errors[] = sprintf($lang_attach['Filesize error'], $cur_posting['g_pun_attachment_upload_max_size']);
 			}
-		}			
+		}
 	}
 	else
 		$errors[] = $lang_attach['Up perm error'];
@@ -222,7 +222,7 @@ function format_size($size)
 
 function show_attachments($attach_list, $cur_posting)
 {
-	global $lang_attach, $forum_page, $forum_config, $attach_url;
+	global $lang_attach, $forum_page, $forum_config, $attach_url, $forum_user;
 
 	if (!empty($attach_list))
 	{
@@ -266,7 +266,7 @@ function show_attachments($attach_list, $cur_posting)
 	
 		}
 	}
-	if ($cur_posting['g_pun_attachment_allow_upload'] && count($attach_list) < $cur_posting['g_pun_attachment_files_per_post'])
+	if ($forum_user['g_id'] == FORUM_ADMIN || ($cur_posting['g_pun_attachment_allow_upload'] && count($attach_list) < $cur_posting['g_pun_attachment_files_per_post']))
 	{
 
 	?>
@@ -286,10 +286,10 @@ function show_attachments($attach_list, $cur_posting)
 }
 function show_attachments_post($attach_list, $post_id, $cur_topic)
 {
-	global $lang_attach, $forum_page, $forum_config, $attach_url;
-	
+	global $lang_attach, $forum_page, $forum_config, $attach_url, $forum_user;
+
 	$result = '<div class="attachments"><strong id="attach'.$post_id.'">'.$lang_attach['Post attachs'].'</strong>';
-	if ($cur_topic['g_pun_attachment_allow_download'])
+	if ($forum_user['g_id'] == FORUM_ADMIN || $cur_topic['g_pun_attachment_allow_download'])
 		foreach ($attach_list as $attach)
 		{
 			if (in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff')) && $forum_config['attach_disp_small'] == '1')
@@ -351,9 +351,9 @@ function remove_attachments($query, $cur_posting)
 		$remove_id = array();
 		while ($cur_attach = $forum_db->fetch_assoc($attach_result))
 		{
-			if ($forum_page['is_admmod'] || $cur_posting['g_pun_attachment_allow_delete'] || $cur_posting['g_pun_attachment_allow_delete_own'])
+			if ($forum_user['g_id'] == FORUM_ADMIN || $cur_posting['g_pun_attachment_allow_delete'] || $cur_posting['g_pun_attachment_allow_delete_own'])
 			{
-				if ($cur_posting['g_pun_attachment_allow_delete_own'] && $cur_attach['owner_id'] != $forum_user['id'])
+				if ($forum_user['g_id'] != FORUM_ADMIN && $cur_posting['g_pun_attachment_allow_delete_own'] && $cur_attach['owner_id'] != $forum_user['id'])
 				{
 					$orphans_id[] = $cur_attach['id'];
 					break;
