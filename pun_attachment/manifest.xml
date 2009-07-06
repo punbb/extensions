@@ -273,7 +273,12 @@ if ($_POST['mode'] == 'add' || (!empty($group_id) && $group_id != FORUM_ADMIN &&
 	$allow_upl = isset($_POST['upload']) && $_POST['upload'] == '1' ? '1' : '0';
 	$allow_del = isset($_POST['delete']) && $_POST['delete'] == '1' ? '1' : '0';
 	$allow_del_own = isset($_POST['owner_delete']) && $_POST['owner_delete'] == '1' ? '1' : '0';
+
 	$size = isset($_POST['max_size']) ? intval($_POST['max_size']) : '0';
+	$upload_max_filesize = get_bytes(ini_get('upload_max_filesize'));
+	$post_max_size = get_bytes(ini_get('post_max_size'));
+	if ($size > $upload_max_filesize ||  $size > $post_max_size)
+		$size = min($upload_max_filesize, $post_max_size);
 
 	$per_post = isset($_POST['per_post']) ? intval($_POST['per_post']) : '1';
 	$file_ext = isset($_POST['file_ext']) ? trim($_POST['file_ext']) : '';
@@ -543,10 +548,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 		<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
 
 			require $ext_info['path'].'/url.php';
-			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-			else
-				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	
 			if ((FORUM_PAGE_SECTION == 'management') && ($forum_user['g_id'] == FORUM_ADMIN))
 			{
@@ -916,32 +918,71 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 }
 		]]></hook>
 
-		<hook id="dl_start"><![CDATA[
+		<hook id="dl_start,mr_start"><![CDATA[
 
 			require $ext_info['path'].'/include/attach_incl.php';
 
 		]]></hook>
-
+		<hook id="dl_qr_get_post_info"><![CDATA[
+if ($forum_config['attach_disable_attach'] != '1')
+{
+	$query['SELECT'] .= ', g_pun_attachment_allow_upload, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions, g_pun_attachment_allow_delete_own, g_pun_attachment_allow_delete';
+	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
+}
+		]]></hook>
 		<hook id="dl_form_submitted"><![CDATA[
-
-			if (isset($_POST['req_confirm']))
-			{
-				$create_orphans = $forum_config['attach_create_orphans'];
-
-				if ($cur_post['is_topic'])
-					attach_delete_thread($cur_post['tid'], $create_orphans);
-				else
-					attach_delete_post($id, $create_orphans);
-			}
-
+if ($forum_config['attach_disable_attach'] != '1')
+{
+	$attach_query = array(
+		'SELECT'	=>	'id, file_path, owner_id',
+		'FROM'		=>	'attach_files'
+	);
+	$attach_query['WHERE'] = $cur_post['is_topic'] ? 'post_id != 0 AND topic_id = '.$cur_post['tid'] : 'post_id = '.$id;
+}
 		]]></hook>
-
+		<hook id="dl_topic_deleted_pre_redirect,dl_post_deleted_pre_redirect"><![CDATA[
+if ($forum_config['attach_disable_attach'] != '1')
+	remove_attachments($attach_query, $cur_post);
+		]]></hook>		
+		<hook id="mr_qr_get_forum_data"><![CDATA[
+if ($forum_config['attach_disable_attach'] != '1')
+{
+	$query['SELECT'] .= ', g_pun_attachment_allow_upload, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions, g_pun_attachment_allow_delete_own, g_pun_attachment_allow_delete';
+	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
+}
+		]]></hook>
+		<hook id="mr_confirm_delete_posts_pre_redirect,mr_confirm_delete_topics_pre_redirect"><![CDATA[
+if ($forum_config['attach_disable_attach'] != '1')
+{
+	$attach_query = array(
+		'SELECT'	=>	'id, file_path, owner_id',
+		'FROM'		=>	'attach_files',
+		'WHERE'		=>	isset($posts) ? 'post_id IN('.implode(',', $posts).')' : 'topic_id IN('.implode(',', $topics).')'
+	);
+	$forum_page['is_admmod'] = true;
+	remove_attachments($attach_query, $cur_forum);
+}
+		]]></hook>
+		<hook id="mr_confirm_split_posts_pre_redirect"><![CDATA[
+$attach_query = array(
+	'UPDATE'	=>	'attach_files',
+	'SET'		=>	'topic_id='.$new_tid,
+	'WHERE'		=>	'post_id IN ('.implode(',', $posts).')'
+);
+$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+		]]></hook>
+		<hook id="mr_confirm_merge_topics_pre_redirect"><![CDATA[
+$attach_query = array(
+	'UPDATE'	=>	'attach_files',
+	'SET'		=>	'topic_id='.$merge_to_tid,
+	'WHERE'		=>	'topic_id IN('.implode(',', $topics).')'
+);
+$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+		]]></hook>
 		<hook id="co_common"><![CDATA[
-		
-			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
-		
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
 		]]></hook>
-		
+
 		<hook id="ft_about_end" priority="10"><![CDATA[
 		
 			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))

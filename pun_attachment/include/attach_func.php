@@ -63,8 +63,6 @@ function attach_generate_pathname($storagepath = '')
 	return $newdir;
 }
 
-
-
 function attach_generate_filename($messagelenght=0, $filesize=0)
 {
 	global $lang_attach, $forum_config;
@@ -208,145 +206,6 @@ function attach_get_extension($filename)
 	return strtolower(ltrim(strrchr($filename, '.'), '.'));
 }
 
-function attach_delete_attachment($item, $orphans)
-{
-	global $forum_db, $forum_user, $forum_config, $lang_attach, $forum_page;
-
-	$attach_allowed_delete = '0';
-
-	if ($forum_user['is_admmod'])
-	{
-		$attach_allowed_delete = '1';
-	}
-	else
-	{
-		$query = array(
-			'SELECT'	=> 'g.g_pun_attachment_allow_delete, g.g_pun_attachment_allow_delete_own',
-			'FROM'		=> 'groups AS g',
-			'WHERE'		=> 'g.g_id='.$forum_user['g_id']
-		);
-
-		$result = $forum_db->query_build($query) or error (__FILE__,__LINE__);
-
-		$query = array(
-			'SELECT'	=> 'af.owner_id',
-			'FROM'		=> 'attach_files as af',
-			'WHERE'		=> 'af.id='.intval($item).' AND af.owner_id='.$forum_user['id']
-		);
-
-		$owner_result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		if ($forum_db->num_rows($result) || $forum_db->num_rows($owner_result))
-		{
-			$attach = $forum_db->fetch_assoc($result);
-			$owner_id = $forum_db->fetch_assoc($owner_result);
-
-			if ($attach['g_pun_attachment_allow_delete'])
-			{
-				$attach_allowed_delete = '1';
-			}
-			else if ($forum_db->num_rows($owner_result) && $attach['g_pun_attachment_allow_delete_own'])
-			{
-				$attach_allowed_delete = '1';
-			}
-		}
-		else
-			message('No permission');
-
-	}
-
-	if (($orphans == '0') || ($forum_user['is_admmod'] == '1'))
-	{
-		$query = array(
-			'SELECT'	=> 'file_path',
-			'FROM'		=> 'attach_files',
-			'WHERE'		=> 'id='.intval($item)
-		);
-
-		$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
-
-		if ($forum_db->num_rows($result))
-		{
-			$attach = $forum_db->fetch_assoc($result);
-
-			$fp = fopen($forum_config['attach_basefolder'].$attach['file_path'], 'wb');
-
-			if (!$fp)
-				message(sprintf($lang_attach['Bad filepointer'], $item));
-
-			fclose($fp);
-
-			$query = array(
-				'DELETE'	=> 'attach_files',
-				'WHERE'		=> 'id='.intval($item)
-			);
-
-			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-			return true;
-		}
-	}
-	else if (($orphans == '1') && ($forum_user['is_admmod'] == '0'))
-	{
-		$query = array(
-			'UPDATE'	=> 'attach_files',
-			'SET'		=> 'post_id=0, topic_id=0, owner_id=0',
-			'WHERE'		=> 'id='.intval($item)
-		);
-
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);
-	}
-}
-
-function attach_delete_thread($id, $orphans)
-{
-	global $forum_db, $forum_config;
-
-	$ok = true;
-
-	if($orphans != '1')
-	{
-		$query = array(
-			'SELECT'	=> 'af.id',
-			'FROM'		=> 'attach_files AS af, posts AS p',
-			'WHERE'		=> 'af.post_id=p.id AND af.topic_id='.intval($id)
-		);
-
-		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		if($forum_db->num_rows($result) > 0)
-		{
-			while((list($attach_id) = $forum_db->fetch_row($result_attach)) && $ok)
-			{
-				$ok = attach_delete_attachment($attach_id, $orphans);
-			}
-		}
-	}
-}
-
-function attach_delete_post($id, $orphans)
-{
-	global $forum_db;
-
-	$ok = true;
-
-	$query = array(
-		'SELECT'	=> 'af.id',
-		'FROM'		=> 'attach_files AS af',
-		'WHERE'		=> 'af.post_id='.intval($id)
-	);
-
-	$result = $forum_db->query_build($query) or error(__FILE, __LINE__);
-
-	if ($forum_db->num_rows($result) > 0)
-	{
-		while((list($attach_id) = $forum_db->fetch_row($result)) && $ok)
-		{
-			$ok = attach_delete_attachment($attach_id, $orphans);
-		}
-	}
-}
-
 function format_size($size)
 {
 	global $lang_attach;
@@ -462,4 +321,71 @@ function show_attachments_post($attach_list, $post_id, $cur_topic)
 	$result .= '</div>';
 
 	return $result;
+}
+
+function get_bytes($value)
+{
+	$value = trim($value);
+	$last = strtolower($value[strlen($value) - 1]);
+	switch ($last)
+	{
+		case 'g':
+			$val *= MBYTE * KBYTE;
+		case 'm':
+			$val *= MBYTE;
+		case 'k':
+			$val *= KBYTE;
+	}
+
+	return $val;
+}
+
+function remove_attachments($query, $cur_posting)
+{
+	global $forum_page, $forum_config, $forum_db, $forum_user;
+
+	$attach_result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	if ($forum_db->num_rows($attach_result) > 0)
+	{
+		$orphans_id = array();
+		$remove_id = array();
+		while ($cur_attach = $forum_db->fetch_assoc($attach_result))
+		{
+			if ($forum_page['is_admmod'] || $cur_posting['g_pun_attachment_allow_delete'] || $cur_posting['g_pun_attachment_allow_delete_own'])
+			{
+				if ($cur_posting['g_pun_attachment_allow_delete_own'] && $cur_attach['owner_id'] != $forum_user['id'])
+				{
+					$orphans_id[] = $cur_attach['id'];
+					break;
+				}
+				if (!$forum_config['attach_create_orphans'])
+				{
+					unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$cur_attach['file_path']);
+					$remove_id[] = $cur_attach['id'];
+				}
+				else
+					$orphans_id[] = $cur_attach['id'];
+			}
+			else
+				$orphans_id[] = $cur_attach['id'];
+		}
+
+		if (!empty($orphans_id))
+		{
+			$attach_query = array(
+				'UPDATE'	=>	'attach_files',
+				'SET'		=>	'post_id = 0, topic_id = 0, owner_id = 0',
+				'WHERE'		=>	'id IN ('.implode(',', $orphans_id).')'
+			);
+			$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);	
+		}
+		if (!empty($remove_id))
+		{
+			$attach_query = array(
+				'DELETE'	=>	'attach_files',
+				'WHERE'		=>	'id IN ('.implode(',', $remove_id).')'
+			);
+			$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+		}
+	}
 }
