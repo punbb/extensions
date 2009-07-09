@@ -314,11 +314,16 @@
 		]]></hook>
 		<hook id="aop_features_updates_fieldset_end"><![CDATA[
 
+			$forum_page['set_count'] = 0;
+			$forum_page['item_count'] = 0;
+			
 			?>
+			
 			<div class="content-head">
 				<h2 class="hn"><span><?php echo $lang_pun_admin_log['Part log']; ?></span></h2>
 			</div>
-			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+			<fieldset class="frm-group group<?php echo $forum_page['group_count'] ?>">
+				<legend class="group-legend"><span><?php echo $lang_admin_settings['Features Avatars legend'] ?></span></legend>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box checkbox">
 						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_admin_log_write_file]" value="1" <?php if($forum_config['o_pun_admin_log_write_file'] == '1') echo 'checked="checked"' ?> /></span>
@@ -333,7 +338,7 @@
 				</div>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_pun_admin_log['Path log-file'] ?></span><small><?php echo $lang_pun_admin_log['Abs path']; ?></small></label>
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_admin_log['Path log-file'] ?></span><small><?php echo $lang_pun_admin_log['Abs path']; ?></small></label>
 						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[pun_admin_path_log_file]" size="80%" value="<?php echo $forum_config['o_pun_admin_path_log_file'] ?>"/></span>
 					</div>
 				</div>
