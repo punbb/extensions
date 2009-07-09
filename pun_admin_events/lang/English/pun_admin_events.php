@@ -24,6 +24,6 @@ $lang_pun_admin_events = array(
 'Comment'			=> 'Comment',
 'Pages'				=> 'Pages',
 'Results'			=> 'Results',
-'Name page'			=> 'Management events',
+'Name page'			=> 'Events management',
 )
 ?>

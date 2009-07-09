@@ -201,6 +201,7 @@ ob_start();
 			</span>
 		</div>
 	</form>
+	</div>
 </div>
 
 <div class="main-content frm">
