@@ -8,6 +8,27 @@
 
 var selNode = null;
 
+function getCaretPos(objName)
+{
+	var obj = document.getElementById(objName);
+	obj.focus();
+	
+	if (document.selection)
+	{ // IE
+		var sel = document.selection.createRange();
+		var clone = sel.duplicate();
+		sel.collapse(true);
+		clone.moveToElementText(obj);
+		clone.setEndPoint('EndToEnd', sel);
+		
+		return clone.text.length;
+	}
+	else if (obj.selectionStart!==false)
+		return obj.selectionStart; // Gecko
+	else
+		return 0;
+}
+
 function getSelectedText()
 {
 	try
@@ -124,16 +145,21 @@ function QuickQuote(qid_param)
 {
 	var selected_text = getSelectedText();
 	var quick_post_value = document.getElementsByName('req_message');
+	var cur_pos = getCaretPos('fld1');
+	var text = quick_post_value[0].value;
+	var text_below = text.substring(0, cur_pos);
+	var text_above = text.substring(cur_pos, (text.length - 1));
+	
 	if (selected_text == undefined || selected_text == '')
-		quick_post_value[0].value += '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]';
+		quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]' + text_above;
 	else
 	{
 		var post_content = ContentCleaning(ParseMessage(pun_quote_posts[qid_param]));
 		var clean_selected_text = ContentCleaning(selected_text.toString());
 		if (post_content.indexOf(clean_selected_text) != -1)
-			quick_post_value[0].value += '[quote=' + pun_quote_authors[qid_param] + ']' + selected_text + '[/quote]';
+			quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + selected_text + '[/quote]' + text_above;
 		else
-			quick_post_value[0].value += '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]';
+			quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]' + text_above;
 	}
 }
 
