@@ -157,8 +157,8 @@ $lang_attach = array(
 'Manage id'				=>	'Manage attachment %s',
 
 'Permission denied'		=>	'The directory "FORUM_ROOT/extensions/pun_attachment/attachments" is not writable for Web-server!',
-'Htaccess fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/.htaccess" does not exist.',
-'Index fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/index.html" does not exist.',
+'Htaccess fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/attachments/.htaccess" does not exist.',
+'Index fail'			=>	'File "FORUM_ROOT/extensions/pun_attachment/attachments/index.html" does not exist.',
 'Errors notice'			=>	'Following errors was encountered:',
 
 'Del perm error'		=>	'You don\'t have permission to delete this file.',

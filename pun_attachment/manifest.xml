@@ -301,7 +301,21 @@ $query['VALUES'] .= ', '.implode(',', array($allow_down, $allow_upl, $allow_del,
 if (isset($allow_down))
 	$query['SET'] .= ', g_pun_attachment_allow_download = '.$allow_down.', g_pun_attachment_allow_upload = '.$allow_upl.', g_pun_attachment_allow_delete = '.$allow_del.', g_pun_attachment_allow_delete_own = '.$allow_del_own.', g_pun_attachment_upload_max_size = '.$size.', g_pun_attachment_files_per_post = '.$per_post.', g_pun_attachment_disallowed_extensions = \''.$forum_db->escape($file_ext).'\'';
 		]]></hook>
-
+		<hook id="hd_head"><![CDATA[
+if (FORUM_PAGE == 'viewtopic' && ($forum_config['attach_disable_attach'] != '1'))
+{
+	if (is_dir(FORUM_ROOT.'extensions/pun_attachment/styles/'.$forum_user['style']))
+	{
+		$forum_head['style_attch'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/'.$forum_user['style'].'/'.$forum_user['style'].'.css" />';
+		$forum_head['style_attch_css'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/'.$forum_user['style'].'/'.$forum_user['style'].'_cs.css" />';
+	}
+	else
+	{
+		$forum_head['style_attch'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/Oxygen/'.$forum_user['style'].'.css" />';
+		$forum_head['style_attch_css'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/Oxygen/'.$forum_user['style'].'_cs.css" />';
+	}
+}
+		]]></hook>
 		<hook id="po_start"><![CDATA[
 if ($forum_config['attach_disable_attach'] != '1')
 	require $ext_info['path'].'/include/attach_incl.php';
