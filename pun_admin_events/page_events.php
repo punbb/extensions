@@ -1,19 +1,23 @@
 <?php
 
+/**
+ * Page with registered events
+ *
+ * @copyright (C) 2008-2009 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_events
+ */
+
 $event_page = (isset($_GET['p'])) ? intval($_GET['p']) : 1;
 
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-
+require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 require $ext_info['path'].'/functions.php';
 
 // Setup breadcrumbs
 $forum_page['crumbs'] = array(
 	array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 	array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-	'Events'
+	$lang_pun_admin_events['Events']
 );
 
 $arr_min = array();
@@ -35,7 +39,7 @@ if ($ev_nums)
 	$max_date = $row['MAX(date)'];
 	$real_min_date = date('Y/n/j', strtotime($min_date));
 	$real_max_date = date('Y/n/j', strtotime($max_date));
-	
+
 	$arr_min = explode('/', $real_min_date);
 	$arr_max = explode('/', $real_max_date);
 	if ($arr_min == $arr_max)
@@ -58,7 +62,7 @@ ob_start();
 	<div class="main-content main-frm">
 	<form class="frm-form" name="mainform" method="post" accept-charset="utf-8" action="<?php echo forum_link($forum_url['admin_management_events']); ?>">
 		<div class="hidden">
-			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($base_url.'/admin/extensions.php?section=events') ?>" />
+			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($forum_url['admin_management_events'])) ?>" />
 			<input type="hidden" name="page" value="1" />
 		</div>
 		<div class="content-head">
@@ -96,7 +100,8 @@ ob_start();
 					</label>
 					<span class="fld-input">
 						<select id="fld-event-id" name="event_id">
-						<?
+						<?php
+
 							$query = array(
 								'SELECT'	=> 'distinct type',
 								'FROM'		=> 'pun_admin_events',
@@ -116,6 +121,7 @@ ob_start();
 								else
 									echo '<option value="'.$_tmp['type'].'">'.$_tmp['type'].'</option>'; 
 							}
+
 						?>
 						</select>
 					</span>
@@ -159,7 +165,8 @@ ob_start();
 					</label>
 					<span class="fld-input">
 						<select id="fld-event-id" name="sort_by">
-							<?php 
+							<?php
+
 							if(isset($_POST['sort_by']))
 							{
 								echo '<option '.(($_POST['sort_by'] == 'Date') ? 'selected="selected"' : '').' value="Date">'.$lang_pun_admin_events['Date'].'</option>';
@@ -174,10 +181,12 @@ ob_start();
 								echo '<option value="IP">'.$lang_pun_admin_events['IP'].'</option>'; 
 								echo '<option value="user_name">'.$lang_pun_admin_events['User_Name'].'</option>'; 
 							}
+
 							?>
 						</select>
 						<select id="fld-event-id" name="sort_rule">
 							<?php
+
 							if(isset($_POST['sort_rule']) && $_POST['sort_rule'] == 'DESC')
 							{
 								echo '<option value="ASC">'.$lang_pun_admin_events['ASC'].'</option>';
@@ -188,6 +197,7 @@ ob_start();
 								echo '<option selected="selected" value="ASC">'. $lang_pun_admin_events['ASC'].'</option>';
 								echo '<option value="DESC">'.$lang_pun_admin_events['DESC'].'</option>'; 
 							}
+
 							?>
 						</select>
 					</span>
@@ -205,15 +215,14 @@ ob_start();
 </div>
 
 <div class="main-content frm">
+	<?php
 
-	<?
-		
 		//$results_onpage - results per page
 		$results_onpage = 10;
-		
+
 		//Prepare ORDER clause.
 		$order_by = '';
-		
+
 		if(isset($_POST['sort_rule']))
 		{
 			if(isset($_POST['sort_by']))
@@ -231,13 +240,12 @@ ob_start();
 			'FROM'		=> 'pun_admin_events',
 			'WHERE'		=> $sql_where,
 		);
-		
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 		$num_rows = $forum_db->result($result);
 		$data = array();
 
-		//if no rows was founded don't try to find it agein =)
+		//if no rows was founded don't try to find it again =)
 		if($num_rows != 0)
 		{
 			$query = array(
@@ -247,9 +255,8 @@ ob_start();
 				'ORDER BY'	=> $order_by,
 				'LIMIT'		=> ($event_page ? ((($event_page - 1) * $results_onpage).', '.$results_onpage) : ('0, '.$results_onpage))
 			);
-			
-			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
+			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 			while($_tmp = $forum_db->fetch_assoc($result))
 				$data[] = $_tmp;
 		}
@@ -271,9 +278,8 @@ ob_start();
 
 		pagination($schema, $data, $event_page, ceil($num_rows/$results_onpage), 'mainform', $lang);
 
-		?>
+	?>
 </div>
-
 <?php
 
 $tpl_temp = trim(ob_get_contents());

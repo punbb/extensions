@@ -1,13 +1,23 @@
 <?php
 
+/**
+ * API for events registration
+ *
+ * @copyright (C) 2008-2009 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_events
+ */
+
 if (!defined('FORUM_ROOT'))
 	die();
 
-require_once FORUM_ROOT.'include/common.php';
+if (!defined('FORUM_ESSENTIALS_LOADED'))
+	require_once FORUM_ROOT.'include/essentials.php';
 
 function pun_admin_event($type, $comment = '', $search_user = true)
 {
 	global $forum_db, $forum_user;
+
 	$query = array(
 		'INSERT'	=> 'ip, type, comment, date',
 		'INTO'		=> 'pun_admin_events',
