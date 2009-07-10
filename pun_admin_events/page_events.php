@@ -60,7 +60,7 @@ ob_start();
 </div>
 <div id="pun-main" class="main sectioned admin">
 	<div class="main-content main-frm">
-	<form class="frm-form" name="mainform" method="post" accept-charset="utf-8" action="<?php echo forum_link($forum_url['admin_management_events']); ?>">
+	<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo forum_link($forum_url['admin_management_events']); ?>">
 		<div class="hidden">
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($forum_url['admin_management_events'])) ?>" />
 			<input type="hidden" name="page" value="1" />
@@ -140,11 +140,11 @@ ob_start();
 			</div>
 			<div class="sf-set set4">
 				<div class="sf-box text">
-					<label for="fld-ip">
+					<label for="fld-username">
 						<span><?php echo $lang_pun_admin_events['By UserName']; ?></span>
 					</label>
 					<span class="fld-input">
-						<input type="text" id="fld-ip" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '*'; ?>" />
+						<input type="text" id="fld-username" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '*'; ?>" />
 					</span>
 				</div>
 			</div>
@@ -164,7 +164,7 @@ ob_start();
 						<span>Sort by:</span>
 					</label>
 					<span class="fld-input">
-						<select id="fld-event-id" name="sort_by">
+						<select id="sort_by" name="sort_by">
 							<?php
 
 							if(isset($_POST['sort_by']))
@@ -184,7 +184,7 @@ ob_start();
 
 							?>
 						</select>
-						<select id="fld-event-id" name="sort_rule">
+						<select id="sort_rule" name="sort_rule">
 							<?php
 
 							if(isset($_POST['sort_rule']) && $_POST['sort_rule'] == 'DESC')
