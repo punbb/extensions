@@ -101,10 +101,8 @@
 			$forum_db->create_table('attach_files', $schema);
 		}
 
-		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '<'))
-		{
+		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '>'))
 			$forum_db->add_field('attach_files', 'secure_str', 'VARCHAR(32)', true);
-		}
 
 		//Check up for existing column for attachments, it will be nessecary to determine needing of updating permissions to groups
 		$exist = $forum_db->field_exists('groups', 'g_pun_attachment_allow_download');
@@ -116,9 +114,9 @@
 		$forum_db->add_field('groups', 'g_pun_attachment_upload_max_size', 'INT(10)', true, '2000000');
 		$forum_db->add_field('groups', 'g_pun_attachment_files_per_post', 'TINYINT(3)', true, '1');
 		$forum_db->add_field('groups', 'g_pun_attachment_disallowed_extensions', 'TEXT', true);
-		
+
 		//If it's fresh install
-		if (!$exist)			
+		if (!$exist)
 		{
 			$query = array(
 				'UPDATE'	=> 'groups',
@@ -135,7 +133,7 @@
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
 
-		$basepath = implode(DIRECTORY_SEPARATOR, array('extensions', $id, 'attachments')).DIRECTORY_SEPARATOR ;		
+		$basepath = implode(DIRECTORY_SEPARATOR, array('extensions', $id, 'attachments')).DIRECTORY_SEPARATOR;
 		$newname = attach_generate_pathname($basepath);
 		if (!is_dir($basepath.$newname))
 		{
@@ -189,6 +187,16 @@
 				$forum_db->query_build($query_attach) or error(__FILE__, __LINE__);
 			}
 			unset($query_attach);
+		}
+
+		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '>'))
+		{
+			$query = array(
+				'UPDATE'	=> 'config',
+				'SET'		=> 'conf_value = \''.$forum_db->escape($basepath).'\'',
+				'WHERE'		=> 'conf_name = \'attach_basefolder\''
+			);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
 
 		require_once FORUM_ROOT.'include/cache.php';
