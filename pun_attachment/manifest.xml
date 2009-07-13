@@ -998,15 +998,13 @@ $pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions
 		]]></hook>
 
 		<hook id="ft_about_end" priority="10"><![CDATA[
-		
+
 			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 			{
 				define('PUN_EXTENSIONS_USED', 1);
 				echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
 			}
-			
+
 		]]></hook>
-		
 	</hooks>
-	
 </extension>

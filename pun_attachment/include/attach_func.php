@@ -330,14 +330,14 @@ function get_bytes($value)
 	switch ($last)
 	{
 		case 'g':
-			$val *= MBYTE * KBYTE;
+			$value *= MBYTE * KBYTE;
 		case 'm':
-			$val *= MBYTE;
+			$value *= MBYTE;
 		case 'k':
-			$val *= KBYTE;
+			$value *= KBYTE;
 	}
 
-	return $val;
+	return $value;
 }
 
 function remove_attachments($query, $cur_posting)
