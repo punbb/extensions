@@ -21,7 +21,7 @@ function pun_admin_event($type, $comment = '', $search_user = true)
 	$query = array(
 		'INSERT'	=> 'ip, type, comment, date',
 		'INTO'		=> 'pun_admin_events',
-		'VALUES'	=> '\''.(empty($_SERVER['REMOTE_ADDR']) ? '0.0.0.0' : $_SERVER['REMOTE_ADDR']).'\', \''.$type.'\', \''.$comment.'\', '.time()
+		'VALUES'	=> '\''.(empty($_SERVER['REMOTE_ADDR']) ? '0.0.0.0' : $_SERVER['REMOTE_ADDR']).'\', \''.$forum_db->escape($type).'\', \''.$forum_db->escape($comment).'\', '.time()
 	);
 
 	if (isset($forum_user) && $search_user == true)
