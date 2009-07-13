@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_admin_events</id>
 	<title>Events registration</title>
-	<version>0.7.2</version>
+	<version>0.8</version>
 	<description>Adds an gear to logging events and GUI for browsing logs.</description>
 	<author>PunBB Development Team</author>
 
