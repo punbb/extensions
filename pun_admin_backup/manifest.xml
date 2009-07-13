@@ -70,7 +70,7 @@ if ($section == 'backup')
 				break;
 			case 'ext_files':
 				$paths_forum = array();
-				break;			
+				break;
 		}
 		if (isset($db_file_name))
 			$db_path = $ext_info['path'].'/dumps/'.$db_file_name;
@@ -96,7 +96,7 @@ if ($section == 'backup')
 		sendFile( $output );
 		//Remove copy from server, if needed
 		if (!isset($_POST['leave_copy']) || $_POST['leave_copy'] != '1')
-			@unlink($output);	
+			@unlink($output);
 		die();
 	}
 	//Do revert
@@ -114,17 +114,17 @@ if ($section == 'backup')
 					'SET'		=> 'conf_value = \'1\'',
 					'WHERE'		=> 'conf_name = \'o_maintenance\''
 				);
-			
+
 				$forum_db->query_build($query_maint_mode) or error(__FILE__, __LINE__);
-		
+
 				// Regenerate the config cache
 				require_once FORUM_ROOT.'include/cache.php';
 				generate_config_cache();
 			}	
-			
+
 			//Temporary folder
 			$dir = $ext_info['path'].'/dumps/'.substr($dump, 0, -7);
-			
+
 			//If user press "Cancel reverting"
 			if (isset($_POST['revert_cancel']))
 			{
@@ -152,7 +152,7 @@ if ($section == 'backup')
 							$error = revertDB( $sql_dir.$sql_list[$sqlf_num] );
 							if ($error !== TRUE)
 								$revert_db[] = $error;
-						}						
+						}
 				}
 				if (!isset($sql_file))
 				{
@@ -163,7 +163,7 @@ if ($section == 'backup')
 			}
 			else if (file_exists($dir) && isset($_POST['revert_continue']))
 			{
-				
+
 				//Check if there is sql-file
 				$sql_dir = $dir.'/extensions/'.$ext_info['id'].'/dumps/';
 				$revert_db = array();
@@ -178,10 +178,10 @@ if ($section == 'backup')
 				$rev_errors = revertFiles( $dir );
 				$errors = array();
 				delTree($dir, $errors);
-			}		
+			}
 			else
 				$revert_db[] = sprintf($lang_backup['Cr dir fail'], $dir);
-			
+
 			if (isset($_POST['maint_mode']) && $_POST['maint_mode'] == '1')
 			{
 				$query_maint_mode = array(
@@ -189,8 +189,8 @@ if ($section == 'backup')
 					'SET'		=> 'conf_value = \'0\'',
 					'WHERE'		=> 'conf_name = \'o_maintenance\''
 				);
-			
-				$forum_db->query_build($query_maint_mode) or error(__FILE__, __LINE__);		
+
+				$forum_db->query_build($query_maint_mode) or error(__FILE__, __LINE__);
 				// Regenerate the config cache
 				generate_config_cache();
 			}
@@ -221,7 +221,7 @@ if ($section == 'backup')
 
 				case 6:	
 					$upload_result = $lang_profile['No tmp directory'];
-					break;				
+					break;
 			}
 		}
 		else if (file_exists($ext_info['path'].'/dumps/'.trim($_FILES['dump_file']['name'])))
@@ -231,16 +231,16 @@ if ($section == 'backup')
 		if (empty($upload_result) && is_uploaded_file($_FILES['dump_file']['tmp_name']))
 		{
 			if (!@move_uploaded_file($_FILES['dump_file']['tmp_name'], $ext_info['path'].'/dumps/'.$_FILES['dump_file']['name']))
-				$upload_result = $lang_backup['Move failed'];				
-		}	
+				$upload_result = $lang_backup['Move failed'];
+		}
 	}
 	else if (isset($_GET['name']) && is_scalar($_GET['name']))
 	{
 		if (!@unlink( realpath($ext_info['path'].'/dumps/').'/'.trim($_GET['name']) ))
 			$del_error = $lang_backup['Delete fail'];
 	}
-	require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';		
-		
+	require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';
+
 	// Setup the form
 	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
 
@@ -258,6 +258,9 @@ if ($section == 'backup')
 	$link = forum_link($forum_url['admin_settings_backup']);
 	$token = generate_form_token($link);
 	require FORUM_ROOT.'header.php';
+
+	// START SUBST - <!-- forum_main -->
+	ob_start();
 
 	$dump_list = get_list($ext_info['path'].'/dumps');
 
@@ -297,7 +300,7 @@ if ($section == 'backup')
 			<form class="frm-form" method="post" action="<?php echo $link ?>" accept-charset="utf-8">
 				<div class="hidden">
 					<input type="hidden" name="csrf_token" value="<?php echo $token; ?>" />
-				</div>			
+				</div>
 				<div class="frm-buttons">
 					<span class="submit"><input type="submit" class="button" name="revert_continue" value="<?php echo $lang_backup['Continue']; ?>" /></span>
 					<span class="submit"><input type="submit" class="button" name="revert_cancel" value="<?php echo $lang_backup['Cancel']; ?>" /></span>
@@ -308,7 +311,7 @@ if ($section == 'backup')
 		}
 		else
 		{
-		
+
 		?>
 			<div class="content-head">
 				<h2 class="hn"><span><?php echo $lang_backup['Backup forum']?></span></h2>
@@ -375,7 +378,7 @@ if ($section == 'backup')
 					if ($backup_result == 1)
 						echo '<div class="ct-box"><p>'.$lang_backup['Dump success'].'</p></div>';
 					else
-						echo '<div class="ct-box"><p>'.$lang_backup['Dump fail'].'</p></div>';		
+						echo '<div class="ct-box"><p>'.$lang_backup['Dump fail'].'</p></div>';
 				}
 
 			?>
@@ -397,17 +400,17 @@ if ($section == 'backup')
 		{
 			if (strpos($list, 'punbb_dump_') === FALSE || substr($list, -7) != '.tar.gz')
 				continue;
-				
+
 			$res_str = '<div class="mf-item">';
 			$res_str .= '<span class="fld-input"><input type="radio" name="checked_dump" id="fld'.++$forum_page['fld_count'].'" value="'.$list.'" '.((isset($dump) && $dump == $list)?(' checked="checked"' ):('')).' '.(($check_disable) ? ('') : (' disabled="disabled"')).'/></span>';
 			$res_str .= '<label for="fld'.$forum_page['fld_count'].'">'.$list.'&nbsp;<a href="'.$link.'&amp;name='.$list.'">'.$lang_backup['Delete'].'</a></label>';
 			$res_str .= '</div>';
 
 			$revert_list[] = $res_str;
-		}			
+		}
 		if (empty($revert_list))
 		{
-	
+
 		?>
 			<div class="ct-box">
 				<p><?php echo $lang_backup['No reverts'] ?> </p>
@@ -419,7 +422,7 @@ if ($section == 'backup')
 		{
 
 		?>
-			<form class="frm-form" method="post" action="<?php echo $link; ?>" accept-charset="utf-8">					
+			<form class="frm-form" method="post" action="<?php echo $link; ?>" accept-charset="utf-8">
 				<div class="hidden">
 					<input type="hidden" name="csrf_token" value="<?php echo $token; ?>" />
 					<input type="hidden" name="restore_form_sent" value="1" />
@@ -472,7 +475,7 @@ if ($section == 'backup')
 
 					echo '<div class="ct-box"><p>';
 					echo sprintf($lang_backup['Delete done'], trim($_GET['name']));
-				}							
+				}
 				if (!empty($errs))
 				{
 					echo ' '.$lang_backup['Errors'];
@@ -487,7 +490,7 @@ if ($section == 'backup')
 					echo '<div class="ct-box"><p>';
 					echo $lang_backup['No dump'];
 					echo '</p></div>';
-				}			
+				}
 
 				?>
 				<div class="frm-buttons">
@@ -505,10 +508,10 @@ if ($section == 'backup')
 			</div>
 			<div class="ct-box">
 				<p><?php echo $lang_backup['Upload message']; ?></p>
-			</div>		
-			<form class="frm-form" enctype="multipart/form-data" method="post" action="<?php echo $link; ?>" accept-charset="utf-8">					
+			</div>
+			<form class="frm-form" enctype="multipart/form-data" method="post" action="<?php echo $link; ?>" accept-charset="utf-8">
 				<div class="hidden">
-					<input type="hidden" name="csrf_token" value="<?php echo $token; ?>" />					
+					<input type="hidden" name="csrf_token" value="<?php echo $token; ?>" />
 				</div>
 				<fieldset class="frm-group group1">
 					<legend class="group-legend">
@@ -525,7 +528,7 @@ if ($section == 'backup')
 								<input id="fld<?php echo $forum_page['fld_count'] ?>" type="file" name="dump_file" maxlength="200" value="<?php echo $lang_backup['Browse'].'" '; echo $check_disable ? '' : 'disabled="disabled"'?> />
 							</span>
 						</div>
-					</div>					
+					</div>
 				</fieldset>
 			<?php
 
@@ -542,7 +545,7 @@ if ($section == 'backup')
 					<span class="submit"><input type="submit" class="button" name="upload" value="<?php echo $lang_backup['Upload']?>" <?php echo $check_disable ? '' : 'disabled="disabled"'?> /></span>
 				</div>
 			</form>
-	<?php		
+	<?php
 
 	} //else if (isset($sql_file))
 
@@ -550,7 +553,7 @@ if ($section == 'backup')
 	</div>
 	<?php
 } //if section = 'backup'
-  ]]></hook>
+	]]></hook>
 
-  </hooks>
+	</hooks>
 </extension>
