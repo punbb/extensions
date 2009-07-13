@@ -36,14 +36,13 @@ $attach_url = array(
 	'admin_attach_rename'		=>	'admin/settings.php?section=list_attach&amp;action=rename&amp;id=$1&amp;csrf_token=$2',
 	'admin_options_attach'		=>	'admin/settings.php?section=pun_attach',
 	'admin_attachment_edit'		=>	'admin/settings.php?section=pun_list_attach&amp;id=$1',
-	'misc_download'				=>	'misc.php?item=$1&amp;download=0',
-	'misc_preview'				=>	'misc.php?item=$1&amp;preview',
-	'misc_preview_secure'		=>	'misc.php?item=$1&amp;preview&amp;secure_str=$2',
-	'misc_vt_down'				=>	'misc.php?item=$1&amp;download=$2',
 	'misc_admin'				=>	'misc.php?item=$1',
-	'misc_download_secure'		=>	'misc.php?item=$1&amp;download&amp;secure_str=$2',
-	'misc_show_secure'			=>	'misc.php?item=$1&amp;show&amp;secure_str=$2',
-	
+	'misc_download'				=>	'misc.php?item=$1&amp;download=1',
+	'misc_view'					=>	'misc.php?item=$1&amp;download=0',
+	'misc_preview'				=>	'misc.php?item=$1&amp;preview',
+	'misc_download_secure'		=>	'misc.php?item=$1&amp;download=1&amp;secure_str=$2',
+	'misc_view_secure'			=>	'misc.php?item=$1&amp;download=0&amp;secure_str=$2',
+	'misc_preview_secure'		=>	'misc.php?item=$1&amp;preview&amp;secure_str=$2',
 );
 
 ?>

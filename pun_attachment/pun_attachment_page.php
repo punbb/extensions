@@ -17,7 +17,7 @@ $pun_attach_attach_error = 0;
 if (isset($_GET['id']))
 {
 	$id = intval($_GET['id']);
-	
+
 	if (isset($_POST['pun_attach_detach']))
 	{
 		if (!isset($_POST['csrf_token']) && (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('delete'.$forum_user['id'])))
@@ -31,20 +31,20 @@ if (isset($_GET['id']))
 
 		$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
 	}
-	
+
 	if (isset($_POST['pun_attach_rename']))
 	{
 		if (!isset($_POST['csrf_token']) && (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('delete'.$forum_user['id'])))
 			csrf_confirm_form();
-			
+
 		$new_name = htmlspecialchars($_POST['pun_attach_new_name']);
-		
+
 		if (strlen($new_name) == 0)
 		{
 			$pun_attach_rename_error = 1;
 			$errors[] = $lang_attach['Too short filename'];
 		}
-			
+
 		if (empty($errors))
 		{
 			$query = array(
@@ -56,8 +56,8 @@ if (isset($_GET['id']))
 			$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
 			
 			if (!$forum_db->num_rows($result))
-				message($lang_common['Bad request']);			
-				
+				message($lang_common['Bad request']);
+
 			$pun_attach_filename = $forum_db->fetch_assoc($result);
 			preg_match('/\.[0-9a-zA-z]{1,}$/', $pun_attach_filename['filename'], $pun_attach_filename_ext);
 			
@@ -68,11 +68,11 @@ if (isset($_GET['id']))
 				'SET'		=> 'filename=\''.$new_name.'\'',
 				'WHERE'		=> 'id='.$id
 			);
-	
-			$forum_db->query_build($query) or error(__FILE__,__LINE__);		
+
+			$forum_db->query_build($query) or error(__FILE__,__LINE__);
 		}
 	}
-	
+
 	if (isset($_POST['pun_attach_delete']))
 	{
 		if (!isset($_POST['csrf_token']) && (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('delete'.$forum_user['id'])))
@@ -85,7 +85,7 @@ if (isset($_GET['id']))
 		else
 			message($lang_attach['Error while deleting attachment']);
 	}
-	
+
 	if (isset($_POST['pun_attach_attach']))
 	{
 		$post_id = intval($_POST['pun_attach_new_post_id']);
@@ -95,7 +95,7 @@ if (isset($_GET['id']))
 			$pun_attach_attach_error = 1;
 			$errors[] = $lang_attach['Empty post id'];
 		}
-		
+
 		if (empty($errors))
 		{		
 			$query = array(
@@ -109,9 +109,9 @@ if (isset($_GET['id']))
 				),
 				'WHERE'		=> 'p.id='.$post_id
 			);
-			
+
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-			
+
 			if ($forum_db->num_rows($result))
 				$pun_attach_topic_id = $forum_db->fetch_assoc($result);
 			else
@@ -133,7 +133,7 @@ if (isset($_GET['id']))
 		}
 		
 	}
-	
+
 	$query = array(
 		'SELECT'	=> 'af.*, u.username, u.id, t.subject, t.id AS topic_id',
 		'FROM'		=> 'attach_files AS af',
@@ -149,14 +149,14 @@ if (isset($_GET['id']))
 		),
 		'WHERE'		=> 'af.id='.$id
 	);
-	
+
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	
+
 	if (!$forum_db->num_rows($result))
 		message($lang_common['Bad request']);
-		
+
 	$pun_current_attach = $forum_db->fetch_assoc($result);
-	
+
 	$pun_attach_frm_buttons = array();
 	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_rename" value="'.$lang_attach['Rename button'].'"></span>';
 	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_delete" value="'.$lang_attach['Delete button'].'"></span>';
@@ -180,10 +180,10 @@ if (isset($_GET['id']))
 	define('FORUM_PAGE_SECTION', 'management');
 	define('FORUM_PAGE', 'admin-attachment-manage');
 	require FORUM_ROOT.'header.php';
-	
+
 	// START SUBST - <!-- forum_main -->
-	ob_start();			
-		
+	ob_start();
+
 ?>
 
 	<div class="main-content main-frm">
@@ -277,15 +277,15 @@ if (isset($_GET['id']))
 			</div>
 		</form>
 	</div>
-	
+
 <?php
-	
+
 		$tpl_temp = trim(ob_get_contents());
 		$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
 		ob_end_clean();
 		// END SUBST - <!-- forum_main -->
-	
+
 		require FORUM_ROOT.'footer.php';
 	}
-	
+
 ?>

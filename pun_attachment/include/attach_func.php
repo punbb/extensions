@@ -239,8 +239,9 @@ function show_attachments($attach_list, $cur_posting)
 			}
 			else
 				$show_image = false;
-			$download_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_show_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_download'], $attach['id']);
-			$preview_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_preview_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_preview'], $attach['id']);
+			$download_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_download_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_download'], $attach['id']);
+
+			$view_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_view_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_view'], $attach['id']);
 			$attach_info = format_size($attach['size']).', '.($attach['download_counter'] ? sprintf($lang_attach['Since'], $attach['download_counter'], date('Y-m-d', $attach['uploaded_at'])) : $lang_attach['Never download']).'&nbsp;';
 
 			?>
@@ -248,18 +249,20 @@ function show_attachments($attach_list, $cur_posting)
 				<div class="<?php echo $show_image ? 'ct' : 'sf'; ?>-box text">
 				<?php if ($show_image):	?>
 					<h3 class="hn ct-legend"><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></h3>
-						<p class="avatar-demo"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $download_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $download_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" /></a></span></p>
-						<p><?php echo $attach_info; ?><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete']; ?>"/></p>
+						<p class="avatar-demo"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" /></a></span></p>
+						<?php echo $attach_info;  if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
+						<p><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete button']; ?>"/></p>
+						<?php endif; ?>
 				<?php else: ?>
 						<label for="fld<?php echo ++$forum_page['fld_count']; ?>"><span><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></span></label>
 						<?php if (in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff'))): ?>
-							<a href="<?php echo $preview_link; ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']); ?></a>
+							<a href="<?php echo !empty($attach['secure_str']) ? forum_link($attach_url['misc_preview_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_preview'], $attach['id']); ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']); ?></a>
 						<?php else: ?>
 							<a href="<?php echo $download_link; ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']);?></a>
 						<?php endif;
 						echo $attach_info;
 						if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
-						<input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete']; ?>"/>
+						<input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete button']; ?>"/>
 						<?php endif; ?>
 				<?php endif; ?>
 				</div>
@@ -304,9 +307,10 @@ function show_attachments_post($attach_list, $post_id, $cur_topic)
 			else
 				$show_image = false;
 			$download_link = forum_link($attach_url['misc_download'], $attach['id']);
+
 			$attach_info = format_size($attach['size']).', '.($attach['download_counter'] ? sprintf($lang_attach['Since'], $attach['download_counter'], date('Y-m-d', $attach['uploaded_at'])) : $lang_attach['Never download']).'&nbsp;';
 			if ($show_image)
-				$link = '<a href="'.$download_link.'"><img src="'.$download_link.'" title="'.forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height'].'" alt="'.forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height'].'" /></a>';
+				$link = '<a href="'.$download_link.'"><img src="'.forum_link($attach_url['misc_view'], $attach['id']).'" title="'.forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height'].'" alt="'.forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height'].'" /></a>';
 			else if (in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff')))
 				$link = '<a href="'.forum_link($attach_url['misc_preview'], $attach['id']).'">'.attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']).'</a>';
 			else

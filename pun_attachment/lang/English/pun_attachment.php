@@ -148,10 +148,10 @@ $lang_attach = array(
 'Attach error'			=>	'<strong>Warning!</strong> The following errors must be corrected before you can attach file:',
 'Rename error'			=>	'<strong>Warning!</strong> The following errors must be corrected before you can rename attachment:',
 
-'Delete'				=>	'Delete',
+'Delete'				=>	'Allow user to delete files',
 'Edit attachments'		=>	'Edit attachments',
 'Post attachments'		=>	'Post attachments',
-'Image preview'			=>	'Preview image',
+'Image preview'			=>	'Image preview',
 
 'Manage attahcments'	=>	'Manage attachments',
 'Manage id'				=>	'Manage attachment %s',

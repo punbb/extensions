@@ -839,7 +839,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 					'ON'		=> '(fp.forum_id = f.id AND fp.group_id = '.$forum_user['g_id'].')'
 				)
 			),
-			'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1)'		
+			'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1)'
 		);
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
@@ -863,7 +863,8 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 		require FORUM_ROOT.'extensions/pun_attachment/url.php';
 
 		$forum_page = array();
-		$forum_page['download_link'] = !empty($attach_info['secure_str']) ? forum_link($attach_url['misc_show_secure'], array($attach_item, $attach_info['secure_str'])) : forum_link($attach_url['misc_download'], $attach_item);
+		$forum_page['download_link'] = !empty($attach_info['secure_str']) ? forum_link($attach_url['misc_download_secure'], array($attach_item, $attach_info['secure_str'])) : forum_link($attach_url['misc_download'], $attach_item);
+		$forum_page['view_link'] = !empty($attach_info['secure_str']) ? forum_link($attach_url['misc_view_secure'], array($attach_item, $attach_info['secure_str'])) : forum_link($attach_url['misc_view'], $attach_info['id']);
 
 		// Setup breadcrumbs
 		$forum_page['crumbs'] = array(
@@ -887,7 +888,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 				<h2 class="hn"><span><?php echo $attach_info['filename']; ?></span></h2>
 			</div>
 			<fieldset class="frm-group group1">
-				<span><img src="<?php echo $forum_page['download_link']; ?>"></span>
+				<span><img src="<?php echo $forum_page['view_link']; ?>"></span>
 				<p><?php echo $lang_attach['Download:']; ?> <a href="<?php echo $forum_page['download_link']; ?>"><?php echo $attach_info['filename']; ?></a></p>
 			</fieldset>
 		</div>
@@ -903,7 +904,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 	else
 	{
 		$fp = fopen($forum_config['attach_basefolder'].$attach_info['file_path'], 'rb');
-	
+
 		if (!$fp)
 			message($lang_common['Bad request']);
 		else
@@ -914,11 +915,11 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 			header('Expires: 0');
 			header('Connection: close');
 			header('Content-Length: '.$attach_info['size']);
-	
+
 			fpassthru ($fp);
-			
-			if ($attach_info['owner_id'] != 0 && $forum_user['id'] != $attach_info['owner_id'])
-			{			
+
+			if (isset($_GET['download']) && intval($_GET['download']) == 1 && $attach_info['owner_id'] != 0 && $forum_user['id'] != $attach_info['owner_id'])
+			{
 				$query = array(
 					'UPDATE'	=> 'attach_files',
 					'SET'		=> 'download_counter = download_counter + 1',
