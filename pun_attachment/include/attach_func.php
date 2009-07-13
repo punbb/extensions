@@ -256,9 +256,11 @@ function show_attachments($attach_list, $cur_posting)
 							<a href="<?php echo $preview_link; ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']); ?></a>
 						<?php else: ?>
 							<a href="<?php echo $download_link; ?>"><?php echo attach_icon($attach['file_ext']).'&nbsp;'.forum_htmlencode($attach['filename']);?></a>
-						<?php endif; ?>
-						<?php echo $attach_info; ?>
+						<?php endif;
+						echo $attach_info;
+						if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
 						<input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete']; ?>"/>
+						<?php endif; ?>
 				<?php endif; ?>
 				</div>
 			</div>
