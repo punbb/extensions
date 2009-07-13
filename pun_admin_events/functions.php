@@ -60,7 +60,7 @@ function pagination($fields, $data, $page, $pages, $form_name, $lang)
 
 					foreach($fields as $key => $value)
 					{
-						echo '<td class="tc'.$event_iter.'">'.$row[$key].'</td>';
+						echo '<td class="tc'.$event_iter.'">'.($event_iter == 3 ? format_time($row[$key]) : $row[$key]).'</td>';
 						$event_iter++;
 					}
 

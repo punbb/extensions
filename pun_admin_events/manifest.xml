@@ -26,7 +26,8 @@
 			'FIELDS'	=> array(
 				'ip'		=> array(
 					'datatype'		=> 'VARCHAR(15)',
-					'allow_null'	=> false
+					'allow_null'	=> false,
+					'default'		=> '\'0.0.0.0\''
 				),
 				'type'		=> array(
 					'datatype'		=> 'VARCHAR(64)',
@@ -45,7 +46,7 @@
 					'allow_null'	=> true
 				),
 				'date'		=> array(
-					'datatype'		=> 'TIMESTAMP',
+					'datatype'		=> 'INT(10) UNSIGNED',
 					'allow_null'	=> false
 				)
 			)
