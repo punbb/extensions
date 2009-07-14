@@ -1,7 +1,7 @@
 <?php
 /***********************************************************************
 
-	Copyright (C) 2008  PunBB
+	Copyright (C) 2008-2009 PunBB
 
 	PunBB is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published
@@ -50,7 +50,7 @@ $lang_pun_admin_log = array(
 		'Logging to file'	=>	'Logging to file',
 		'Logging to db'		=>	'Logging to db',
 		'Path log-file'		=>	'Path to log-file',
-		'Abs path'			=>	'Absolute path to log-file'
+		'Abs path'			=>	'Absolute path to the log file. Web server should have write access to this file.'
 	);
 
 ?>

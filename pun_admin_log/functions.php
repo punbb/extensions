@@ -1,7 +1,7 @@
 <?
 /***********************************************************************
 
-	Copyright (C) 2008  PunBB
+	Copyright (C) 2008-2009 PunBB
 
 	PunBB is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published
@@ -27,7 +27,7 @@ function pun_log_write_logfile( $str )
 {
 	global $forum_config;
 	$hf = fopen($forum_config['o_pun_admin_path_log_file'], 'a+');
-	
+
 	if ($hf)
 	{
 		fwrite($hf, $str);
