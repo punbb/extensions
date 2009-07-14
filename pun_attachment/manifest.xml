@@ -2,35 +2,20 @@
 <!DOCTYPE extension SYSTEM "ext-1.0.dtd">
 
 <!--
-***********************************************************************
-
-	Copyright (C) 2009 PunBB
-
-	Partially based on Attachment Mod by Frank Hagstrom
-
-	PunBB is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published
-	by the Free Software Foundation; either version 2 of the License,
-	or (at your option) any later version.
-
-	PunBB is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-	MA  02111-1307  USA
-
-***********************************************************************
+/**
+ * Allows users to attach files to posts.
+ *
+ * @copyright (C) 2008-2009 PunBB, partially based on Attachment Mod by Frank Hagstrom
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_attachment
+ */
 -->
 
 <extension engine="1.0">
 	<id>pun_attachment</id>
 	<title>Attachment</title>
 	<version>1.0b</version>
-	<description>Allows you to attach files to posts.</description>
+	<description>Allows users to attach files to posts.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3 SVN</minversion>
 	<maxtestedon>1.3 SVN</maxtestedon>
@@ -167,7 +152,7 @@
 				'attach_basefolder'			=> $basepath,
 				'attach_create_orphans'		=> '1',
 				'attach_cur_version'		=> '1.0a.1',
-				'attach_icon_folder'		=>  $base_url.'/extensions/pun_attachment/img/',
+				'attach_icon_folder'		=>  $base_url.'/extensions/'.$id.'/img/',
 				'attach_icon_extension'		=> 'txt,doc,pdf,wav,mp3,ogg,avi,mpg,mpeg,png,jpg,jpeg,gif',
 				'attach_icon_name'			=> 'text.png,doc.png,doc.png,audio.png,audio.png,audio.png,video.png,video.png,video.png,image.png,image.png,image.png,image.png',
 				'attach_subfolder'			=> $newname,
@@ -224,7 +209,8 @@
 	<hooks>
 
 		<hook id="agr_start"><![CDATA[
-require $ext_info['path'].'/include/attach_incl.php';
+require $ext_info['path'].'/include/attach_func.php';
+require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 		]]></hook>
 
 		<hook id="agr_add_edit_group_flood_fieldset_end"><![CDATA[
@@ -310,34 +296,38 @@ if (isset($allow_down))
 	$query['SET'] .= ', g_pun_attachment_allow_download = '.$allow_down.', g_pun_attachment_allow_upload = '.$allow_upl.', g_pun_attachment_allow_delete = '.$allow_del.', g_pun_attachment_allow_delete_own = '.$allow_del_own.', g_pun_attachment_upload_max_size = '.$size.', g_pun_attachment_files_per_post = '.$per_post.', g_pun_attachment_disallowed_extensions = \''.$forum_db->escape($file_ext).'\'';
 		]]></hook>
 		<hook id="hd_head"><![CDATA[
-if (FORUM_PAGE == 'viewtopic' && ($forum_config['attach_disable_attach'] != '1'))
+if (!$forum_config['attach_disable_attach'] && in_array(FORUM_PAGE, array('viewtopic', 'postedit', 'attachment-preview')))
 {
-	if (is_dir(FORUM_ROOT.'extensions/pun_attachment/styles/'.$forum_user['style']))
+	if (is_dir($ext_info['path'].'/styles/'.$forum_user['style']))
 	{
-		$forum_head['style_attch'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/'.$forum_user['style'].'/'.$forum_user['style'].'.css" />';
-		$forum_head['style_attch_css'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/'.$forum_user['style'].'/'.$forum_user['style'].'_cs.css" />';
+		$forum_head['style_attch'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/'.$forum_user['style'].'/'.$forum_user['style'].'.css" />';
+		$forum_head['style_attch_css'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/'.$forum_user['style'].'/'.$forum_user['style'].'_cs.css" />';
 	}
 	else
 	{
-		$forum_head['style_attch'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/Oxygen/'.$forum_user['style'].'.css" />';
-		$forum_head['style_attch_css'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$base_url.'/extensions/pun_attachment/style/Oxygen/'.$forum_user['style'].'_cs.css" />';
+		$forum_head['style_attch'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/Oxygen/Oxygen.css" />';
+		$forum_head['style_attch_css'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/style/Oxygen/Oxygen_cs.css" />';
 	}
 }
 		]]></hook>
 		<hook id="po_start"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
-	require $ext_info['path'].'/include/attach_incl.php';
+if (!$forum_config['attach_disable_attach'])
+{
+	require $ext_info['path'].'/include/attach_func.php';
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	require $ext_info['path'].'/url.php';
+}
 		]]></hook>
 
 		<hook id="po_qr_get_topic_forum_info,po_qr_get_forum_info"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$query['SELECT'] .= ', g_pun_attachment_allow_upload, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions, g_pun_attachment_allow_delete_own';
 	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
 }
 		]]></hook>
 		<hook id="po_form_submitted"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$attach_secure_str = $forum_user['id'].($tid ? 't'.$tid : 'f'.$fid);
 	$uploaded_list = array();
@@ -357,7 +347,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 		]]></hook>
 
 		<hook id="po_end_validation"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	foreach (array_keys($_POST) as $key)
 	{
@@ -399,7 +389,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 }
 		]]></hook>
 		<hook id="po_pre_redirect"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1' && isset($_POST['submit']))
+if (!$forum_config['attach_disable_attach'] && isset($_POST['submit']))
 {
 	$attach_query = array(
 		'UPDATE'	=>	'attach_files',
@@ -410,28 +400,32 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_POST['submit']))
 }
 		]]></hook>
 		<hook id="po_pre_header_load"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 	$forum_page['form_attributes']['enctype'] = 'enctype="multipart/form-data"';
 		]]></hook>
 		<hook id="po_pre_req_info_fieldset_end"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 	show_attachments(isset($uploaded_list) ? $uploaded_list : array(), $cur_posting);
 		]]></hook>
 
 		<hook id="vt_start"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
-	require $ext_info['path'].'/include/attach_incl.php';
+if (!$forum_config['attach_disable_attach'])
+{
+	require $ext_info['path'].'/include/attach_func.php';
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	require $ext_info['path'].'/url.php';
+}
 		]]></hook>
 
 		<hook id="vt_qr_get_topic_info"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$query['SELECT'] .= ', g_pun_attachment_allow_download';
 	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
 }
 		]]></hook>
 		<hook id="vt_main_output_start"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$attach_query = array(
 		'SELECT'	=>	'id, post_id, filename, file_ext, file_mime_type, size, download_counter, uploaded_at, file_path',
@@ -451,7 +445,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 		]]></hook>
 
 		<hook id="vt_row_pre_display"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1' && isset($attach_list[$cur_post['id']]))
+if (!$forum_config['attach_disable_attach'] && isset($attach_list[$cur_post['id']]))
 {
 	if (isset($forum_page['message']['signature']))
 		$forum_page['message']['signature'] = show_attachments_post($attach_list[$cur_post['id']], $cur_post['id'], $cur_topic).$forum_page['message']['signature'];
@@ -461,12 +455,16 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($attach_list[$cur_pos
 		]]></hook>
 
 		<hook id="ed_start"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
-	require $ext_info['path'].'/include/attach_incl.php';
+if (!$forum_config['attach_disable_attach'])
+{
+	require $ext_info['path'].'/include/attach_func.php';
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	require $ext_info['path'].'/url.php';
+}
 		]]></hook>
 
 		<hook id="ed_qr_get_post_info"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$query['SELECT'] .= ', g_pun_attachment_allow_upload, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions, g_pun_attachment_allow_delete_own, g_pun_attachment_allow_delete';
 	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
@@ -474,16 +472,17 @@ if ($forum_config['attach_disable_attach'] != '1')
 		]]></hook>
 
 		<hook id="ed_post_selected"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$attach_secure_str = $forum_user['id'].'t'.$cur_post['tid'];
 	$uploaded_list = array();
 	$attach_query = array(
 		'SELECT'	=>	'id, owner_id, post_id, topic_id, filename, file_ext, file_mime_type, file_path, size, download_counter, uploaded_at, secure_str',
 		'FROM'		=>	'attach_files',
-		'WHERE'		=>	'post_id = '.$id.' OR secure_str = \''.$attach_secure_str.'\''
+		'WHERE'		=>	'post_id = '.$id.' OR secure_str = \''.$attach_secure_str.'\'',
+		'ORDER BY'	=>	'filename'
 	);
-	
+
 	$attach_result = $forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 	if ($forum_db->num_rows($attach_result) > 0)
 	{
@@ -494,7 +493,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 		]]></hook>
 
 		<hook id="ed_end_validation"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	foreach (array_keys($_POST) as $key)
 	{
@@ -537,7 +536,7 @@ if ($forum_config['attach_disable_attach'] != '1')
 		]]></hook>
 
 		<hook id="ed_pre_redirect"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1' && isset($_POST['submit']))
+if (!$forum_config['attach_disable_attach'] && isset($_POST['submit']))
 {
 	$attach_query = array(
 		'UPDATE'	=>	'attach_files',
@@ -549,239 +548,225 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_POST['submit']))
 		]]></hook>
 
 		<hook id="ed_pre_header_load"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 	$forum_page['form_attributes']['enctype'] = 'enctype="multipart/form-data"';
 		]]></hook>
 
 		<hook id="ed_pre_main_fieldset_end"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 	show_attachments(isset($uploaded_list) ? $uploaded_list : array(), $cur_post);
 		]]></hook>
 
+		<hook id="aop_start"><![CDATA[
+
+require $ext_info['path'].'/include/attach_func.php';
+require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+require $ext_info['path'].'/url.php';
+
+$section = isset($_GET['section']) ? $_GET['section'] : null;
+
+if (isset($_POST['apply']) && ($section == 'list_attach') && isset($_POST['form_sent']))
+	unset($_POST['form_sent']);
+
+		]]></hook>
+
 		<hook id="aop_new_section"><![CDATA[
-		
-			if ($section == 'pun_attach')
-				require $ext_info['path'].'/pun_attach.php';
-			else if ($section == 'pun_list_attach')
-				require $ext_info['path'].'/pun_list_attach.php';
+
+if ($section == 'pun_attach')
+	require $ext_info['path'].'/pun_attach.php';
+else if ($section == 'pun_list_attach')
+	require $ext_info['path'].'/pun_list_attach.php';
 
 		]]></hook>
 
 		<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
 
-			require $ext_info['path'].'/url.php';
-			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	
-			if ((FORUM_PAGE_SECTION == 'management') && ($forum_user['g_id'] == FORUM_ADMIN))
-			{
-				$forum_page['admin_submenu']['pun_attachment_management'] = '<li class="'.((FORUM_PAGE == 'admin-attachment-manage') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($attach_url['admin_attachment_manage']).'">'.$lang_attach['Attachment'].'</a></li>';
-			}
+require $ext_info['path'].'/url.php';
+require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 
-			if ((FORUM_PAGE_SECTION == 'settings') && ($forum_user['g_id'] == FORUM_ADMIN))
-			{
-				$forum_page['admin_submenu']['pun_attachment_settings'] = '<li class="'.((FORUM_PAGE == 'admin-options-attach') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($attach_url['admin_options_attach']).'">'.$lang_attach['Attachment'].'</a></li>';
-			}
+if ((FORUM_PAGE_SECTION == 'management') && ($forum_user['g_id'] == FORUM_ADMIN))
+	$forum_page['admin_submenu']['pun_attachment_management'] = '<li class="'.((FORUM_PAGE == 'admin-attachment-manage') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($attach_url['admin_attachment_manage']).'">'.$lang_attach['Attachment'].'</a></li>';
+if ((FORUM_PAGE_SECTION == 'settings') && ($forum_user['g_id'] == FORUM_ADMIN))
+	$forum_page['admin_submenu']['pun_attachment_settings'] = '<li class="'.((FORUM_PAGE == 'admin-options-attach') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($attach_url['admin_options_attach']).'">'.$lang_attach['Attachment'].'</a></li>';
 
 		]]></hook>
 
-		<hook id="aop_start"><![CDATA[
-
-			require $ext_info['path'].'/url.php';
-			require $ext_info['path'].'/include/attach_incl.php';
-
-			$section = isset($_GET['section']) ? $_GET['section'] : null;
-
-			if (isset($_POST['apply']) && ($section == 'list_attach') && isset($_POST['form_sent']))
-				unset($_POST['form_sent']);
-
-		]]></hook>
+		
 
 		<hook id="aop_pre_update_configuration"><![CDATA[
 
-			if ($section == 'pun_attach')
-			{
-				while (list($key, $input) = @each($form))
-				{
-					if ($forum_config['attach_'.$key] != $input)
-					{
-						if ($input != '' || is_int($input))
-							$value = '\''.$forum_db->escape($input).'\'';
-						else
-							$value = 'NULL';
+if ($section == 'pun_attach')
+{
+	while (list($key, $input) = @each($form))
+	{
+		if ($forum_config['attach_'.$key] != $input)
+		{
+			if ($input != '' || is_int($input))
+				$value = '\''.$forum_db->escape($input).'\'';
+			else
+				$value = 'NULL';
 
-						$query = array(
-							'UPDATE'	=> 'config',
-							'SET'		=> 'conf_value='.$value,
-							'WHERE'		=> 'conf_name=\'attach_'.$key.'\''
-						);
+			$query = array(
+				'UPDATE'	=> 'config',
+				'SET'		=> 'conf_value='.$value,
+				'WHERE'		=> 'conf_name=\'attach_'.$key.'\''
+			);
 
-						$forum_db->query_build($query) or error(__FILE__,__LINE__);
-					}
-				}
+			$forum_db->query_build($query) or error(__FILE__,__LINE__);
+		}
+	}
 
-				require_once FORUM_ROOT.'include/cache.php';
-				generate_config_cache();
+	require_once FORUM_ROOT.'include/cache.php';
+	generate_config_cache();
 
-				redirect(forum_link($attach_url['admin_options_attach']), $lang_admin_settings['Settings updated'].' '.$lang_admin_common['Redirect']);
-			}
+	redirect(forum_link($attach_url['admin_options_attach']), $lang_admin_settings['Settings updated'].' '.$lang_admin_common['Redirect']);
+}
 
 		]]></hook>
 		
 		<hook id="aop_pre_redirect"><![CDATA[
-		
-			if ($section == 'pun_attach')
-				redirect(forum_link($attach_url['admin_options_attach']), $lang_admin_settings['Settings updated'].' '.$lang_admin_common['Redirect']);
-		
+
+if ($section == 'pun_attach')
+	redirect(forum_link($attach_url['admin_options_attach']), $lang_admin_settings['Settings updated'].' '.$lang_admin_common['Redirect']);
+
 		]]></hook>
 
 		<hook id="aop_new_section_validation"><![CDATA[
 
-			if ($section == 'pun_attach')
+if ($section == 'pun_attach')
+{
+	if (!isset($form['use_icon']) || $form['use_icon'] != '1') $form['use_icon'] = '0';
+	if (!isset($form['create_orphans']) || $form['create_orphans'] != '1') $form['create_orphans'] = '0';
+	if (!isset($form['disable_attach']) || $form['disable_attach'] != '1') $form['disable_attach'] = '0';
+	if (!isset($form['disp_small']) || $form['disp_small'] != '1') $form['disp_small'] = '0';
+	
+	if ($form['always_deny'])
+	{
+		$form['always_deny'] = preg_replace('/\s/','',$form['always_deny']);
+		$match = preg_match('/(^[a-zA-Z0-9])+(([a-zA-Z0-9]+\,)|([a-zA-Z0-9]))+([a-zA-Z0-9]+$)/',$form['always_deny']);
+	
+		if (!$match)
+			message($lang_attach['Wrong deny']);
+	}
+	
+	if (preg_match('/^[0-9]+$/', $form['small_height']))
+		$form['small_height'] = intval($form['small_height']);
+	else
+		$form['small_height'] = $forum_config['attach_small_height'];
+	
+	if (preg_match('/^[0-9]+$/',$form['small_width']))
+		$form['small_width'] = intval($form['small_width']);
+	else
+		$form['small_width'] = $forum_config['attach_small_width'];
+	
+	$names = explode(',', $forum_config['attach_icon_name']);
+	$icons = explode(',', $forum_config['attach_icon_extension']);
+	
+	$num_icons = count($icons);
+	for ($i = 0; $i < $num_icons; $i++)
+	{
+		if (!empty($_POST['attach_ext_'.$i]) && !empty($_POST['attach_ico_'.$i]))
+		{
+			if (!preg_match("/^[a-zA-Z0-9]+$/", forum_trim($_POST['attach_ext_'.$i])) && !preg_match("/^([a-zA-Z0-9]+\.+(png|gif|jpeg|jpg|ico))+$/", forum_trim($_POST['attach_ico_'.$i])))
+				message($lang_attach['Wrong icon/name']);
+	
+			$icons[$i] = trim($_POST['attach_ext_'.$i]);
+			$names[$i] = trim($_POST['attach_ico_'.$i]);
+		}
+	}
+	
+	if (isset($_POST['add_field_icon']) && isset($_POST['add_field_file']))
+	{
+		if (!empty($_POST['add_field_icon']) && !empty($_POST['add_field_file']))
+		{
+			if (!(preg_match("/^[a-zA-Z0-9]+$/",trim($_POST['add_field_icon'])) && preg_match("/^([a-zA-Z0-9]+\.+(png|gif|jpeg|jpg|ico))+$/",trim($_POST['add_field_file']))))
+				message ($lang_attach['Wrong icon/name']);
+	
+			$icons[] = trim($_POST['add_field_icon']);
+			$names[] = trim($_POST['add_field_file']);
+		}
+	}
+	
+	$icons = implode(',', $icons);
+	$icons = preg_replace('/\,{2,}/',',',$icons);
+	$icons = preg_replace('/\,{1,}+$/','',$icons);
+	
+	$names = implode(',', $names);
+	$names = preg_replace('/\,{2,}/',',',$names);
+	$names = preg_replace('/\,{1,}+$/','',$names);
+	
+	$query = array(
+		'UPDATE'	=> 'config',
+		'SET'		=> 'conf_value=\''.$forum_db->escape($icons).'\'',
+		'WHERE'		=> 'conf_name = \'attach_icon_extension\''
+	);
+	$result = $forum_db->query_build($query) or error (__FILE__, __LINE__);
+	
+	$query = array(
+		'UPDATE'	=> 'config',
+		'SET'		=> 'conf_value=\''.$forum_db->escape($names).'\'',
+		'WHERE'		=> 'conf_name=\'attach_icon_name\''
+	);
+	$result = $forum_db->query_build($query) or error (__FILE__, __LINE__);
+	}
+	
+	if ($section == 'list_attach')
+	{
+	$query = array(
+		'SELECT'	=> 'count(id) as num_attach',
+		'FROM'		=> 'attach_files'
+	);
+	
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	
+	if ($forum_db->num_rows($result))
+	{
+		$num_attach = $forum_db->fetch_assoc($result);
+		for ($i = 0; $i < $num_attach['num_attach']; $i++)
+		{
+			if (isset($_POST['attach_'.$i]))
 			{
-				if (!isset($form['use_icon']) || $form['use_icon'] != '1') $form['use_icon'] = '0';
-				if (!isset($form['create_orphans']) || $form['create_orphans'] != '1') $form['create_orphans'] = '0';
-				if (!isset($form['disable_attach']) || $form['disable_attach'] != '1') $form['disable_attach'] = '0';
-				if (!isset($form['disp_small']) || $form['disp_small'] != '1') $form['disp_small'] = '0';
-
-				if ($form['always_deny'])
+				if (isset($_POST['attach_to_post_'.$i]) && !empty($_POST['attach_to_post_'.$i]))
 				{
-					$form['always_deny'] = preg_replace('/\s/','',$form['always_deny']);
-					$match = preg_match('/(^[a-zA-Z0-9])+(([a-zA-Z0-9]+\,)|([a-zA-Z0-9]))+([a-zA-Z0-9]+$)/',$form['always_deny']);
-
-					if (!$match)
-						message($lang_attach['Wrong deny']);
+					$post_id = intval($_POST['attach_to_post_'.$i]);
+					$attach_id = intval($_POST['attachment_'.$i]);
+					$query = array(
+						'SELECT'	=> 'id, topic_id, poster_id',
+						'FROM'		=> 'posts',
+						'WHERE'		=> 'id='.$post_id
+					);
+					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	
+	
+					if (!$forum_db->num_rows($result))
+						message ($lang_attach['Wrong post']);
+					$info = $forum_db->fetch_assoc($result);
+	
+					$query = array(
+						'UPDATE'	=> 'attach_files',
+						'SET'		=> 'post_id='.intval($info['id']).', topic_id='.intval($info['topic_id']).', owner_id='.intval($info['poster_id']),
+						'WHERE'		=> 'id='.$attach_id
+					);
+					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	
+					redirect(forum_link($attach_url['admin_attachment_manage']), $lang_attach['Attachment added']);
 				}
-
-				if (preg_match('/^[0-9]+$/', $form['small_height']))
-					$form['small_height'] = intval($form['small_height']);
 				else
-					$form['small_height'] = $forum_config['attach_small_height'];
-
-				if (preg_match('/^[0-9]+$/',$form['small_width']))
-					$form['small_width'] = intval($form['small_width']);
-				else
-					$form['small_width'] = $forum_config['attach_small_width'];
-
-				$names = explode(',',$forum_config['attach_icon_name']);
-				$icons = explode(',',$forum_config['attach_icon_extension']);
-
-				$num_icons = count($icons);;
-
-				for ($i=0; $i<$num_icons; $i++)
-				{
-					if (isset($_POST['attach_ext_'.$i]) && (isset($_POST['attach_ico_'.$i])))
-					{
-						if (!((trim($_POST['attach_ext_'.$i]) == '') && (trim($_POST['attach_ico_'.$i]) == '')))
-						{
-							if (!(preg_match("/^[a-zA-Z0-9]+$/",trim($_POST['attach_ext_'.$i])) && preg_match("/^([a-zA-Z0-9]+\.+(png|gif|jpeg|jpg|ico))+$/",trim($_POST['attach_ico_'.$i]))))
-							message($lang_attach['Wrong icon/name']);
-						}
-
-						$icons[$i] = trim($_POST['attach_ext_'.$i]);
-						$names[$i] = trim($_POST['attach_ico_'.$i]);
-					}
-				}
-
-				if (isset($_POST['add_field_icon']) && isset($_POST['add_field_file']))
-				{
-					if (($_POST['add_field_icon'] != '') && ($_POST['add_field_file'] != ''))
-					{
-						if (!(preg_match("/^[a-zA-Z0-9]+$/",trim($_POST['add_field_icon'])) && preg_match("/^([a-zA-Z0-9]+\.+(png|gif|jpeg|jpg|ico))+$/",trim($_POST['add_field_file']))))
-							message ($lang_attach['Wrong icon/name']);
-
-						$icons[] = trim($_POST['add_field_icon']);
-						$names[] = trim($_POST['add_field_file']);
-					}
-				}
-
-				$icons = implode(',', $icons);
-				$icons = preg_replace('/\,{2,}/',',',$icons);
-				$icons = preg_replace('/\,{1,}+$/','',$icons);
-
-				$names = implode(',', $names);
-				$names = preg_replace('/\,{2,}/',',',$names);
-				$names = preg_replace('/\,{1,}+$/','',$names);
-
-				$query = array(
-					'UPDATE'	=> 'config',
-					'SET'		=> 'conf_value=\''.$forum_db->escape($icons).'\'',
-					'WHERE'		=> 'conf_name = \'attach_icon_extension\''
-				);
-
-				$result = $forum_db->query_build($query) or error (__FILE__, __LINE__);
-
-				$query = array(
-					'UPDATE'	=> 'config',
-					'SET'		=> 'conf_value=\''.$forum_db->escape($names).'\'',
-					'WHERE'		=> 'conf_name=\'attach_icon_name\''
-				);
-
-				$result = $forum_db->query_build($query) or error (__FILE__, __LINE__);
+					message ($lang_attach['Wrong post']);
 			}
-
-			if ($section == 'list_attach')
-			{
-				$query = array(
-					'SELECT'	=> 'count(id) as num_attach',
-					'FROM'		=> 'attach_files'
-				);
-
-				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-				if ($forum_db->num_rows($result))
-				{
-					$num_attach = $forum_db->fetch_assoc($result);
-
-					for ($i = 0; $i < $num_attach['num_attach']; $i++)
-					{
-						if (isset($_POST['attach_'.$i]))
-						{
-							if (isset($_POST['attach_to_post_'.$i]) && $_POST['attach_to_post_'.$i] != '')
-							{
-								$post_id = intval($_POST['attach_to_post_'.$i]);
-
-								$attach_id = intval($_POST['attachment_'.$i]);
-
-
-								$query = array(
-									'SELECT'	=> 'id, topic_id, poster_id',
-									'FROM'		=> 'posts',
-									'WHERE'		=> 'id='.$post_id
-								);
-
-								$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-								if (!$forum_db->num_rows($result))
-									message ($lang_attach['Wrong post']);
-
-								$info = $forum_db->fetch_assoc($result);
-
-								$query = array(
-									'UPDATE'	=> 'attach_files',
-									'SET'		=> 'post_id='.intval($info['id']).', topic_id='.intval($info['topic_id']).', owner_id='.intval($info['poster_id']),
-									'WHERE'		=> 'id='.$attach_id
-								);
-
-								$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-								redirect(forum_link($attach_url['admin_attachment_manage']), 'Attachment attached. Redirecting...');
-							}
-							else
-								message ($lang_attach['Wrong post']);
-						}
-					}
-				}
-			}
+		}
+	}
+}
 
 		]]></hook>
 
 		<hook id="mi_new_action"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
+if (!$forum_config['attach_disable_attach'] && isset($_GET['item']))
 {
 	$attach_item = intval($_GET['item']);
 	if ($attach_item < 1)
 		message($lang_common['Bad request']);
-	
+
 	if (isset($_GET['secure_str']))
 	{
 		if (preg_match('~(\d+)f(\d+)~', $_GET['secure_str'], $match))
@@ -821,7 +806,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 						'ON'		=> '(fp.forum_id = f.id AND fp.group_id = '.$forum_user['g_id'].')'
 					)
 				),
-				'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1) AND secure_str = \''.$_GET['secure_str'].'\''	
+				'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1) AND secure_str = \''.$_GET['secure_str'].'\''
 			);
 		}
 		else
@@ -867,8 +852,8 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 
 	if (isset($_GET['preview']) && in_array($attach_info['file_ext'], array('png', 'jpg', 'gif', 'tiff')))
 	{
-		require FORUM_ROOT.'extensions/pun_attachment'.'/lang/'.$forum_user['language'].'/'.'pun_attachment'.'.php';
-		require FORUM_ROOT.'extensions/pun_attachment/url.php';
+		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		require $ext_info['path'].'/url.php';
 
 		$forum_page = array();
 		$forum_page['download_link'] = !empty($attach_info['secure_str']) ? forum_link($attach_url['misc_download_secure'], array($attach_item, $attach_info['secure_str'])) : forum_link($attach_url['misc_download'], $attach_item);
@@ -896,7 +881,7 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 				<h2 class="hn"><span><?php echo $attach_info['filename']; ?></span></h2>
 			</div>
 			<fieldset class="frm-group group1">
-				<span><img src="<?php echo $forum_page['view_link']; ?>"></span>
+				<span class="show-image"><img src="<?php echo $forum_page['view_link']; ?>" alt="<?php echo $attach_info['filename']; ?>" /></span>
 				<p><?php echo $lang_attach['Download:']; ?> <a href="<?php echo $forum_page['download_link']; ?>"><?php echo $attach_info['filename']; ?></a></p>
 			</fieldset>
 		</div>
@@ -943,18 +928,19 @@ if ($forum_config['attach_disable_attach'] != '1' && isset($_GET['item']))
 
 		<hook id="dl_start,mr_start"><![CDATA[
 
-			require $ext_info['path'].'/include/attach_incl.php';
+require $ext_info['path'].'/include/attach_func.php';
+require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 
 		]]></hook>
 		<hook id="dl_qr_get_post_info"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$query['SELECT'] .= ', g_pun_attachment_allow_upload, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions, g_pun_attachment_allow_delete_own, g_pun_attachment_allow_delete';
 	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
 }
 		]]></hook>
 		<hook id="dl_form_submitted"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$attach_query = array(
 		'SELECT'	=>	'id, file_path, owner_id',
@@ -964,18 +950,18 @@ if ($forum_config['attach_disable_attach'] != '1')
 }
 		]]></hook>
 		<hook id="dl_topic_deleted_pre_redirect,dl_post_deleted_pre_redirect"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 	remove_attachments($attach_query, $cur_post);
-		]]></hook>		
+		]]></hook>
 		<hook id="mr_qr_get_forum_data"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$query['SELECT'] .= ', g_pun_attachment_allow_upload, g_pun_attachment_upload_max_size, g_pun_attachment_files_per_post, g_pun_attachment_disallowed_extensions, g_pun_attachment_allow_delete_own, g_pun_attachment_allow_delete';
 	$query['JOINS'][] = array('LEFT JOIN' => 'groups AS g', 'ON' => 'g.g_id = '.$forum_user['g_id']);
 }
 		]]></hook>
 		<hook id="mr_confirm_delete_posts_pre_redirect,mr_confirm_delete_topics_pre_redirect"><![CDATA[
-if ($forum_config['attach_disable_attach'] != '1')
+if (!$forum_config['attach_disable_attach'])
 {
 	$attach_query = array(
 		'SELECT'	=>	'id, file_path, owner_id',
@@ -1008,11 +994,11 @@ $pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions
 
 		<hook id="ft_about_end" priority="10"><![CDATA[
 
-			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
-			{
-				define('PUN_EXTENSIONS_USED', 1);
-				echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
-			}
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+	echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
+}
 
 		]]></hook>
 	</hooks>

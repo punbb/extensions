@@ -1,27 +1,12 @@
 <?php
 
-/***********************************************************************
-
-	Copyright (C) 2009 PunBB
-
-	Partially based on Attachment Mod by Frank Hagstrom
-
-	PunBB is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published
-	by the Free Software Foundation; either version 2 of the License,
-	or (at your option) any later version.
-
-	PunBB is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-	MA  02111-1307  USA
-
-***********************************************************************/
+/**
+ * Functions for pun_attachment extension.
+ *
+ * @copyright (C) 2008-2009 PunBB, partially based on Attachment Mod by Frank Hagstrom
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_attachment
+ */
 
 if (!defined('FORUM')) exit;
 
@@ -30,26 +15,22 @@ define('KBYTE', 1024);
 
 function attach_icon($file_ext)
 {
-	global $forum_config, $attach_icons, $forum_user, $lang_attach;
+	global $forum_config, $forum_user, $lang_attach;
 
 	if ($forum_user['show_img'] == 0 || $forum_config['attach_use_icon'] == 0)
 		return '';
 
-	if (empty($attach_icons) && !empty($forum_config['attach_icon_extension']))
+	$icon_url = $forum_config['attach_icon_folder'].'unknown.png';
+	if (!empty($forum_config['attach_icon_extension']))
 	{
 		$icon_extension = explode(',', $forum_config['attach_icon_extension']);
 		$icon_name = explode(',', $forum_config['attach_icon_name']);
-	
-		for ($cur_icon = 0; $cur_icon < count($icon_extension); $cur_icon++)
-			$attach_icons[$icon_extension[$cur_icon]] = $icon_name[$cur_icon];
+		$icon_index = array_search($file_ext, $icon_extension);
+		if ($icon_index !== FALSE)
+			$icon_url = $forum_config['attach_icon_folder'].$icon_name[$icon_index];
 	}
 
-	$icon_url = $forum_config['attach_icon_folder'].'unknown.png';
-
-	if (array_key_exists($file_ext, $attach_icons))
-		$icon_url = $forum_config['attach_icon_folder'].$attach_icons[$file_ext];
-
-	return '<img src="'.$icon_url.'" width="15" height="15" alt="'.$lang_attach['Attachment icon'].'" />&nbsp;';
+	return '<img src="'.$icon_url.'" width="15" height="15" alt="'.$lang_attach['Attachment icon'].'" />';
 }
 
 function attach_generate_pathname($storagepath = '')
@@ -120,7 +101,7 @@ function attach_create_attachment($attach_secure_str, $cur_posting)
 			if (empty($errors))
 			{
 				$file_ext = attach_get_extension($uploaded_file['name']);
-				if (in_array($file_ext, explode(',', $cur_posting['g_pun_attachment_disallowed_extensions'])) || (empty($cur_posting['g_pun_attachment_disallowed_extensions']) && in_array($file_ext, explode(',', $forum_config['attach_always_deny']))))
+				if (!in_array($file_ext, explode(',', $cur_posting['g_pun_attachment_disallowed_extensions'])) && in_array($file_ext, explode(',', $forum_config['attach_always_deny'])))
 					$errors[] = sprintf($lang_attach['Ext error'], $file_ext);
 				if ($forum_user['g_id'] != FORUM_ADMIN && $uploaded_file['size'] > $cur_posting['g_pun_attachment_upload_max_size'])
 					$errors[] = sprintf($lang_attach['Filesize error'], $cur_posting['g_pun_attachment_upload_max_size']);
@@ -152,7 +133,7 @@ function attach_create_attachment($attach_secure_str, $cur_posting)
 					$attach_record['filename'] = $forum_db->escape($uploaded_file['name']);
 					$attach_record['file_ext'] = $forum_db->escape($file_ext);
 					$attach_record['secure_str'] = $attach_secure_str;
-					$attach_record['file_path'] = $forum_db->escape($forum_config['attach_subfolder'].'/'.$attach_name);
+					$attach_record['file_path'] = $forum_db->escape($forum_config['attach_subfolder'].DIRECTORY_SEPARATOR.$attach_name);
 					$uploaded_list[] = $attach_record;
 				}
 			}
@@ -232,7 +213,7 @@ function show_attachments($attach_list, $cur_posting)
 			++$num;
 			if (in_array($attach['file_ext'], array('png', 'jpg', 'gif', 'tiff')) && $forum_config['attach_disp_small'] == '1')
 			{
-				list($width, $height,,) = getimagesize(FORUM_ROOT.$forum_config['attach_basefolder'].'/'.$attach['file_path']);
+				list($width, $height,,) = getimagesize(FORUM_ROOT.$forum_config['attach_basefolder'].$attach['file_path']);
 				$attach['img_width'] = $width;
 				$attach['img_height'] = $height;
 				$show_image = ($attach['img_height'] <= $forum_config['attach_small_height']) && ($attach['img_width'] <= $forum_config['attach_small_width']);
@@ -240,7 +221,6 @@ function show_attachments($attach_list, $cur_posting)
 			else
 				$show_image = false;
 			$download_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_download_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_download'], $attach['id']);
-
 			$view_link = !empty($attach['secure_str']) ? forum_link($attach_url['misc_view_secure'], array($attach['id'], $attach['secure_str'])) : forum_link($attach_url['misc_view'], $attach['id']);
 			$attach_info = format_size($attach['size']).', '.($attach['download_counter'] ? sprintf($lang_attach['Since'], $attach['download_counter'], date('Y-m-d', $attach['uploaded_at'])) : $lang_attach['Never download']).'&nbsp;';
 
@@ -249,7 +229,7 @@ function show_attachments($attach_list, $cur_posting)
 				<div class="<?php echo $show_image ? 'ct' : 'sf'; ?>-box text">
 				<?php if ($show_image):	?>
 					<h3 class="hn ct-legend"><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></h3>
-						<p class="avatar-demo"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" /></a></span></p>
+						<p class="show-image"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $view_link; ?>"/></a></span></p>
 						<?php echo $attach_info;  if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
 						<p><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete button']; ?>"/></p>
 						<?php endif; ?>
@@ -383,7 +363,7 @@ function remove_attachments($query, $cur_posting)
 				'SET'		=>	'post_id = 0, topic_id = 0, owner_id = 0',
 				'WHERE'		=>	'id IN ('.implode(',', $orphans_id).')'
 			);
-			$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);	
+			$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 		}
 		if (!empty($remove_id))
 		{

@@ -46,7 +46,7 @@ define('FORUM_PAGE', 'admin-options-attach');
 require FORUM_ROOT.'header.php';
 
 // START SUBST - <!-- forum_main -->
-ob_start();	
+ob_start();
 
 ?>
 <div class="main-content main-frm">
@@ -61,7 +61,7 @@ ob_start();
 		<fieldset class="frm-group group1">
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box checkbox">
-					<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count']; ?>" name="form[disable_attach]" value="1"<?php if ($forum_config['attach_disable_attach'] == '1') echo ' checked="checked"' ?> /></span>
+					<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count']; ?>" name="form[disable_attach]" value="1"<?php if ($forum_config['attach_disable_attach']) echo ' checked="checked"' ?> /></span>
 					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo 'Disable attachment' ?></span><?php echo $lang_attach['Disable attachments'] ?></label>
 				</div>
 			</div>
