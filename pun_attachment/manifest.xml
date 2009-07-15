@@ -193,13 +193,11 @@
 	]]></install>
 
 	<uninstall><![CDATA[
-		$attach_query = array(
-			'SELECT'	=>	'file_path',
-			'FROM'		=>	'attach_files'
-		);
-		$attach_result = $forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
-		while ($cur_attach = $forum_db->fetch_assoc($attach_result))
-			unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$cur_attach['file_path']);
+		$attached_files = scandir(FORUM_ROOT.$forum_config['attach_basefolder'].$forum_config['attach_subfolder'].DIRECTORY_SEPARATOR);
+		foreach ($attached_files as $file)
+			if ($file != '.' && $file != '..')
+				unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$forum_config['attach_subfolder'].DIRECTORY_SEPARATOR.$file);
+		rmdir(FORUM_ROOT.$forum_config['attach_basefolder'].$forum_config['attach_subfolder']);
 
 		$forum_db->drop_table('attach_files');
 		$forum_db->drop_field('groups', 'g_pun_attachment_allow_download');
