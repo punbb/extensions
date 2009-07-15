@@ -239,7 +239,7 @@ if (isset($_GET['id']))
 							<td class="tc0" scope="col"><?php echo forum_htmlencode($pun_current_attach['filename']) ?></td>
 							<td class="tc1" scope="col"><?php echo format_size($pun_current_attach['size']) ?></td>
 							<td class="tc2" scope="col"><?php echo forum_htmlencode($pun_current_attach['username']) ?></td>
-							<td class="tc3" scope="col"><?php echo date('Y-m-d', $pun_current_attach['uploaded_at']) ?></td>
+							<td class="tc3" scope="col"><?php echo format_time($pun_current_attach['uploaded_at']) ?></td>
 							<td class="tc4" scope="col"><?php echo $pun_current_attach['file_mime_type'] ?></td>
 <?php if ($pun_current_attach['topic_id'] != '0'): ?>
 							<td class="tc5" scope="col"><a href="<?php echo forum_link($forum_url['topic'], array($pun_current_attach['topic_id'])) ?>"><?php echo forum_htmlencode($pun_current_attach['subject']) ?></a></td>

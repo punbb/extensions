@@ -314,7 +314,7 @@ if (!empty($attachments))
 							<td class="tc0" scope="col"><a href="<?php echo forum_link($attach_url['admin_attachment_edit'], array($key)) ?>"><?php echo forum_htmlencode($attachments[$key]['filename']) ?></a></td>
 							<td class="tc1" scope="col"><?php echo format_size($attachments[$key]['size']) ?></td>
 							<td class="tc2" scope="col"><?php echo forum_htmlencode($attachments[$key]['username']) ?></td>
-							<td class="tc3" scope="col"><?php echo date('Y-m-d', $attachments[$key]['uploaded_at']) ?></td>
+							<td class="tc3" scope="col"><?php echo format_time($attachments[$key]['uploaded_at']) ?></td>
 							<td class="tc4" scope="col"><?php echo $attachments[$key]['file_mime_type'] ?></td>
 							<td class="tc5" scope="col"><?php echo $attachments[$key]['download_counter'] ?></td>
 						</tr>
