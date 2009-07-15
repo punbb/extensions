@@ -70,7 +70,8 @@ $lang_attach = array(
 
 //attach.php
 'Download:'				=>	'Download:',
-'Attachment added'			=>	'Attachment was added. Redirecting…',
+'Attachment added'		=>	'Attachment added. Redirecting...',
+'Attachment delete'		=>	'Attachment deleted. Redirecting...',
 
 //rules
 'Group attach part'		=>	'Attachment extension group permissions',
@@ -156,6 +157,12 @@ $lang_attach = array(
 'Bad image'				=>	'Bad image! Try upload it again.',
 'Add file'				=>	'Add file',
 'Post attachs'			=>	'Post\'s attachments',
-'Download perm error'	=>	'You don\'t have permssions to download the attachments of this post.'
+'Download perm error'	=>	'You don\'t have permssions to download the attachments of this post.',
+'None'					=>	'None',
+
+'Id'					=>	'Id',
+'Owner'					=>	'Owner',
+'Up date'				=>	'Uploaded date',
+'Type'					=>	'Type',
 
 );

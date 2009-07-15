@@ -34,7 +34,7 @@ if (isset($_POST['apply']))
 {
 	$show_orphans = 0;
 
-	if(isset($form['orphans']) && ($form['orphans'] == '1'))
+	if (isset($form['orphans']) && ($form['orphans'] == '1'))
 		$show_orphans = 1;
 }
 
@@ -72,7 +72,6 @@ if (isset($form['owner_id']) && ($form['owner_id'] != '0'))
 {
 	$query['WHERE'] .= ' AND af.owner_id='.intval($form['owner_id']);
 }
-
 $result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
 
 if ($forum_db->num_rows($result))
@@ -240,14 +239,14 @@ ob_start();
 						</label><br />
 						<span class="fld-input">
 							<select id="fld<?php echo $forum_page['fld_count'] ?>" name="form[order]">
-								<option <?php echo ((!isset($form['order']) || ($form['order'] == 'id')) ? 'selected="selected"' : '') ?> value="id">Id</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'filename')) ? 'selected="selected"' : '') ?> value="filename">Filename</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'owner_id')) ? 'selected="selected"' : '') ?> value="owner_id">Owner</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'uploaded_at')) ? 'selected="selected"' : '') ?> value="uploaded_at">Uploaded date</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'file_mime_type')) ? 'selected="selected"' : '') ?> value="file_mime_type">Type</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'topic_id')) ? 'selected="selected"' : '') ?> value="topic_id">Topic</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'post_id')) ? 'selected="selected"' : '') ?> value="post_id">Post id</option>
-								<option <?php echo ((isset($form['order']) && ($form['order'] == 'download_counter')) ? 'selected="selected"' : '') ?> value="download_counter">Downloads</option>
+								<option <?php echo (!isset($form['order']) || $form['order'] == 'id') ? 'selected="selected"' : '' ?> value="id"><?php echo $lang_attach['Id'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'filename') ? 'selected="selected"' : '' ?> value="filename"><?php echo $lang_attach['Filename'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'owner_id') ? 'selected="selected"' : '' ?> value="owner_id"><?php echo $lang_attach['Owner'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'uploaded_at') ? 'selected="selected"' : '' ?> value="uploaded_at"><?php echo $lang_attach['Up date'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'file_mime_type') ? 'selected="selected"' : '' ?> value="file_mime_type"><?php echo $lang_attach['Type'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'topic_id') ? 'selected="selected"' : '' ?> value="topic_id"><?php echo $lang_attach['Topic'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'post_id') ? 'selected="selected"' : '' ?> value="post_id"><?php echo $lang_attach['Post id'] ?></option>
+								<option <?php echo (isset($form['order']) && $form['order'] == 'download_counter') ? 'selected="selected"' : '' ?> value="download_counter"><?php echo $lang_attach['Downloads'] ?></option>
 							</select>
 						</span>
 					</div>
@@ -312,9 +311,9 @@ if (!empty($attachments))
 
 					<tbody>
 						<tr>
-							<td class="tc0" scope="col"><a href="<?php echo forum_link($attach_url['admin_attachment_edit'], array($key)) ?>"><?php echo $attachments[$key]['filename'] ?></a></td>
+							<td class="tc0" scope="col"><a href="<?php echo forum_link($attach_url['admin_attachment_edit'], array($key)) ?>"><?php echo forum_htmlencode($attachments[$key]['filename']) ?></a></td>
 							<td class="tc1" scope="col"><?php echo format_size($attachments[$key]['size']) ?></td>
-							<td class="tc2" scope="col"><?php echo $attachments[$key]['username'] ?></td>
+							<td class="tc2" scope="col"><?php echo forum_htmlencode($attachments[$key]['username']) ?></td>
 							<td class="tc3" scope="col"><?php echo date('Y-m-d', $attachments[$key]['uploaded_at']) ?></td>
 							<td class="tc4" scope="col"><?php echo $attachments[$key]['file_mime_type'] ?></td>
 							<td class="tc5" scope="col"><?php echo $attachments[$key]['download_counter'] ?></td>

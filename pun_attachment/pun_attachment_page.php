@@ -17,18 +17,16 @@ $pun_attach_attach_error = 0;
 if (isset($_GET['id']))
 {
 	$id = intval($_GET['id']);
-
 	if (isset($_POST['pun_attach_detach']))
 	{
 		if (!isset($_POST['csrf_token']) && (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('delete'.$forum_user['id'])))
 			csrf_confirm_form();
-						
+
 		$query = array(
 			'UPDATE'	=> 'attach_files',
 			'SET'		=> 'post_id=0, topic_id=0, owner_id=0',
-			'WHERE'		=> 'id='.$id
+			'WHERE'		=> 'id = '.$id
 		);
-
 		$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
 	}
 
@@ -37,9 +35,8 @@ if (isset($_GET['id']))
 		if (!isset($_POST['csrf_token']) && (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('delete'.$forum_user['id'])))
 			csrf_confirm_form();
 
-		$new_name = htmlspecialchars($_POST['pun_attach_new_name']);
-
-		if (strlen($new_name) == 0)
+		$new_name = forum_htmlencode($_POST['pun_attach_new_name']);
+		if (empty($new_name))
 		{
 			$pun_attach_rename_error = 1;
 			$errors[] = $lang_attach['Too short filename'];
@@ -52,7 +49,6 @@ if (isset($_GET['id']))
 				'FROM'		=> 'attach_files',
 				'WHERE'		=> 'id='.$id
 			);
-			
 			$result = $forum_db->query_build($query) or error(__FILE__,__LINE__);
 			
 			if (!$forum_db->num_rows($result))
@@ -61,14 +57,12 @@ if (isset($_GET['id']))
 			$pun_attach_filename = $forum_db->fetch_assoc($result);
 			preg_match('/\.[0-9a-zA-z]{1,}$/', $pun_attach_filename['filename'], $pun_attach_filename_ext);
 			
-			$new_name = $new_name.$pun_attach_filename_ext[0];
-	
+			$new_name = $new_name.$pun_attach_filename_ext[0];	
 			$query = array(
 				'UPDATE'	=> 'attach_files',
-				'SET'		=> 'filename=\''.$new_name.'\'',
+				'SET'		=> 'filename=\''.$forum_db->escape($new_name).'\'',
 				'WHERE'		=> 'id='.$id
 			);
-
 			$forum_db->query_build($query) or error(__FILE__,__LINE__);
 		}
 	}
@@ -78,19 +72,32 @@ if (isset($_GET['id']))
 		if (!isset($_POST['csrf_token']) && (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('delete'.$forum_user['id'])))
 			csrf_confirm_form();
 
-		$create_orphans = '0';
+		$attach_query = array(
+			'SELECT'	=>	'file_path',
+			'FROM'		=>	'attach_files',
+			'WHERE'		=>	'id = '.$id
+		);
+		$attach_result = $forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+		if (!$forum_db->num_rows($attach_result))
+			message($lang_common['Bad request']);
 
-		if (attach_delete_attachment($id, $create_orphans))
-			redirect(forum_link($attach_url['admin_attachment_manage']), 'Attachment deleted. Redirecting...');
-		else
-			message($lang_attach['Error while deleting attachment']);
+		$del_attach_info = $forum_db->fetch_assoc($attach_result);
+		unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$del_attach_info['file_path']);
+
+		$attach_query = array(
+			'DELETE'	=>	'attach_files',
+			'WHERE'		=>	'id = '.$id
+		);
+		$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+
+		redirect(forum_link($attach_url['admin_attachment_manage']), $lang_attach['Attachment delete']);
 	}
 
 	if (isset($_POST['pun_attach_attach']))
 	{
 		$post_id = intval($_POST['pun_attach_new_post_id']);
 		
-		if ($post_id == 0)
+		if ($post_id <= 0)
 		{
 			$pun_attach_attach_error = 1;
 			$errors[] = $lang_attach['Empty post id'];
@@ -109,7 +116,6 @@ if (isset($_GET['id']))
 				),
 				'WHERE'		=> 'p.id='.$post_id
 			);
-
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 			if ($forum_db->num_rows($result))
@@ -119,7 +125,7 @@ if (isset($_GET['id']))
 				$pun_attach_attach_error = 1;
 				$errors[] = $lang_attach['Wrong post id'];
 			}
-				
+
 			if (empty($errors))
 			{
 				$query = array(
@@ -127,11 +133,9 @@ if (isset($_GET['id']))
 					'SET'		=> 'topic_id = '.$pun_attach_topic_id['topic_id'].', post_id = '.$pun_attach_topic_id['post_id'],
 					'WHERE'		=> 'id = '.$id
 				);
-				
 				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 			}
 		}
-		
 	}
 
 	$query = array(
@@ -158,13 +162,13 @@ if (isset($_GET['id']))
 	$pun_current_attach = $forum_db->fetch_assoc($result);
 
 	$pun_attach_frm_buttons = array();
-	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_rename" value="'.$lang_attach['Rename button'].'"></span>';
-	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_delete" value="'.$lang_attach['Delete button'].'"></span>';
+	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_rename" value="'.$lang_attach['Rename button'].'" /></span>';
+	$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_delete" value="'.$lang_attach['Delete button'].'" /></span>';
 
 	if ($pun_current_attach['post_id'] == '0')
-		$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_attach" value="'.$lang_attach['Attach button'].'"></span>';
+		$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_attach" value="'.$lang_attach['Attach button'].'" /></span>';
 	else 
-		$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_detach" value="'.$lang_attach['Detach button'].'"></span>';
+		$pun_attach_frm_buttons[] = '<span class="submit"><input type="submit" name="pun_attach_detach" value="'.$lang_attach['Detach button'].'" /></span>';
 
 	// Setup the form
 	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
@@ -219,36 +223,36 @@ if (isset($_GET['id']))
 			<div class="ct-group">
 				<table cellspacing="0">
 					<thead>
-						<th class="tc4" scope="col"><?php echo $lang_attach['Filename'] ?></th>
-						<th class="tc1" scope="col"><?php echo $lang_attach['Filesize'] ?></th>
-						<th class="tc2" scope="col"><?php echo $lang_attach['Owner'] ?></th>
-						<th class="tc3" scope="col"><?php echo $lang_attach['Uploaded date'] ?></th>
-						<th class="tc4" scope="col"><?php echo $lang_attach['MIME-type'] ?></th>
-						<th class="tc5" scope="col"><?php echo $lang_attach['Topic'] ?></th>
-						<th class="tc6" scope="col"><?php echo $lang_attach['Post id'] ?></th>
-						<th class="tc7" scope="col"><?php echo $lang_attach['Downloads'] ?></th>
+						<tr>
+							<th class="tc4" scope="col"><?php echo $lang_attach['Filename'] ?></th>
+							<th class="tc1" scope="col"><?php echo $lang_attach['Filesize'] ?></th>
+							<th class="tc2" scope="col"><?php echo $lang_attach['Owner'] ?></th>
+							<th class="tc3" scope="col"><?php echo $lang_attach['Uploaded date'] ?></th>
+							<th class="tc4" scope="col"><?php echo $lang_attach['MIME-type'] ?></th>
+							<th class="tc5" scope="col"><?php echo $lang_attach['Topic'] ?></th>
+							<th class="tc6" scope="col"><?php echo $lang_attach['Post id'] ?></th>
+							<th class="tc7" scope="col"><?php echo $lang_attach['Downloads'] ?></th>
+						</tr>
 					</thead>
 					<tbody>
-						<td class="tc0" scope="ñol"><?php echo $pun_current_attach['filename'] ?></td>
-						<td class="tc1" scope="ñol"><?php echo format_size($pun_current_attach['size']) ?></td>
-						<td class="tc2" scope="ñol"><?php echo $pun_current_attach['username'] ?></td>
-						<td class="tc3" scope="ñol"><?php echo date('Y-m-d', $pun_current_attach['uploaded_at']) ?></td>
-						<td class="tc4" scope="ñol"><?php echo $pun_current_attach['file_mime_type'] ?></td>
-						<td class="tc5" scope="ñol">
-							<?php if ($pun_current_attach['topic_id'] != '0') { ?>
-							<a href="<?php echo forum_link($forum_url['topic'], array($pun_current_attach['topic_id'])) ?>">
-								<?php echo $pun_current_attach['subject'] ?>
-							</a>
-							<?php } else { echo '<strong>None</strong>'; } ?>
-						</td>
-						<td class="tc6" scope="ñol">
-							<?php if ($pun_current_attach['post_id'] != '0') { ?>
-							<a href="<?php echo forum_link($forum_url['post'], array($pun_current_attach['post_id'])) ?>">
-								<?php echo $pun_current_attach['post_id'] ?>
-							</a>
-							<?php } else { echo '<strong>None</strong>'; } ?>
-						</td>
-						<td class="tc7" scope="ñol"><?php echo $pun_current_attach['download_counter'] ?></td>
+						<tr>
+							<td class="tc0" scope="col"><?php echo forum_htmlencode($pun_current_attach['filename']) ?></td>
+							<td class="tc1" scope="col"><?php echo format_size($pun_current_attach['size']) ?></td>
+							<td class="tc2" scope="col"><?php echo forum_htmlencode($pun_current_attach['username']) ?></td>
+							<td class="tc3" scope="col"><?php echo date('Y-m-d', $pun_current_attach['uploaded_at']) ?></td>
+							<td class="tc4" scope="col"><?php echo $pun_current_attach['file_mime_type'] ?></td>
+<?php if ($pun_current_attach['topic_id'] != '0'): ?>
+							<td class="tc5" scope="col"><a href="<?php echo forum_link($forum_url['topic'], array($pun_current_attach['topic_id'])) ?>"><?php echo forum_htmlencode($pun_current_attach['subject']) ?></a></td>
+<?php else: ?>
+							<td class="tc5" scope="col"><strong><?php echo $lang_attach['None'] ?></strong></td>
+<?php endif; ?>
+<?php if ($pun_current_attach['post_id'] != '0'): ?>
+							<td class="tc6" scope="col"><a href="<?php echo forum_link($forum_url['post'], array($pun_current_attach['post_id'])) ?>"><?php echo $pun_current_attach['post_id'] ?></a></td>
+<?php else: ?>
+							<td class="tc6" scope="col"><strong><?php echo $lang_attach['None'] ?></strong></td>
+<?php endif; ?>
+							<td class="tc7" scope="col"><?php echo $pun_current_attach['download_counter'] ?></td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
