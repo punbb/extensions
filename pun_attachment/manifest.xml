@@ -90,7 +90,7 @@
 			$forum_db->create_table('attach_files', $schema);
 		}
 
-		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '>'))
+		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '<='))
 			$forum_db->add_field('attach_files', 'secure_str', 'VARCHAR(32)', true);
 
 		//Check up for existing column for attachments, it will be nessecary to determine needing of updating permissions to groups
@@ -177,7 +177,7 @@
 			unset($query_attach);
 		}
 
-		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '>'))
+		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '<='))
 		{
 			$query = array(
 				'UPDATE'	=> 'config',
@@ -212,7 +212,7 @@
 		$forum_db->drop_field('groups', 'g_pun_attachment_files_per_post');
 		$forum_db->drop_field('groups', 'g_pun_attachment_disallowed_extensions');
 
-		$config_names  =  array('attach_always_deny', 'attach_basefolder', 'attach_create_orphans', 'attach_cur_version', 'attach_icon_folder', 'attach_icon_extension', 'attach_icon_name', 'attach_subfolder', 'attach_disable_attach', 'attach_disp_small', 'attach_small_height', 'attach_small_width');
+		$config_names  =  array('attach_always_deny', 'attach_basefolder', 'attach_create_orphans', 'attach_cur_version', 'attach_icon_folder', 'attach_icon_extension', 'attach_icon_name', 'attach_subfolder', 'attach_disable_attach', 'attach_disp_small', 'attach_small_height', 'attach_small_width', 'attach_use_icon');
 		$query_attach = array(
 			'DELETE'	=> 'config',
 			'WHERE'		=> 'conf_name IN (\''.implode('\', \'', $config_names).'\')'
