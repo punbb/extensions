@@ -105,6 +105,10 @@ function attach_create_attachment($attach_secure_str, $cur_posting)
 					$errors[] = sprintf($lang_attach['Ext error'], $file_ext);
 				if ($forum_user['g_id'] != FORUM_ADMIN && $uploaded_file['size'] > $cur_posting['g_pun_attachment_upload_max_size'])
 					$errors[] = sprintf($lang_attach['Filesize error'], $cur_posting['g_pun_attachment_upload_max_size']);
+				if (utf8_strlen($uploaded_file['name']) > 255)
+					$errors[] = $lang_attach['File len err'];
+				if (utf8_strlen($file_ext) > 64)
+					$errors[] = $lang_attach['Ext len err'];
 			}
 		}
 	}
@@ -230,8 +234,8 @@ function show_attachments($attach_list, $cur_posting)
 				<?php if ($show_image):	?>
 					<h3 class="hn ct-legend"><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></h3>
 						<p class="show-image"><span><a href="<?php echo $download_link; ?>"><img width="<?php echo $attach['img_width'] > 660 ? '100%' : $attach['img_width'].'px'; ?>" src="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $view_link; ?>"/></a></span></p>
-						<?php echo $attach_info;  if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
-						<p><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete button']; ?>"/></p>
+						<?php echo forum_htmlencode($attach['filename']).'&nbsp;'.$attach_info;  if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
+						<input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete button']; ?>"/>
 						<?php endif; ?>
 				<?php else: ?>
 						<label for="fld<?php echo ++$forum_page['fld_count']; ?>"><span><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></span></label>
@@ -302,7 +306,7 @@ function show_attachments_post($attach_list, $post_id, $cur_topic)
 			$link = '<b>'.forum_htmlencode($attach['filename']).'</b>';
 		$result .= '<p>'.$link;
 		if ($show_image)
-			$result .= '<br/>'.$attach_info;
+			$result .= '<br/>'.forum_htmlencode($attach['filename']).'&nbsp;'.$attach_info;
 		else
 			$result .= '&nbsp;'.$attach_info;
 		$result .= '</p>';

@@ -17,8 +17,8 @@
 	<version>1.0b</version>
 	<description>Allows users to attach files to posts.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3 SVN</minversion>
-	<maxtestedon>1.3 SVN</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
 
 	<note type="install" timing="pre">WARNING: your web-server should have write access to FORUM_ROOT/extensions/pun_attachment/attachments/.</note>
 	<note type="uninstall" timing="pre">WARNING: all users' attachments will be removed during the uninstallation process. It is recommended that you disable the "pun_attachment" extension instead, or upgrade it without uninstalling.</note>

@@ -83,8 +83,10 @@ $lang_attach = array(
 'Per post'				=>	'Attachments per post',
 'Allowed files'			=>	'Allowed files',
 'Allowed comment'		=>	'If empty, allow all files except those that are always denied.',
+'File len err'			=>	'File name can\'t be longer than 255 chars',
+'Ext len err'			=>	'File extension can\'t be longer than 64 chars.',
 
-// NoticesF
+// Notices
 'Wrong post'			=>	'You have entered a wrong post id. Please correct it.',
 'Too large ini'			=>	'The selected file was too large to upload. The server forbade the upload.',
 'Wrong icon/name'		=>	'You have entered a wrong extension/icon name',
