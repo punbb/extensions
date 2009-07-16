@@ -86,13 +86,13 @@ ob_start();
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box text">
 					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Max height'] ?></span></label><br />
-					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[small_height]" size="5" maxlength="5" value="<?php echo htmlspecialchars($forum_config['attach_small_height']); ?>" /></span>
+					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[small_height]" size="5" maxlength="5" value="<?php echo forum_htmlencode($forum_config['attach_small_height']); ?>" /></span>
 				</div>
 			</div>
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box text">
 					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Max width'] ?></span></label><br />
-					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[small_width]" size="5" maxlength="5" value="<?php echo htmlspecialchars($forum_config['attach_small_width']); ?>" /></span>
+					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[small_width]" size="5" maxlength="5" value="<?php echo forum_htmlencode($forum_config['attach_small_width']); ?>" /></span>
 				</div>
 			</div>
 		</fieldset>

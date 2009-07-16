@@ -224,7 +224,7 @@ ob_start();
 							for ($i=0; $i<count($topic); $i++)
 							{
 								$key = array_keys($topic);
-								echo '<option value="'.$key[$i].'"'.((isset($form['topic']) && (htmlspecialchars($form['topic']) == $key[$i])) ? ' selected="selected"' : '').'>'.forum_htmlencode($topic[$key[$i]]).'</option>';
+								echo '<option value="'.$key[$i].'"'.((isset($form['topic']) && ($form['topic'] == $key[$i])) ? ' selected="selected"' : '').'>'.forum_htmlencode($topic[$key[$i]]).'</option>';
 							}
 
 ?>
