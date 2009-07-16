@@ -229,7 +229,7 @@ function show_attachments($attach_list, $cur_posting)
 				<div class="<?php echo $show_image ? 'ct' : 'sf'; ?>-box text">
 				<?php if ($show_image):	?>
 					<h3 class="hn ct-legend"><?php echo sprintf($lang_attach['Number existing'], $num).'&nbsp;'; ?></h3>
-						<p class="show-image"><span><a href="<?php echo $download_link; ?>"><img src="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $view_link; ?>"/></a></span></p>
+						<p class="show-image"><span><a href="<?php echo $download_link; ?>"><img width="<?php echo $attach['img_width'] > 660 ? '100%' : $attach['img_width'].'px'; ?>" src="<?php echo $view_link; ?>" title="<?php echo forum_htmlencode($attach['filename']).', '.format_size($attach['size']).', '.$attach['img_width'].' x '.$attach['img_height']; ?>" alt="<?php echo $view_link; ?>"/></a></span></p>
 						<?php echo $attach_info;  if ($forum_user['g_pun_attachment_allow_delete'] || !empty($attach['secure_str']) || ($forum_user['g_pun_attachment_allow_delete_own'] && $forum_user['id'] == $attach['owner_id'])): ?>
 						<p><input type="submit" name="delete_<?php echo $attach['id']; ?>" value="<?php echo $lang_attach['Delete button']; ?>"/></p>
 						<?php endif; ?>

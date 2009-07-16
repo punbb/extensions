@@ -20,7 +20,11 @@ div.attachments
 	visibility:hidden;
 	display:none;
 }
-p.show-image, p.show-image img, #brd-attachment-preview span.show-image, #brd-attachment-preview span.show-image img
+p.show-image, #brd-attachment-preview span.show-image, #brd-attachment-preview span.show-image img
 {
 	width:100%;
+}
+p.show-image img
+{
+	max-width:100%;
 }
