@@ -74,7 +74,7 @@ ob_start();
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box text">
 					<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Always deny'] ?></span></label><br />
-					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[always_deny]" size="75" maxlength="150" value="<?php echo htmlspecialchars($forum_config['attach_always_deny']); ?>" /></span>
+					<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[always_deny]" size="75" maxlength="150" value="<?php echo forum_htmlencode($forum_config['attach_always_deny']); ?>" /></span>
 				</div>
 			</div>
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -149,10 +149,10 @@ ob_start();
 ?>
 						<div class="sf-box text">
 							<span class="fld-input">
-								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ext_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ext_'.$i]) ? htmlspecialchars($_POST['attach_ext_'.$i]) : $icons[$i]) ?>" />
-								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ico_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ico_'.$i]) ? htmlspecialchars($_POST['attach_ico_'.$i]) : $names[$i]) ?>" />
+								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ext_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ext_'.$i]) ? forum_htmlencode($_POST['attach_ext_'.$i]) : forum_htmlencode($icons[$i])) ?>" />
+								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ico_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ico_'.$i]) ? forum_htmlencode($_POST['attach_ico_'.$i]) : forum_htmlencode($names[$i])) ?>" />
 								<?php if (!in_array($forum_config['attach_icon_folder'].$names[$i], $big_images) && !in_array($forum_config['attach_icon_folder'].$names[$i], $missing_files)): ?>
-								<span class="fld-input"><img src="<?php echo $forum_config['attach_icon_folder'].$names[$i]; ?>" alt="<?php echo $names[$i]; ?>" /></span>
+								<span class="fld-input"><img src="<?php echo $forum_config['attach_icon_folder'].$names[$i]; ?>" alt="<?php echo forum_htmlencode($names[$i]); ?>" /></span>
 								<?php endif; ?>
 							</span>
 						</div>

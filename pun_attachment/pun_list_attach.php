@@ -203,7 +203,7 @@ ob_start();
 							for ($i=0; $i<count($owner_name); $i++)
 							{
 								$key = array_keys($owner_name);
-								echo '<option value="'.$key[$i].'"'.((isset($form['owner_id']) && (intval($form['owner_id']) == $key[$i])) ? ' selected="selected"' : '').'>'.$owner_name[$key[$i]].'</option>';
+								echo '<option value="'.$key[$i].'"'.((isset($form['owner_id']) && (intval($form['owner_id']) == $key[$i])) ? ' selected="selected"' : '').'>'.forum_htmlencode($owner_name[$key[$i]]).'</option>';
 							}
 
 ?>
@@ -224,7 +224,7 @@ ob_start();
 							for ($i=0; $i<count($topic); $i++)
 							{
 								$key = array_keys($topic);
-								echo '<option value="'.$key[$i].'"'.((isset($form['topic']) && (htmlspecialchars($form['topic']) == $key[$i])) ? ' selected="selected"' : '').'>'.$topic[$key[$i]].'</option>';
+								echo '<option value="'.$key[$i].'"'.((isset($form['topic']) && (htmlspecialchars($form['topic']) == $key[$i])) ? ' selected="selected"' : '').'>'.forum_htmlencode($topic[$key[$i]]).'</option>';
 							}
 
 ?>

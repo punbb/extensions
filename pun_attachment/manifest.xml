@@ -414,7 +414,7 @@ if (!$forum_config['attach_disable_attach'] && isset($_POST['submit']))
 	$attach_query = array(
 		'UPDATE'	=>	'attach_files',
 		'SET'		=>	'owner_id = '.$forum_user['id'].', topic_id = '.(isset($new_tid) ? $new_tid : $tid).', post_id = '.$new_pid.', secure_str = NULL',
-		'WHERE'		=>	'secure_str = \''.$attach_secure_str.'\''
+		'WHERE'		=>	'secure_str = \''.$forum_db->escape($attach_secure_str).'\''
 	);
 	$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 }
@@ -567,7 +567,7 @@ if (!$forum_config['attach_disable_attach'] && isset($_POST['submit']))
 	$attach_query = array(
 		'UPDATE'	=>	'attach_files',
 		'SET'		=>	'owner_id = '.$forum_user['id'].', topic_id = '.$cur_post['tid'].', post_id = '.$id.', secure_str = NULL',
-		'WHERE'		=>	'secure_str = \''.$attach_secure_str.'\''
+		'WHERE'		=>	'secure_str = \''.$forum_db->escape($attach_secure_str).'\''
 	);
 	$forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
 }
@@ -919,8 +919,8 @@ if (!$forum_config['attach_disable_attach'] && isset($_GET['item']))
 				<h2 class="hn"><span><?php echo $attach_info['filename']; ?></span></h2>
 			</div>
 			<fieldset class="frm-group group1">
-				<span class="show-image"><img src="<?php echo $forum_page['view_link']; ?>" alt="<?php echo $attach_info['filename']; ?>" /></span>
-				<p><?php echo $lang_attach['Download:']; ?> <a href="<?php echo $forum_page['download_link']; ?>"><?php echo $attach_info['filename']; ?></a></p>
+				<span class="show-image"><img src="<?php echo $forum_page['view_link']; ?>" alt="<?php echo forum_htmlencode($attach_info['filename']); ?>" /></span>
+				<p><?php echo $lang_attach['Download:']; ?> <a href="<?php echo $forum_page['download_link']; ?>"><?php echo forum_htmlencode($attach_info['filename']); ?></a></p>
 			</fieldset>
 		</div>
 		<?php
@@ -954,7 +954,7 @@ if (!$forum_config['attach_disable_attach'] && isset($_GET['item']))
 				$query = array(
 					'UPDATE'	=> 'attach_files',
 					'SET'		=> 'download_counter = download_counter + 1',
-					'WHERE'		=> 'id='.$attach_item
+					'WHERE'		=> 'id = '.$attach_item
 				);
 				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 			}
