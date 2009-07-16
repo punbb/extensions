@@ -155,7 +155,6 @@
 				'attach_always_deny'		=> 'html,htm,php,php3,php4,exe,com,bat',
 				'attach_basefolder'			=> $basepath,
 				'attach_create_orphans'		=> '1',
-				'attach_cur_version'		=> '1.0a.1',
 				'attach_icon_folder'		=>  $base_url.'/extensions/'.$id.'/img/',
 				'attach_icon_extension'		=> 'txt,doc,pdf,wav,mp3,ogg,avi,mpg,mpeg,png,jpg,jpeg,gif',
 				'attach_icon_name'			=> 'text.png,doc.png,doc.png,audio.png,audio.png,audio.png,video.png,video.png,video.png,image.png,image.png,image.png,image.png',
@@ -186,6 +185,11 @@
 				'WHERE'		=> 'conf_name = \'attach_basefolder\''
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			$query = array(
+				'DELETE'	=> 'config',
+				'WHERE'		=> 'conf_name = \'attach_cur_version\''
+			);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
 
 		require_once FORUM_ROOT.'include/cache.php';
@@ -208,7 +212,7 @@
 		$forum_db->drop_field('groups', 'g_pun_attachment_files_per_post');
 		$forum_db->drop_field('groups', 'g_pun_attachment_disallowed_extensions');
 
-		$config_names  =  array('attach_always_deny', 'attach_basefolder', 'attach_create_orphans', 'attach_cur_version', 'attach_icon_folder', 'attach_icon_extension', 'attach_icon_name', 'attach_subfolder', 'attach_use_icon', 'attach_disable_attach', 'attach_disp_small', 'attach_small_height', 'attach_small_width');
+		$config_names  =  array('attach_always_deny', 'attach_basefolder', 'attach_create_orphans', 'attach_cur_version', 'attach_icon_folder', 'attach_icon_extension', 'attach_icon_name', 'attach_subfolder', 'attach_disable_attach', 'attach_disp_small', 'attach_small_height', 'attach_small_width');
 		$query_attach = array(
 			'DELETE'	=> 'config',
 			'WHERE'		=> 'conf_name IN (\''.implode('\', \'', $config_names).'\')'
@@ -261,7 +265,7 @@ else
 		</div>
 		<div class="sf-box text">
 			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Per post'] ?></span></label><br />
-			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="per_post" size="15" maxlength="15" value="<?php echo $group['g_pun_attachment_files_per_post'] ?>" /></span>
+			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="per_post" size="4" maxlength="5" value="<?php echo $group['g_pun_attachment_files_per_post'] ?>" /></span>
 		</div>
 		<div class="sf-box text">
 			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Allowed files'] ?></span><small><?php echo $lang_attach['Allowed comment'] ?></small></label><br />
@@ -875,9 +879,12 @@ if (!$forum_config['attach_disable_attach'] && isset($_GET['item']))
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	if ($forum_user['g_id'] != FORUM_ADMIN && !$forum_db->num_rows($result))
+	if (!$forum_db->num_rows($result))
 		message($lang_common['Bad request']);
 
+	$perms = $forum_db->fetch_assoc($result);
+	if ($forum_user['g_id'] != FORUM_ADMIN && !$perms['g_pun_attachment_allow_download'])
+		message($lang_common['Bad request']);
 	if (isset($_GET['preview']) && in_array($attach_info['file_ext'], array('png', 'jpg', 'gif', 'tiff')))
 	{
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))

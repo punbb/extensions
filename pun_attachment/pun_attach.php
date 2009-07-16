@@ -62,13 +62,13 @@ ob_start();
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box checkbox">
 					<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count']; ?>" name="form[disable_attach]" value="1"<?php if ($forum_config['attach_disable_attach']) echo ' checked="checked"' ?> /></span>
-					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo 'Disable attachment' ?></span><?php echo $lang_attach['Disable attachments'] ?></label>
+					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Disable attachments'] ?></span><?php echo $lang_attach['Disable attachments'] ?></label>
 				</div>
 			</div>
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box checkbox">
 					<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count']; ?>" name="form[create_orphans]" value="1"<?php if ($forum_config['attach_create_orphans'] == '1') echo ' checked="checked"' ?> /></span>
-					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo 'Create orphans' ?></span><?php echo $lang_attach['Orphans help'] ?></label>
+					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Create orphans'] ?></span><?php echo $lang_attach['Orphans help'] ?></label>
 				</div>
 			</div>
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -80,7 +80,7 @@ ob_start();
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="sf-box checkbox">
 					<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[disp_small]" value="1"<?php if ($forum_config['attach_disp_small'] == '1') echo ' checked="checked"' ?> /></span>
-					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo 'Display small images' ?></span><?php echo $lang_attach['Display small'] ?></label>
+					<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_attach['Display images'] ?></span><?php echo $lang_attach['Display small'] ?></label>
 				</div>
 			</div>
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">

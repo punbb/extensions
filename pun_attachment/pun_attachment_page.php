@@ -178,7 +178,7 @@ if (isset($_GET['id']))
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
 		array($lang_attach['Manage attahcments'], forum_link($attach_url['admin_attachment_manage'])),
-		sprintf($lang_attach['Manage id'], $pun_current_attach['filename'])
+		array(sprintf($lang_attach['Manage id'], $pun_current_attach['filename']), forum_link($attach_url['admin_attachment_edit'], $id))
 	);
 
 	define('FORUM_PAGE_SECTION', 'management');
