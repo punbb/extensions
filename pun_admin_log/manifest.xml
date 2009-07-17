@@ -26,7 +26,7 @@
 
 <extension engine="1.0">
 	<id>pun_admin_log</id>
-	<title>Loging of events</title>
+	<title>Logging of events</title>
 	<version>1.0</version>
 	<description>Logs a lot of forum's events.</description>
 	<author>PunBB Development Team</author>
