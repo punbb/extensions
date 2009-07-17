@@ -90,7 +90,7 @@
 			$forum_db->create_table('attach_files', $schema);
 		}
 
-		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '<='))
+		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0a', '<='))
 			$forum_db->add_field('attach_files', 'secure_str', 'VARCHAR(32)', true);
 
 		//Check up for existing column for attachments, it will be nessecary to determine needing of updating permissions to groups
@@ -177,7 +177,7 @@
 			unset($query_attach);
 		}
 
-		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0b', '<='))
+		if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0a', '<='))
 		{
 			$query = array(
 				'UPDATE'	=> 'config',
