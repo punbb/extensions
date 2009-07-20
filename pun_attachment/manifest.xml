@@ -278,7 +278,7 @@ else
 		]]></hook>
 		<hook id="agr_add_edit_end_validation"><![CDATA[
 $group_id = isset($_POST['group_id']) ? intval($_POST['group_id']) : '';
-if ($_POST['mode'] == 'add' || (!empty($group_id) && $group_id != FORUM_ADMIN && $group_id != FORUM_GUEST))
+if ($_POST['mode'] == 'add' || (!empty($group_id) && $group_id != FORUM_ADMIN))
 {
 	$allow_down = isset($_POST['download']) && $_POST['download'] == '1' ? '1' : '0';
 	$allow_upl = isset($_POST['upload']) && $_POST['upload'] == '1' ? '1' : '0';
