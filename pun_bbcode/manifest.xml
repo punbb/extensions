@@ -14,14 +14,14 @@
 -->
 
 <extension engine="1.0">
-    <id>pun_bbcode</id>
-    <title>BBCode buttons</title>
-    <version>1.2.1</version>
-    <description>Pretty buttons for easy BBCode formatting.</description>
-    <author>PunBB Development Team</author>
+	<id>pun_bbcode</id>
+	<title>BBCode buttons</title>
+	<version>1.2.1</version>
+	<description>Pretty buttons for easy BBCode formatting.</description>
+	<author>PunBB Development Team</author>
 
-    <minversion>1.3</minversion>
-    <maxtestedon>1.3.4</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
 	<install><![CDATA[
 		if (defined('EXT_CUR_VERSION') && EXT_CUR_VERSION == '1.1')
 		{
@@ -42,15 +42,12 @@
 	$forum_db->drop_field('users', 'pun_bbcode_use_buttons');
 	]]></uninstall>
 
-    <hooks>
+	<hooks>
 		<hook id="hd_head"><![CDATA[
 			if (FORUM_PAGE == 'viewtopic' || FORUM_PAGE == 'postedit' || FORUM_PAGE == 'post' && $forum_user['pun_bbcode_enabled'] == '1')
 			{
-				require_once FORUM_ROOT.'include/parser.php';
-
 				$forum_head['style_pun_bbcode'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
 				$forum_head['js_pun_bbcode'] = '<script type="text/javascript" src="'.$ext_info['url'].'/scripts.js"></script>';
-				$forum_head['js_files'] = '<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.7.0/build/yahoo/yahoo-min.js&2.7.0/build/event/event-min.js&2.7.0/build/connection/connection-min.js"></script>';
 			}
 		]]></hook>
 		
@@ -63,18 +60,16 @@
 		]]></hook>
 		
 		<hook id="ft_about_output_start"><![CDATA[
-			if ((FORUM_PAGE == 'post') || (FORUM_PAGE == 'viewtopic') || (FORUM_PAGE == 'edit'))
+			if ((FORUM_PAGE == 'post') || (FORUM_PAGE == 'viewtopic') || (FORUM_PAGE == 'postedit'))
 			{
 				$bbar_temp = '';
-				
-				if ($forum_user['pun_bbcode_enabled'] == '1')
-				{
+				if ($forum_user['pun_bbcode_enabled'])
 					include $ext_info['path'].'/bar.php';
-				}
-				
-				$tpl_main = str_replace('<div class="sf-set" id="pun_bbcode_bar"></div>', '<div class="sf-set" id="pun_bbcode_bar"></div><script type="text/javascript">document.getElementById("pun_bbcode_bar").innerHTML = "'.$bbar_temp.'"; document.getElementById("pun_bbcode_bar").style.display="block"; document.getElementById("pun_bbcode_bar").style.visibility="visible";</script>', $tpl_main);
-				ob_start();
 			}
+		]]></hook>
+		<hook id="ft_about_pre_copyright"><![CDATA[
+			if ((FORUM_PAGE == 'post') || (FORUM_PAGE == 'viewtopic') || (FORUM_PAGE == 'postedit'))
+				echo '<script type="text/javascript"><!--'."\n".'document.getElementById("pun_bbcode_bar").innerHTML = "'.$bbar_temp.'";'."\n".'document.getElementById("pun_bbcode_bar").style.display="block";'."\n".'document.getElementById("pun_bbcode_bar").style.visibility="visible";'."\n".'--></script>'."\n";
 		]]></hook>
 		
 		<hook id="pf_change_details_settings_validation"><![CDATA[
@@ -126,5 +121,5 @@
 				echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2008 <a href="http://punbb.informer.com/">PunBB</a></p>';
 			}
 		]]></hook>
-    </hooks>
+	</hooks>
 </extension>
