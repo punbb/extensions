@@ -8,10 +8,24 @@
  * @package pun_admin_events
  */
 
-$event_page = (isset($_GET['p'])) ? intval($_GET['p']) : 1;
-
-require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 require $ext_info['path'].'/functions.php';
+//Was data sent?
+if (isset($_POST['sort_rule']))
+	$tmp_where = pun_events_generate_where();
+
+if (isset($_POST['p']) || isset($_GET['p']))
+{
+	if (isset($_POST['p']))
+		$event_page = intval($_POST['p']);
+	if (isset($_GET['p']))
+		$event_page = intval($_GET['p']);
+}
+else
+	$event_page = 1;
 
 // Setup breadcrumbs
 $forum_page['crumbs'] = array(
@@ -20,36 +34,11 @@ $forum_page['crumbs'] = array(
 	$lang_pun_admin_events['Events']
 );
 
-$arr_min = array();
-$arr_max = array();
-
-$query = array(
-	'SELECT'	=> 'MIN(date), MAX(date)',
-	'FROM'		=> 'pun_admin_events'
-);
-
-$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-$ev_nums = $forum_db->num_rows($result);
-
-if ($ev_nums)
-{
-	$row = $forum_db->fetch_assoc($result);
-	$min_date = $row['MIN(date)'];
-	$max_date = $row['MAX(date)'];
-	$real_min_date = date('Y/n/j', strtotime($min_date));
-	$real_max_date = date('Y/n/j', strtotime($max_date));
-
-	$arr_min = explode('/', $real_min_date);
-	$arr_max = explode('/', $real_max_date);
-	if ($arr_min == $arr_max)
-		$arr_max[2] += 01;
-}
-
 define('FORUM_PAGE_SECTION', 'management');
 define('FORUM_PAGE', 'admin-management-events');
 require FORUM_ROOT.'header.php';
 
+$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
 // START SUBST - <!-- forum_main -->
 ob_start();
 ?>
@@ -60,151 +49,126 @@ ob_start();
 </div>
 <div id="pun-main" class="main sectioned admin">
 	<div class="main-content main-frm">
-	<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo forum_link($forum_url['admin_management_events']); ?>">
+	<form class="frm-form" method="post" name="events_form" accept-charset="utf-8" action="<?php echo forum_link($forum_url['admin_management_events']); ?>">
 		<div class="hidden">
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token(forum_link($forum_url['admin_management_events'])) ?>" />
-			<input type="hidden" name="page" value="1" />
+			<input type="hidden" name="p" value="1" />
+		</div>
+		<div class="ct-box">
+			<p class="warn"><?php echo $lang_pun_admin_events['Page notice'] ?></p>
 		</div>
 		<div class="content-head">
-			<h2 class="hn">
-				<span><strong><?php echo $lang_pun_admin_events['Filter selection'] ?></strong></span>
-			</h2>
+			<h2 class="hn"><span><?php echo $lang_pun_admin_events['Filter selection'] ?></span></h2>
 		</div>
 		<fieldset class="frm-group group1">
-			<div class="sf-set set1">
-				<div class="sf-box select">
-					<label for="fld-day-from">
-						<span>By date: From</span>
-					</label>
-					<span class="fld-input">
-						<?php generate_dropdown_list('fld-day-from', 'day_from', 1, 31, $arr_min[2]); ?>
-						<?php generate_dropdown_list('fld-month-from', 'month_from', 1, 12, $arr_min[1]); ?>
-						<?php generate_dropdown_list('fld-year-from', 'year_from', 1990, 2020, $arr_min[0]); ?>
-					</span>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+							<span><?php echo $lang_pun_admin_events['From'] ?></span>
+							<small><?php echo $lang_pun_admin_events['Date help'] ?></small>
+						</label>
+						<br/>
+						<span class="fld-input">
+							<input id="fld<?php echo $forum_page['fld_count'] ?>" value="<?php echo isset($_POST['date_from']) ? forum_htmlencode($_POST['date_from']) : ''; ?>" type="text" maxlength="10" size="15" name="date_from"/>
+						</span>
+					</div>
 				</div>
-				<div class="sf-box select">
-					<label for="fld-day-from">
-						<span>To</span>
-					</label>
-					<span class="fld-input">
-						<?php generate_dropdown_list('fld-day-to', 'day_to', 1, 31, $arr_max[2]); ?>
-						<?php generate_dropdown_list('fld-month-to', 'month_to', 1, 12, $arr_max[1]); ?>
-						<?php generate_dropdown_list('fld-year-to', 'year_to', 1990, 2020, $arr_max[0]); ?>
-					</span>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+							<span><?php echo $lang_pun_admin_events['To'] ?></span>
+							<small><?php echo $lang_pun_admin_events['Date help'] ?></small>
+						</label>
+						<br/>
+						<span class="fld-input">
+							<input id="fld<?php echo $forum_page['fld_count'] ?>" value="<?php echo isset($_POST['date_to']) ? forum_htmlencode($_POST['date_to']) : ''; ?>" type="text" maxlength="10" size="15" name="date_to"/>
+						</span>
+					</div>
 				</div>
-			</div>
-			<div class="sf-set set2">
-				<div class="sf-box select">
-					<label for="fld-day-from">
-						<span>By type:</span>
-					</label>
-					<span class="fld-input">
-						<select id="fld-event-id" name="event_id">
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box select">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_admin_events['By type'] ?></span></label><br />
+						<span class="fld-input"><select id="fld<?php echo $forum_page['fld_count'] ?>" name="event_id">
 						<?php
 
 							$query = array(
-								'SELECT'	=> 'distinct type',
+								'SELECT'	=> 'DISTINCT type',
 								'FROM'		=> 'pun_admin_events',
 							);
-
 							$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+							echo '<option '.((isset($_POST['event_id']) && !empty($_POST['event_id']) && $_POST['event_id'] != -1) ? 'selected="selected"' : '').' value="-1">'.$lang_pun_admin_events['Any'].'</option>';
 
-							if(isset($_POST['event_id']) && $_POST['event_id'] != '' && $_POST['event_id'] != 0)
-								echo '<option value="">'.$_POST['event_id'].'</option>';
-							else
-								echo '<option selected="selected" value="0">'.$lang_pun_admin_events['Any'].'</option>';
-
-							while($_tmp = $forum_db->fetch_assoc($result))
+							while ($cur_type = $forum_db->fetch_assoc($result))
 							{
-								if(isset($_POST['event_id']) && $_POST['event_id'] == $_tmp['type'])
-									echo '<option selected="selected" value="'.$_tmp.'">'.$_tmp['type'].'</option>'; 
+								if (isset($_POST['event_id']) && $_POST['event_id'] == $cur_type['type'])
+									echo '<option selected="selected" value="'.$cur_type['type'].'">'.$cur_type['type'].'</option>';
 								else
-									echo '<option value="'.$_tmp['type'].'">'.$_tmp['type'].'</option>'; 
+									echo '<option value="'.$cur_type['type'].'">'.$cur_type['type'].'</option>';
 							}
 
 						?>
-						</select>
-					</span>
+						</select></span>
+					</div>
 				</div>
-			</div>
-			<div class="sf-set set3">
-				<div class="sf-box text">
-					<label for="fld-ip">
-						<span><?php echo $lang_pun_admin_events['By IP']; ?></span>
-					</label>
-					<br />
-					<span class="fld-input">
-						<input type="text" id="fld-ip" name="ip" value="<?php echo isset($_POST['ip']) ? $_POST['ip'] : '*'; ?>" />
-					</span>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+							<span><?php echo $lang_pun_admin_events['By IP']; ?></span>
+						</label>
+						<br/>
+						<span class="fld-input">
+							<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="ip" value="<?php echo isset($_POST['ip']) ? forum_htmlencode($_POST['ip']) : ''; ?>" />
+						</span>
+					</div>
 				</div>
-			</div>
-			<div class="sf-set set4">
-				<div class="sf-box text">
-					<label for="fld-username">
-						<span><?php echo $lang_pun_admin_events['By UserName']; ?></span>
-					</label>
-					<span class="fld-input">
-						<input type="text" id="fld-username" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '*'; ?>" />
-					</span>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+							<span><?php echo $lang_pun_admin_events['By UserName']; ?></span>
+						</label>
+						<span class="fld-input">
+							<input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="name" value="<?php echo isset($_POST['name']) ? forum_htmlencode($_POST['name']) : ''; ?>" />
+						</span>
+					</div>
 				</div>
-			</div>
-			<div class="sf-set set5">
-				<div class="sf-box text">
-					<label for="fld-ip">
-						<span><?php echo $lang_pun_admin_events['By Comment']; ?></span>
-					</label>
-					<span class="fld-input">
-						<input id="fld-comment" name="comment" value="<?php echo isset($_POST['comment']) ? $_POST['comment'] : '*'; ?>" />
-					</span>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+							<span><?php echo $lang_pun_admin_events['By Comment']; ?></span>
+						</label>
+						<span class="fld-input">
+							<input id="fld<?php echo $forum_page['fld_count'] ?>" name="comment" value="<?php echo isset($_POST['comment']) ? forum_htmlencode($_POST['comment']) : ''; ?>" />
+						</span>
+					</div>
 				</div>
+			</fieldset>
+			<div class="content-head">
+				<h3 class="hn"><span><?php echo $lang_pun_admin_events['Sort results'] ?></span></h3>
 			</div>
-			<div class="sf-set set6">
-				<div class="sf-box select">
-					<label for="fld-event-id">
-						<span>Sort by:</span>
-					</label>
-					<span class="fld-input">
-						<select id="sort_by" name="sort_by">
-							<?php
-
-							if(isset($_POST['sort_by']))
-							{
-								echo '<option '.(($_POST['sort_by'] == 'Date') ? 'selected="selected"' : '').' value="Date">'.$lang_pun_admin_events['Date'].'</option>';
-								echo '<option '.(($_POST['sort_by'] == 'Type') ? 'selected="selected"' : '').' value="Type">'.$lang_pun_admin_events['Event'].'</option>'; 
-								echo '<option '.(($_POST['sort_by'] == 'IP') ? 'selected="selected"' : '').'value="IP">'.$lang_pun_admin_events['IP'].'</option>'; 
-								echo '<option '.(($_POST['sort_by'] == 'user_name') ? 'selected="selected"' : '').' value="user_name">'.$lang_pun_admin_events['User_Name'].'</option>';
-							}
-							else
-							{
-								echo '<option selected="selected" value="Date">'.$lang_pun_admin_events['Date'].'</option>';
-								echo '<option value="Type">'.$lang_pun_admin_events['Event'].'</option>'; 
-								echo '<option value="IP">'.$lang_pun_admin_events['IP'].'</option>'; 
-								echo '<option value="user_name">'.$lang_pun_admin_events['User_Name'].'</option>'; 
-							}
-
-							?>
-						</select>
-						<select id="sort_rule" name="sort_rule">
-							<?php
-
-							if(isset($_POST['sort_rule']) && $_POST['sort_rule'] == 'DESC')
-							{
-								echo '<option value="ASC">'.$lang_pun_admin_events['ASC'].'</option>';
-								echo '<option selected="selected" value="DESC">'.$lang_pun_admin_events['DESC'].'</option>'; 
-							}
-							else
-							{
-								echo '<option selected="selected" value="ASC">'. $lang_pun_admin_events['ASC'].'</option>';
-								echo '<option value="DESC">'.$lang_pun_admin_events['DESC'].'</option>'; 
-							}
-
-							?>
-						</select>
-					</span>
-
+			<fieldset class="frm-group group1">
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box select">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_admin_events['Order by']; ?></span></label><br />
+						<span class="fld-input"><select id="fld<?php echo $forum_page['fld_count'] ?>" name="sort_by">
+							<?php $sort_by = isset($_POST['sort_by']) && in_array($_POST['sort_by'], array('Date', 'Type', 'IP', 'user_name')) ? $_POST['sort_by'] : 'Date'; ?>
+							<option value="Date" <?php echo $sort_by == 'Date' ? 'selected="selected"': ''; ?>><?php echo $lang_pun_admin_events['Date']; ?></option>
+							<option value="Type" <?php echo $sort_by == 'Type' ? 'selected="selected"' : ''; ?>><?php echo $lang_pun_admin_events['Event']; ?></option>
+							<option value="IP" <?php echo $sort_by == 'IP' ? 'selected="selected"' : ''; ?>><?php echo $lang_pun_admin_events['IP']; ?></option>
+							<option value="user_name" <?php echo $sort_by == 'user_name' ? 'selected="selected"' : ''; ?>><?php echo $lang_pun_admin_events['User_Name']; ?></option>
+						</select></span>
+					</div>
 				</div>
-			</div>
-		</fieldset>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box select">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_admin_events['Sort order']; ?></span></label><br />
+						<span class="fld-input"><select id="fld<?php echo $forum_page['fld_count'] ?>" name="sort_rule">
+							<?php $sort_rule = isset($_POST['sort_rule']) && ($_POST['sort_rule'] == 'DESC' || $_POST['sort_rule'] == 'ASC') ? $_POST['sort_rule'] : 'DESC'; ?>
+							<option value="ASC" <?php echo $sort_rule == 'ASC' ? 'selected="selected"' : '';?>><?php echo $lang_pun_admin_events['ASC']; ?></option>
+							<option value="DESC" <?php echo $sort_rule == 'DESC' ? 'selected="selected"' : '';?>><?php echo $lang_pun_admin_events['DESC']; ?></option>
+						</select></span>
+					</div>
+				</div>
+			</fieldset>
 		<div class="frm-buttons">
 			<span class="submit">
 				<input type="submit" value="<?php echo $lang_pun_admin_events['Search'] ?>" />
@@ -217,66 +181,38 @@ ob_start();
 <div class="main-content frm">
 	<?php
 
-		//$results_onpage - results per page
-		$results_onpage = 10;
-
-		//Prepare ORDER clause.
-		$order_by = '';
-
-		if(isset($_POST['sort_rule']))
-		{
-			if(isset($_POST['sort_by']))
-				$order_by = $_POST['sort_by'].' '.$_POST['sort_rule'];
-			else
-				$order_by = 'date'.' '.$_POST['sort_rule'];
-		}
-
-		//Prepare WHERE clause
-		$sql_where = implode(' && ', pun_events_generate_where());
-
-		//Count rows
+		$results_onpage = $forum_config['o_disp_topics_default'];
 		$query = array(
-			'SELECT'	=> 'count(*)',
-			'FROM'		=> 'pun_admin_events',
-			'WHERE'		=> $sql_where,
+			'SELECT'	=> 'COUNT(*)',
+			'FROM'		=> 'pun_admin_events'
 		);
+		if (isset($tmp_where) && !empty($tmp_where['WHERE']))
+			$query['WHERE'] = $tmp_where['WHERE'];
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-		$num_rows = $forum_db->result($result);
+		list($num_rows) = $forum_db->fetch_row($result);
+		
 		$data = array();
-
-		//if no rows was founded don't try to find it again =)
-		if($num_rows != 0)
+		if ($num_rows > 0)
 		{
 			$query = array(
 				'SELECT'	=> 'ip, type, comment, date, user_name',
 				'FROM'		=> 'pun_admin_events',
-				'WHERE'		=> $sql_where,
-				'ORDER BY'	=> $order_by,
-				'LIMIT'		=> ($event_page ? ((($event_page - 1) * $results_onpage).', '.$results_onpage) : ('0, '.$results_onpage))
+				'LIMIT'		=> ($event_page - 1) * $results_onpage.', '.$results_onpage
 			);
-
+			if (isset($tmp_where))
+			{
+				if (!empty($tmp_where['WHERE']))
+					$query['WHERE'] = $tmp_where['WHERE'];
+				$query['ORDER BY'] = $tmp_where['ORDER BY'];
+			}
+	
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-			while($_tmp = $forum_db->fetch_assoc($result))
-				$data[] = $_tmp;
+			while($cur_event = $forum_db->fetch_assoc($result))
+				$data[] = $cur_event;
 		}
 
 		//Draw results
-		$schema = array(
-			'ip'			=> $lang_pun_admin_events['IP'],
-			'type'			=> $lang_pun_admin_events['Type'],
-			'comment'		=> $lang_pun_admin_events['Comment'],
-			'date'			=> $lang_pun_admin_events['Date'],
-			'user_name'		=> $lang_pun_admin_events['User_Name'],
-		);
-
-		$lang = array(
-			'Pages'			=> $lang_pun_admin_events['Pages'],
-			'Results'		=> $lang_pun_admin_events['Results'],
-			'Nothing found' => $lang_pun_admin_events['Nothing found']
-		);
-
-		pagination($schema, $data, $event_page, ceil($num_rows/$results_onpage), 'mainform', $lang);
+		show_data($data, ceil($num_rows/$results_onpage));
 
 	?>
 </div>

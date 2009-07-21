@@ -1,5 +1,5 @@
-function PageSubmit(Form, Page)
+function PageSubmit(page)
 {
-	Form.page.value = Page;
-	Form.submit();
+	document.events_form.p.value = page;
+	document.events_form.submit();
 }

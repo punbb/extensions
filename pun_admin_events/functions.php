@@ -8,20 +8,27 @@
  * @package pun_admin_events
  */
 
-function pagination($fields, $data, $page, $pages, $form_name, $lang)
+function show_data($data, $pages)
 {
-	global $forum_url, $results_onpage, $lang_common;
+	global $forum_url, $results_onpage, $lang_common, $lang_pun_admin_events, $event_page;
 
 	if (!empty($data))
 	{
-		$pagination = paginate($pages, $page, $forum_url['admin_management_events'], $lang_common['Paging separator']);
+		$pagination = paginate($pages, $event_page, $forum_url['admin_management_events'], $lang_common['Paging separator']);
+		$fields = array(
+			'ip'			=> $lang_pun_admin_events['IP'],
+			'type'			=> $lang_pun_admin_events['Type'],
+			'comment'		=> $lang_pun_admin_events['Comment'],
+			'date'			=> $lang_pun_admin_events['Date'],
+			'user_name'		=> $lang_pun_admin_events['User_Name']
+		);
 
 		?>
 		<div id="brd-events-pagination-top" class="main-pagepost gen-content">
 			<p class="paging"><span class="pages"><?php echo $lang_common['Pages']; ?></span><?php echo $pagination; ?></p>
 		</div>
 		<div class="main-head">
-			<p><span class="item-info"><?php echo $lang['Results']; ?></span></p>
+			<p><span class="item-info"><?php echo $lang_pun_admin_events['Results']; ?></span></p>
 		</div>
 		<div class="ct-group">
 			<table cellspacing="0" summary="Table summary">
@@ -77,7 +84,7 @@ function pagination($fields, $data, $page, $pages, $form_name, $lang)
 		</div>
 
 		<div class="main-foot">
-			<p><span class="item-info"><?php echo $lang['Results']; ?></span></p>
+			<p><span class="item-info"><?php echo $lang_pun_admin_events['Results']; ?></span></p>
 		</div>
 		<div id="brd-events-pagination-bottom" class="main-pagepost gen-content">
 			<p class="paging"><span class="pages"><?php echo $lang_common['Pages']; ?></span><?php echo $pagination; ?></p>
@@ -90,94 +97,89 @@ function pagination($fields, $data, $page, $pages, $form_name, $lang)
 
 		?>
 			<div class="ct-box">
-				<p><strong><?php echo $lang['Nothing found'] ?></strong></p>
+				<p><strong><?php echo $lang_pun_admin_events['Nothing found'] ?></strong></p>
 			</div>
 		<?php
 
 	}
 }
 
-function generate_dropdown_list($fld_id, $fld_name, $value_from, $value_to, $default_text)
-{
-	$result = '<select id="'.$fld_id.'" name="'.$fld_name.'">';
-		for ($i = $value_from; $i <= $value_to; $i++)
-		{
-			if((isset($_POST[$fld_name]) && ($_POST[$fld_name]) == $i) || ($i == $default_text))
-				$result .= '<option selected="selected" value="'.$i.'">'.$i.'</option>'; 
-			else
-				$result .= '<option value="'.$i.'">'.$i.'</option>'; 
-		}
-	$result .= '</select>';
-
-	echo $result;
-}
-
 function pun_events_generate_where()
 {
+	global $forum_db, $lang_common, $db_type, $lang_pun_admin_events;
 	$result = array();
-	global $forum_db;
-
-	if (isset($_POST['day_from']) && isset($_POST['month_from']) && isset($_POST['year_from']) &&
-		isset($_POST['day_to']) && isset($_POST['month_to']) && isset($_POST['year_to']))
+	
+	$date_from = isset($_POST['date_from']) ? forum_trim($_POST['date_from']) : '';
+	$date_to = isset($_POST['date_to']) ? forum_trim($_POST['date_to']) : '';
+	if (!empty($date_from))
 	{
-		if (($_POST['year_from'] > $_POST['year_to']) || ($_POST['month_from'] > $_POST['month_to']) || ($_POST['day_from'] > $_POST['day_to']))
-		{
-			$event_temp = $_POST['day_from'];
-			$_POST['day_from'] = $_POST['day_to'];
-			$_POST['day_to'] = $event_temp;
-
-			$event_temp = $_POST['month_from'];
-			$_POST['month_from'] = $_POST['month_to'];
-			$_POST['month_to'] = $event_temp;
-
-			$event_temp = $_POST['year_from'];
-			$_POST['year_from'] = $_POST['year_to'];
-			$_POST['year_to'] = $event_temp;
-		}
-		else if (($_POST['day_from'] == $_POST['day_to']) && ($_POST['month_from'] == $_POST['month_to']) && ($_POST['year_from'] == $_POST['year_to']))
-			$_POST['day_to']++;
-		else if (($_POST['day_from'] != $_POST['day_to']) && ($_POST['month_from'] == $_POST['month_to']) && ($_POST['year_from'] == $_POST['year_to']))
-			$_POST['day_to']++;
-		
-		$result[] = '(date >= STR_TO_DATE(\''.$_POST['day_from'].'/'.$_POST['month_from'].'/'.$_POST['year_from'].'\', \'%d/%m/%Y\'))';
-		$result[] = '(date <= STR_TO_DATE(\''.$_POST['day_to'].'/'.$_POST['month_to'].'/'.$_POST['year_to'].'\', \'%d/%m/%Y\'))';
+		$date_from = strtotime($date_from);
+		if (!$date_from)
+			message($lang_pun_admin_events['Incor from']);
+	}
+	if (!empty($date_to))
+	{
+		$date_to = strtotime($date_to);
+		if (!$date_to)
+			message($lang_pun_admin_events['Incor to']);
 	}
 
-	if (isset($_POST['event_id']))
+	if (!empty($date_from) && !empty($date_to))
 	{
-		$query = array(
-			'SELECT'	=> '*',
-			'FROM'		=> 'pun_admin_events'
-		);
-		$event_res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-		$exist = -1;
+	 	if ($date_from > $date_to)
+			message('');
+		if ($date_from == $date_to)
+			$date_to += 86400;
+	}
+	if (!empty($date_from))
+		$result['WHERE'][] = 'date >= '.$date_from;
+	if (!empty($date_to))
+		$result['WHERE'][] = 'date <= '.$date_to;
 
-		if ($forum_db->num_rows($event_res))
+	if (isset($_POST['event_id']) && is_scalar($_POST['event_id']))
+	{
+		if ($_POST['event_id'] != -1)
 		{
-			while($row = $forum_db->fetch_assoc($event_res))
-			{
-				if ($row['type'] == $_POST['event_id'])
-				{
-					$exist = 1;
-					break;
-				}
-			}
+			$query = array(
+				'SELECT'	=> '1',
+				'FROM'		=> 'pun_admin_events',
+				'WHERE'		=> 'type = \''.$forum_db->escape($_POST['event_id']).'\''
+			);
+			$event_res = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+			if (!$forum_db->num_rows($event_res))
+				message($lang_common['Bad request']);
+			$event_id = $_POST['event_id'];
 		}
+		else
+			$event_id = 0;
+	}
+	else
+		message($lang_common['Bad request']);
+	if ($event_id !== 0)
+		$result['WHERE'][] = 'type = \''.$forum_db->escape($event_id).'\'';
+
+	$sort_by = isset($_POST['sort_by']) && in_array($_POST['sort_by'], array('Date', 'Event', 'IP', 'user_name')) ? $_POST['sort_by'] : message($lang_common['Bad request']);
+	$sort_rule = isset($_POST['sort_rule']) && ($_POST['sort_rule'] == 'ASC' || $_POST['sort_rule'] == 'DESC') ? $_POST['sort_rule'] : message($lang_common['Bad request']);
+	$result['ORDER BY'] = $sort_by.' '.$sort_rule;
+
+	$like_command = ($db_type == 'pgsql') ? 'ILIKE' : 'LIKE';
+	if (isset($_POST['ip']) && !empty($_POST['ip'])  && $_POST['ip'] != '*')
+	{
+		$ip = $_POST['ip'];
+		if (empty($ip) || (!preg_match('/[0-9\*]{1,3}\.[0-9\*]{1,3}\.[0-9\*]{1,3}\.[0-9\*]{1,3}/', $ip) && !preg_match('/^((([0-9A-Fa-f\*]{1,4}:){7}[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){6}:[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){5}:([0-9A-Fa-f\*]{1,4}:)?[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){4}:([0-9A-Fa-f\*]{1,4}:){0,2}[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){3}:([0-9A-Fa-f\*]{1,4}:){0,3}[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){2}:([0-9A-Fa-f\*]{1,4}:){0,4}[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f\*]{1,4}::([0-9A-Fa-f\*]{1,4}:){0,5}[0-9A-Fa-f\*]{1,4})|(::([0-9A-Fa-f\*]{1,4}:){0,6}[0-9A-Fa-f\*]{1,4})|(([0-9A-Fa-f\*]{1,4}:){1,7}:))$/', $ip)))
+		message($lang_pun_admin_events['Invalid IP']);
+		if (strpos($ip, '*'))		
+			$result['WHERE'][] = 'ip '.$like_command.' \''.$forum_db->escape(str_replace('*', '%', $ip)).'\'';
+		else
+			$result['WHERE'][] = 'ip = \''.$forum_db->escape(str_replace('*', '%', $ip)).'\'';
 	}
 
-	if(isset($_POST['event_id']) && $_POST['event_id'] != '' && ($exist == 1))
-		$result[] = '(type like \''.$forum_db->escape($_POST['event_id']).'\')';
+	if (isset($_POST['name']) && !empty($_POST['name']) && $_POST['name'] != '*')
+		$result['WHERE'][] = 'user_name '.$like_command.' \''.$forum_db->escape(str_replace('*', '%', $_POST['name'])).'\'';
+	if (isset($_POST['comment']) && !empty($_POST['comment']) && $_POST['comment'] != '*')
+		$result['WHERE'][] = 'comment '.$like_command.' \''.$forum_db->escape(str_replace('*', '%', $_POST['comment'])).'\'';
 
-	if(isset($_POST['ip']) && $_POST['ip'] != '*')
-		$result[] = '(ip like \''.str_replace('*', '%', $forum_db->escape($_POST['ip'])).'\')';
-
-	if(isset($_POST['name']) && $_POST['name'] != '*')
-		$result[] = '(user_name like \''.str_replace('*', '%', $forum_db->escape($_POST['name'])).'\')';
-
-	if(isset($_POST['comment']) && $_POST['comment'] != '*')
-		$result[] = '(comment like \''.str_replace('*', '%', $forum_db->escape($_POST['comment'])).'\')';
-
-	return ($result);
+	return array('ORDER BY' => $result['ORDER BY'], 'WHERE' => isset($result['WHERE']) ? implode(' && ', $result['WHERE']) : '');
 }
 
 ?>
