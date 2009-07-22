@@ -93,7 +93,7 @@
 			}
 		]]></hook>
 		<hook id="fn_paginate_start"><![CDATA[
-		if (FORUM_PAGE == 'admin-management-events')
+		if (defined('FORUM_PAGE') && FORUM_PAGE == 'admin-management-events')
 		{
 			// If $cur_page == -1, we link to all pages (used in viewforum.php)
 			if ($cur_page == -1)
