@@ -8,22 +8,18 @@
 
 var selNode = null;
 
-function getCaretPos(objName)
+function getCaretPos()
 {
-	var obj = document.getElementById(objName);
-	obj.focus();
-	
+	var obj = document.getElementById('fld1');
 	if (document.selection)
 	{ // IE
+		obj.focus();
 		var sel = document.selection.createRange();
-		var clone = sel.duplicate();
-		sel.collapse(true);
-		clone.moveToElementText(obj);
-		clone.setEndPoint('EndToEnd', sel);
-		
-		return clone.text.length;
+		sel.moveStart ('character', -obj.value.length);
+
+		return sel.text.length;
 	}
-	else if (obj.selectionStart!==false)
+	else if (obj.selectionStart !== false)
 		return obj.selectionStart; // Gecko
 	else
 		return 0;
@@ -145,11 +141,11 @@ function QuickQuote(qid_param)
 {
 	var selected_text = getSelectedText();
 	var quick_post_value = document.getElementsByName('req_message');
-	var cur_pos = getCaretPos('fld1');
+	var cur_pos = getCaretPos();
 	var text = quick_post_value[0].value;
 	var text_below = text.substring(0, cur_pos);
-	var text_above = text.substring(cur_pos, (text.length - 1));
-	
+	var text_above = text.substring(cur_pos, text.length);
+
 	if (selected_text == undefined || selected_text == '')
 		quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]' + text_above;
 	else
