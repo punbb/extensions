@@ -9,20 +9,20 @@
  */
 
 if (!defined('FORUM'))
-    die();
+	die();
 
 ob_end_clean();
 ob_start();
 // NOTE: I couldn't find how to remove sf-set from here.
 ?>
-		<div id="pun_bbcode_wrapper"<?php echo (($forum_user['pun_bbcode_use_buttons']) && ($forum_config['p_message_bbcode'])) ? ' class="graphical"' : '' ?>>
-<?php
-		$pun_bbcode_tabindex = 1;
-		
+					<div id="pun_bbcode_wrapper"<?php echo (($forum_user['pun_bbcode_use_buttons']) && ($forum_config['p_message_bbcode']))?' class="graphical"':'' ?>>
+		<?php
+
 		if ($forum_config['p_message_bbcode'])
 		{
-?>
-			<div id="pun_bbcode_buttons">
+
+		?>
+						<div id="pun_bbcode_buttons">
 <?php
 
 // List of tags, which may have attribute
@@ -33,13 +33,12 @@ if ($forum_config['p_message_img_tag'])
 
 // List of tags, which may not to have attribute
 if ($forum_user['pun_bbcode_use_buttons'])
-    $tags_with_attr = array('color');
+	$tags_with_attr = array('color');
 else
-    $tags_with_attr = array('quote', 'color', 'url', 'email', 'list');
+	$tags_with_attr = array('quote', 'color', 'url', 'email', 'img', 'list');
 
-if (!$forum_user['pun_bbcode_use_buttons'])
-	if ($forum_config['p_message_img_tag'])
-		$tags_with_attr[] = 'img';
+if (!$forum_user['pun_bbcode_use_buttons'] && $forum_config['p_message_img_tag'])
+	$tags_with_attr[] = 'img';
 
 ($hook = get_hook('pun_bbcode_pre_tags_merge')) ? eval($hook) : null;
 
@@ -54,20 +53,22 @@ if ($forum_user['pun_bbcode_use_buttons'])
 		$buttons_path = $ext_info['url'].'/buttons/Oxygen';
 }
 
+$pun_bbcode_tabindex = 1;
+
 ($hook = get_hook('pun_bbcode_pre_buttons_output')) ? eval($hook) : null;
 
 foreach ($tags as $filename => $tag)
 {
 	($hook = get_hook('pun_bbcode_buttons_output_loop_start')) ? eval($hook) : null;
-	
+
 	if (in_array($tag, $tags_without_attr))
 	{
 		if ($forum_user['pun_bbcode_use_buttons'])
-			echo '<img src="'.$buttons_path.'/'.(is_numeric($filename)?$tag:$filename).'.png" alt="['.$tag.']" title="'.$tag.'"';
+			echo "\t\t\t\t\t\t\t".'<img src="'.$buttons_path.'/'.(is_numeric($filename) ? $tag : $filename).'.png" alt="['.$tag.']" title="'.$tag.'"';
 		else
-			echo '<input type="button" value="'.ucfirst($tag).'" name="'.$tag.'"';
+			echo "\t\t\t\t\t\t\t".'<input type="button" value="'.ucfirst($tag).'" name="'.$tag.'"';
 
-		echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'"/>';
+		echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'"/>'."\n";
 	}
 
 	if (in_array($tag, $tags_with_attr))
@@ -77,35 +78,41 @@ foreach ($tags as $filename => $tag)
 		else
 			echo "\t\t\t\t\t\t\t".'<input type="button" value="'.ucfirst($tag).'=" name="'.$tag.'"';
 
-		echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'" />';
+		echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'" />'."\n";
 	}
 
 	$pun_bbcode_tabindex++;
 }
 
 ?>
-			</div>
-			<?php
+						</div>
+		<?php
+
 		}
+
 		?>
-			<div id="pun_bbcode_smilies">
-			<?php
-			
-			($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
-			
-			// Display the smiley set
-			foreach (array_unique($smilies) as $smile_text => $smile_file)
-			{
-				($hook = get_hook('pun_bbcode_smilies_output_loop_start')) ? eval($hook) : null;
-				
-				echo '<a href="javascript:insert_text(\' '.$smile_text.'\', \'\');" tabindex="'.($pun_bbcode_tabindex++).'"><img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" /></a>'."\n";
-			}
-			
-			?>
-			
-			</div>
-		</div>
+
+						<div id="pun_bbcode_smilies">
 <?php
-$bbar_temp = str_replace(array("\n", '"'), array('\n', '\"'), forum_trim(ob_get_contents()));
+
+($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
+
+// Display the smiley set
+foreach (array_unique($smilies) as $smile_text => $smile_file)
+{
+	($hook = get_hook('pun_bbcode_smilies_output_loop_start')) ? eval($hook) : null;
+
+	echo "\t\t\t\t\t\t\t".'<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\' '.$smile_text.' \', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
+}
+
+?>
+						</div>
+					</div>
+<?php
+
+$bbar_temp = str_replace(array("\n", "\t", "\r"), '', forum_trim(ob_get_contents()));
+$bbar_temp = str_replace('"', '\"', $bbar_temp);
+
 ob_end_clean();
+
 ?>
