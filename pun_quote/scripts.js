@@ -25,6 +25,24 @@ function getCaretPos()
 		return 0;
 }
 
+function setCaretPos(pos)
+{
+	var obj = document.getElementById('fld1');
+	if (obj.setSelectionRange)
+	{
+		obj.focus();
+		obj.setSelectionRange(pos, pos);
+	}
+	else if (obj.createTextRange)
+	{
+		var range = ctrl.createTextRange();
+		range.collapse(true);
+		range.moveEnd('character', pos);
+		range.moveStart('character', pos);
+		range.select();
+	}
+}
+
 function getSelectedText()
 {
 	try
@@ -147,16 +165,26 @@ function QuickQuote(qid_param)
 	var text_above = text.substring(cur_pos, text.length);
 
 	if (selected_text == undefined || selected_text == '')
-		quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]' + text_above;
+	{
+		var quote = '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]';
+		quick_post_value[0].value = text_below + quote + text_above;
+	}
 	else
 	{
 		var post_content = ContentCleaning(ParseMessage(pun_quote_posts[qid_param]));
 		var clean_selected_text = ContentCleaning(selected_text.toString());
 		if (post_content.indexOf(clean_selected_text) != -1)
-			quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + selected_text + '[/quote]' + text_above;
+		{
+			var quote = '[quote=' + pun_quote_authors[qid_param] + ']' + selected_text + '[/quote]';
+			quick_post_value[0].value = text_below + quote + text_above;
+		}
 		else
-			quick_post_value[0].value = text_below + '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]' + text_above;
+		{
+			var quote = '[quote=' + pun_quote_authors[qid_param] + ']' + ParseMessage(pun_quote_posts[qid_param]) + '[/quote]';
+			quick_post_value[0].value = text_below + quote + text_above;
+		}
 	}
+	setCaretPos(text_below.length + quote.length);
 }
 
 function Reply(qid_param, quote_link)
