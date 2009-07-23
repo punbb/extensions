@@ -44,7 +44,7 @@ else
 
 	<hooks>
 		<hook id="hd_head"><![CDATA[
-if ($forum_user['pun_bbcode_enabled'] == '1' && (FORUM_PAGE == 'viewtopic' || FORUM_PAGE == 'postedit' || FORUM_PAGE == 'post'))
+if ($forum_user['pun_bbcode_enabled'] && ((FORUM_PAGE == 'viewtopic' && $forum_config['o_quickpost']) || in_array(FORUM_PAGE, array('post', 'postedit'))))
 {
 	if (!defined('FORUM_PARSER_LOADED'))
 		require FORUM_ROOT.'include/parser.php';
@@ -55,7 +55,7 @@ if ($forum_user['pun_bbcode_enabled'] == '1' && (FORUM_PAGE == 'viewtopic' || FO
 		]]></hook>
 
 		<hook id="pun_pm_fn_send_form_pre_output"><![CDATA[
-if ($forum_user['pun_bbcode_enabled'] == '1')
+if ($forum_user['pun_bbcode_enabled'])
 {
 	global $smilies, $base_url;
 	if (!defined('FORUM_PARSER_LOADED'))
@@ -67,22 +67,19 @@ if ($forum_user['pun_bbcode_enabled'] == '1')
 		]]></hook>
 
 		<hook id="po_pre_post_contents, vt_quickpost_pre_message_box, ed_pre_message_box, pun_pm_fn_send_form_pre_textarea_output"><![CDATA[
-			?>
-			<div class="sf-set" id="pun_bbcode_bar"></div>
-			<?php
+			if ($forum_user['pun_bbcode_enabled'])
+				echo '<div class="sf-set" id="pun_bbcode_bar"></div>';
 		]]></hook>
-
 		<hook id="ft_about_output_start" priority="1"><![CDATA[
-			if (in_array(FORUM_PAGE, array('post', 'viewtopic', 'postedit')) || substr(FORUM_PAGE, 0, 6) == 'pun_pm-')
+			if ($forum_user['pun_bbcode_enabled'] && ((FORUM_PAGE == 'viewtopic' && $forum_config['o_quickpost']) || (in_array(FORUM_PAGE, array('post', 'postedit')) || substr(FORUM_PAGE, 0, 6) == 'pun_pm-')))
 			{
 				$bbar_temp = '';
-				if ($forum_user['pun_bbcode_enabled'])
-					include $ext_info['path'].'/bar.php';
+				include $ext_info['path'].'/bar.php';
 			}
 		]]></hook>
 
 		<hook id="ft_about_pre_copyright"><![CDATA[
-			if (in_array(FORUM_PAGE, array('post', 'viewtopic', 'postedit')) || substr(FORUM_PAGE, 0, 6) == 'pun_pm-')
+			if (isset($bbar_temp))
 				echo '<script type="text/javascript"><!--'."\n".'document.getElementById("pun_bbcode_bar").innerHTML = "'.$bbar_temp.'";'."\n".'document.getElementById("pun_bbcode_bar").style.display="block";'."\n".'document.getElementById("pun_bbcode_bar").style.visibility="visible";'."\n".'--></script>'."\n";
 		]]></hook>
 
