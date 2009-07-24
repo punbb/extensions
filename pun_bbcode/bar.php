@@ -97,6 +97,9 @@ foreach ($tags as $filename => $tag)
 
 ($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
 
+
+if (!$forum_config['p_message_bbcode'])
+	$pun_bbcode_tabindex = 1;
 // Display the smiley set
 foreach (array_unique($smilies) as $smile_text => $smile_file)
 {
@@ -104,6 +107,7 @@ foreach (array_unique($smilies) as $smile_text => $smile_file)
 
 	echo "\t\t\t\t\t\t\t".'<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\' '.$smile_text.' \', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
 }
+
 
 ?>
 						</div>
