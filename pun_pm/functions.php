@@ -512,7 +512,7 @@ function pun_pm_edit_message()
 	global $forum_db, $forum_user, $lang_pun_pm;
 
 	$errors = array();
-
+	$pun_pm_message_id = intval($_GET['message_id']);
 	// Verify input data
 	$query = array(
 		'SELECT'	=> 'm.id as id, m.sender_id as sender_id, m.status as status, u.username as username, m.subject as subject, m.body as body',
@@ -523,7 +523,7 @@ function pun_pm_edit_message()
 				'ON'			=> '(u.id = m.receiver_id)'
 			),
 		),
-		'WHERE'		=> 'm.id = '.$forum_db->escape($_GET['message_id']).' AND m.sender_id = '.$forum_user['id'].' AND m.deleted_by_sender = 0'
+		'WHERE'		=> 'm.id = '.$pun_pm_message_id.' AND m.sender_id = '.$forum_user['id'].' AND m.deleted_by_sender = 0'
 	);
 
 	($hook = get_hook('pun_pm_fn_edit_message_pre_validate_query')) ? eval($hook) : null;
@@ -541,7 +541,7 @@ function pun_pm_edit_message()
 			$query = array(
 				'UPDATE'		=> 'pun_pm_messages',
 				'SET'			=> 'status = \'draft\', lastedited_at = '.$now,
-				'WHERE'			=> 'id = '.$forum_db->escape($_GET['message_id']).' AND (status = \'draft\' OR status = \'sent\')'
+				'WHERE'			=> 'id = '.$pun_pm_message_id.' AND (status = \'draft\' OR status = \'sent\')'
 			);
 
 			($hook = get_hook('pun_pm_fn_edit_message_pre_status_change_query')) ? eval($hook) : null;
