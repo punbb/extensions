@@ -20,8 +20,7 @@
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.2</maxtestedon>
 
-	<install>
-	<![CDATA[
+	<install><![CDATA[
 		// Create table topic_tags if its fresh install
 		if (!$forum_db->table_exists('topic_tags'))
 		{
@@ -94,19 +93,38 @@
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
+		$query_pun_tags = array(
+			'SELECT'	=>	'1',
+			'FROM'		=>	'config',
+			'WHERE'		=>	'conf_name = "o_pun_tags_splitter"'
+		);
+		$result_pun_tags = $forum_db->query_build($query_pun_tags) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($result_pun_tags) == 0)
+		{
+			$query = array(
+				'INSERT'	=> 'conf_name, conf_value',
+				'INTO'		=> 'config',
+				'VALUES'	=> '\'o_pun_tags_splitter\', \' \''
+			);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		}
+		
+		if (!$forum_db->field_exists('groups', 'g_pun_tags_allow'))
+			$forum_db->add_field('groups', 'g_pun_tags_allow', 'INT(3)', false, '1');
+		
 	]]></install>
-	<uninstall>
-	<![CDATA[
+	<uninstall><![CDATA[
 		// Delete extension options from config
 		$query = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name = \'o_pun_tags_show\' OR conf_name = \'o_pun_tags_count_in_cloud\''
+			'WHERE'		=> 'conf_name = \'o_pun_tags_show\' OR conf_name = \'o_pun_tags_count_in_cloud\' OR conf_name = \'o_pun_tags_splitter\''
 		);
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 		// Drop extension tables
 		$forum_db->drop_table('topic_tags');
 		$forum_db->drop_table('tags');
+		$forum_db->drop_field('groups', 'g_pun_tags_allow');
 
 		// Remove pun_tags cache file
 		@unlink(FORUM_CACHE_DIR.'cache_pun_tags.php');
@@ -114,6 +132,30 @@
 	</uninstall>
 
 	<hooks>
+		
+		<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
+
+			?>
+				<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<legend><span><?php echo $lang_pun_tags['legend checks'] ?></span></legend>
+					<div class="mf-box">
+						<div class="mf-item">
+							<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="pun_tags_allow" value="1"<?php if ($group['g_pun_tags_allow'] == '1') echo ' checked="checked"' ?> /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_tags['Name check'] ?></label>
+						</div>
+					</div>
+				</fieldset>
+			<?php
+
+		]]></hook>
+		
+		<hook id="agr_edit_end_qr_update_group"><![CDATA[
+		
+			$pun_tags_allow = isset($_POST['pun_tags_allow']) ? intval($_POST['pun_tags_allow']) : '0';
+			$query['SET'] .= ', g_pun_tags_allow='.$pun_tags_allow;
+			
+		]]></hook>
+		
 		<hook id="hd_main_elements"><![CDATA[
 			//Output of search results
 			if ($forum_config['o_pun_tags_show'] == 1 && in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
@@ -186,7 +228,7 @@
 					$results = array();
 					foreach ($output_results as $tag_id => $tag_info)
 						$results[] = pun_tags_get_link(round(($tag_info['weight'] - $min_pop) * $step + $minfontsize), $tag_id, $tag_info['weight'], $tag_info['tag']);
-					$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags" class="gen-content">'.implode('&nbsp;', $results).'</div>';
+					$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags" class="gen-content">'.$lang_pun_tags['Title'].implode(htmlspecialchars($forum_config['o_pun_tags_splitter']), $results).'</div>';
 					unset($minfontsize, $maxfontsize, $step, $results, $min_pop, $max_pop);
 				}
 				unset($output_results, $tags_weights);
@@ -217,6 +259,10 @@
 				$form['pun_tags_count_in_cloud'] = intval($form['pun_tags_count_in_cloud']);
 			else
 				$form['pun_tags_count_in_cloud'] = 25;
+			if (isset($form['pun_tags_splitter']) && !empty($form['pun_tags_splitter']))
+				$form['pun_tags_splitter'] = forum_trim($form['pun_tags_splitter']);
+			else
+				$form['pun_tags_splitter'] = ' ';
 		]]></hook>
 		<hook id="aop_features_avatars_fieldset_end"><![CDATA[
 
@@ -230,17 +276,17 @@
 				<legend class="group-legend">
 					<span><?php echo $lang_pun_tags['Settings']; ?></span>
 				</legend>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>"> 
-					<div class="sf-box checkbox"> 
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
 						<span class="fld-input">
 							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="checkbox" <?php if ($forum_config['o_pun_tags_show'] == '1') echo ' checked="checked"' ?> value="1" name="form[pun_tags_show]"/>
 						</span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"> 
+						<label for="fld<?php echo $forum_page['fld_count'] ?>">
 							<span><?php echo $lang_pun_tags['Show Pun Tags']; ?></span>
 							<?php echo $lang_pun_tags['Pun Tags notice']; ?>
 						</label>
 					</div>
-				</div> 
+				</div>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<span class="fld-input">
@@ -249,6 +295,17 @@
 						<label for="fld<?php echo $forum_page['fld_count'] ?>">
 							<span><?php echo $lang_pun_tags['Tags count']; ?></span>
 							<small><?php echo $lang_pun_tags['Tags count info']; ?></small>
+						</label>
+					</div>
+				</div>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<span class="fld-input">
+							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="text" value="<?php echo $forum_config['o_pun_tags_splitter']; ?>" maxlength="6" size="6" name="form[pun_tags_splitter]"/>
+						</span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>">
+							<span><?php echo $lang_pun_tags['Splitter']; ?></span>
+							<small><?php echo $lang_pun_tags['Splitter info']; ?></small>
 						</label>
 					</div>
 				</div>
@@ -296,7 +353,7 @@
 		]]></hook>
 
 		<hook id="po_pre_post_contents" priority = "1"><![CDATA[
-			if ($fid)
+			if (($fid) && ($forum_user['g_pun_tags_allow']))
 			{
 
 				?>
@@ -311,13 +368,13 @@
 			}
 		]]></hook>
 		<hook id="po_end_validation, mr_confirm_split_posts_form_submitted"><![CDATA[
-			if (!empty($_POST['pun_tags']))
+			if ((!empty($_POST['pun_tags'])) && ($forum_user['g_pun_tags_allow']))
 				$new_tags = pun_tags_parse_string(trim($_POST['pun_tags']));
 		]]></hook>
 		<hook id="fn_add_topic_end"><![CDATA[
 			global $new_tags, $pun_tags;
 			// Add tags to DB
-			if (!empty($new_tags))
+			if ((!empty($new_tags)) && ($forum_user['g_pun_tags_allow']))
 			{
 				$search_arr = isset($pun_tags['index']) ? $pun_tags['index'] : array();
 				foreach ($new_tags as $pun_tag)
@@ -332,7 +389,7 @@
 			}
 		]]></hook>
 		<hook id="mr_confirm_split_posts_pre_redirect"><![CDATA[
-			if (!empty($new_tags))
+			if ((!empty($new_tags)) && ($forum_user['g_pun_tags_allow']))
 			{
 				foreach ($new_tags as $pun_tag)
 					pun_tags_add_new($pun_tag, $new_tid);
@@ -346,7 +403,7 @@
 			pun_tags_generate_cache();
 		]]></hook>
 		<hook id="ed_pre_message_box" priority = "1"><![CDATA[
-			if ($can_edit_subject)
+			if (($can_edit_subject) && ($forum_user['g_pun_tags_allow']))
 			{
 				$res_tags = array();
 				if (isset($pun_tags['topics'][$cur_post['tid']]))
@@ -367,7 +424,7 @@
 			}
 		]]></hook>
 		<hook id="ed_pre_post_edited"><![CDATA[
-			if ($can_edit_subject)
+			if (($can_edit_subject) && ($forum_user['g_pun_tags_allow']))
 			{
 				//Parse the string
 				if (isset($_POST['pun_tags']))
@@ -506,7 +563,7 @@
 						if (!isset($pun_tags['forums'][$forum_id]))
 							continue;
 						//Calcullate common keys in arrays
-						$tmp = array_intersect($tags, array_keys($pun_tags['forums'][$forum_id]));						
+						$tmp = array_intersect($tags, array_keys($pun_tags['forums'][$forum_id]));
 						foreach ($tmp as $cur_tag)
 						{
 							if (!isset($tags_results[$cur_tag]))

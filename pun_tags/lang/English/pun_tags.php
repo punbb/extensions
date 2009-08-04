@@ -20,7 +20,12 @@ $lang_pun_tags = array(
 	'Pun Tags notice'				=>	'Display list of tags at the pages',
 	'Count error'					=>	'Total length of tags can\'t be more than 100.',
 	'Tags count'					=>	'Limit of tags cloud',
-	'Tags count info'				=>	'Maximum count of tags in the cloud.'
+	'Tags count info'				=>	'Maximum count of tags in the cloud.',
+	'Splitter'						=>	'Tags splitter',
+	'Splitter info'					=>	'The line which will be split tags in cloud',
+	'legend checks'					=>	'Tags permission',
+	'Name check'					=>	'Allow users to create tags',
+	'Title'							=>	'<strong>Tags:</strong> '
 );
 
 ?>
