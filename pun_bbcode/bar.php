@@ -11,8 +11,6 @@
 if (!defined('FORUM'))
 	die();
 
-ob_end_clean();
-ob_start();
 // NOTE: I couldn't find how to remove sf-set from here.
 ?>
 					<div id="pun_bbcode_wrapper"<?php echo (($forum_user['pun_bbcode_use_buttons']) && ($forum_config['p_message_bbcode']))?' class="graphical"':'' ?>>
@@ -118,5 +116,6 @@ $bbar_temp = str_replace(array("\n", "\t", "\r"), '', forum_trim(ob_get_contents
 $bbar_temp = str_replace('"', '\"', $bbar_temp);
 
 ob_end_clean();
+ob_start();
 
 ?>

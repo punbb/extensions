@@ -70,7 +70,7 @@ if ($forum_user['pun_bbcode_enabled'])
 			if ($forum_user['pun_bbcode_enabled'])
 				echo '<div class="sf-set" id="pun_bbcode_bar"></div>';
 		]]></hook>
-		<hook id="ft_about_output_start" priority="1"><![CDATA[
+		<hook id="ft_about_output_start" priority="0"><![CDATA[
 			if ($forum_user['pun_bbcode_enabled'] && ((FORUM_PAGE == 'viewtopic' && $forum_config['o_quickpost']) || (in_array(FORUM_PAGE, array('post', 'postedit')) || substr(FORUM_PAGE, 0, 6) == 'pun_pm-')))
 			{
 				$bbar_temp = '';
@@ -80,7 +80,7 @@ if ($forum_user['pun_bbcode_enabled'])
 
 		<hook id="ft_about_pre_copyright"><![CDATA[
 			if (isset($bbar_temp))
-				echo '<script type="text/javascript"><!--'."\n".'document.getElementById("pun_bbcode_bar").innerHTML = "'.$bbar_temp.'";'."\n".'document.getElementById("pun_bbcode_bar").style.display="block";'."\n".'document.getElementById("pun_bbcode_bar").style.visibility="visible";'."\n".'--></script>'."\n";
+				echo '<script type="text/javascript"><!--'."\n".'document.getElementById("pun_bbcode_bar").innerHTML = "'.$bbar_temp.'";'."\n".'document.getElementById("pun_bbcode_bar").style.display = "block";'."\n".'document.getElementById("pun_bbcode_bar").style.visibility = "visible";'."\n".'--></script>'."\n";
 		]]></hook>
 
 		<hook id="pf_change_details_settings_validation"><![CDATA[
