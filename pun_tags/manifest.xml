@@ -260,7 +260,7 @@
 			else
 				$form['pun_tags_count_in_cloud'] = 25;
 			if (isset($form['pun_tags_splitter']) && !empty($form['pun_tags_splitter']))
-				$form['pun_tags_splitter'] = forum_trim($form['pun_tags_splitter']);
+				$form['pun_tags_splitter'] = $form['pun_tags_splitter'];
 			else
 				$form['pun_tags_splitter'] = ' ';
 		]]></hook>
@@ -486,7 +486,7 @@
 				'WHERE'		=>	'topic_id IN('.$topic_ids.')'
 			);
 			$forum_db->query_build($query_tags) or error(__FILE__, __LINE__);
-		]]></hook>	
+		]]></hook>
 		<hook id="acg_del_cat_pre_redirect, mr_confirm_delete_topics_pre_redirect"><![CDATA[
 			pun_tags_remove_orphans();
 			pun_tags_generate_cache();
