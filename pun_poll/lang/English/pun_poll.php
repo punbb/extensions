@@ -25,7 +25,9 @@ $lang_pun_poll = array(
 	'Poll add'						=>	'Allow users to use polls in their topics.',
 	'Permission'					=>	'Voting permission',
 // general
-	'Users count'					=>	'Count of votes - ',
+	'Users count'					=>	'Votes: ',
+	'Preview poll'					=>	'Preview of your edited poll.',
+	'Preview poll question'			=>	'<strong>%s?</strong>',
 	'Revote'						=>	'Revote poll',
 	'Summary count'					=>	'Number of poll options',
 	'Allow days'					=>	'Run poll for (days)',

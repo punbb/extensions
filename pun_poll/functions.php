@@ -29,7 +29,7 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 				$poll_answers[$ans_num] = forum_trim($poll_answers[$ans_num]);
 			$poll_answers = array_unique($poll_answers);
 		}
-
+		
 		for ($opt_num = 0; $opt_num < $options_count; $opt_num++)
 		{
 
