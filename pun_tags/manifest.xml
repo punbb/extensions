@@ -108,10 +108,10 @@
 			);
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		}
-		
+
 		if (!$forum_db->field_exists('groups', 'g_pun_tags_allow'))
 			$forum_db->add_field('groups', 'g_pun_tags_allow', 'TINYINT(1)', false, '1');
-		
+
 	]]></install>
 	<uninstall><![CDATA[
 		// Delete extension options from config

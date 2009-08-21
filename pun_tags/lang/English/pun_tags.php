@@ -22,10 +22,9 @@ $lang_pun_tags = array(
 	'Tags count'					=>	'Limit of tags cloud',
 	'Tags count info'				=>	'Maximum count of tags in the cloud.',
 	'Separator'						=>	'Tags separator',
-	'Separator info'					=>	'The separator of tags in the cloud.',
+	'Separator info'				=>	'The separator of tags in the cloud.',
 	'Permissions'					=>	'Tags permission',
-	'legend checks'					=>	'Tags permission',
-	'Name check'					=>	'Allow users to create tags.',
+	'Name check'					=>	'Allow users to tag topics.',
 	'Title'							=>	'<strong>Tags:</strong> ',
 	'Create tags perms'				=>	'Create tags'
 );
