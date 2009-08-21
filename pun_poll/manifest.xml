@@ -642,7 +642,7 @@
 					{
 						$error_poll[] = sprintf($lang_pun_poll['Max cnt options'], $forum_config['p_pun_poll_max_answers']);
 					}
-					if ($options_count == null)
+					if (($options_count == null) && (isset($_POST['form_sent']) || isset($_POST['update_poll'])))
 						$error_poll[] = $lang_pun_poll['Min cnt options'];
 					$days_poll = (isset($_POST['allow_poll_days']) && !empty($_POST['allow_poll_days'])) ? intval($_POST['allow_poll_days']) : null;
 					if ($days_poll != null && ($days_poll > 90 || $days_poll < 1))
@@ -736,7 +736,7 @@
 					form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : $question, $poll_answers, $options_count, (($days_count_poll != 0) && ($votes_count_poll == 0)) ? $days_count_poll : '', (($days_count_poll == 0) && ($votes_count_poll != 0)) ? $votes_count_poll : '');
 				}
 				else
-					form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', (isset($poll_answers) && $poll_answers != null) ? $poll_answers : array(), isset($options_count) ? $options_count : 2, ((isset($days_poll) && (($days_poll != null)) && !(isset($votes_poll) && $votes_poll != null))) ? $days_poll : '', ((isset($votes_poll) && $votes_poll != null) && !(isset($days_poll) && (($days_poll != null)))) ? $votes_poll : '');
+					form_of_poll(isset($_POST['question_of_poll']) ? forum_htmlencode(forum_trim($_POST['question_of_poll'])) : '', (isset($poll_answers) && $poll_answers != null) ? $poll_answers : array(), (isset($options_count) && (!empty($_POST))) ? $options_count : 2, ((isset($days_poll) && (($days_poll != null)) && !(isset($votes_poll) && $votes_poll != null))) ? $days_poll : '', ((isset($votes_poll) && $votes_poll != null) && !(isset($days_poll) && (($days_poll != null)))) ? $votes_poll : '');
 			}
 		]]></hook>
 		
