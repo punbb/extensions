@@ -18,7 +18,7 @@
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
-	<maxtestedon>1.3.2</maxtestedon>
+	<maxtestedon>1.3.4</maxtestedon>
 
 	<install><![CDATA[
 		// Create table topic_tags if its fresh install
