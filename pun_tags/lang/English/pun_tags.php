@@ -21,11 +21,13 @@ $lang_pun_tags = array(
 	'Count error'					=>	'Total length of tags can\'t be more than 100.',
 	'Tags count'					=>	'Limit of tags cloud',
 	'Tags count info'				=>	'Maximum count of tags in the cloud.',
-	'Splitter'						=>	'Tags splitter',
-	'Splitter info'					=>	'The line which will be split tags in cloud',
+	'Separator'						=>	'Tags separator',
+	'Separator info'					=>	'The separator of tags in the cloud.',
+	'Permissions'					=>	'Tags permission',
 	'legend checks'					=>	'Tags permission',
-	'Name check'					=>	'Allow users to create tags',
-	'Title'							=>	'<strong>Tags:</strong> '
+	'Name check'					=>	'Allow users to create tags.',
+	'Title'							=>	'<strong>Tags:</strong> ',
+	'Create tags perms'				=>	'Create tags'
 );
 
 ?>
