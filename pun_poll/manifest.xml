@@ -1003,7 +1003,7 @@
 					{
 						$vote_form = '';
 						$link = forum_link($forum_url['topic'], $id);
-						$vote_form = '<div class="main-subhead"><h2 class="hn"><span><strong>'.forum_htmlencode($question).'?</strong></span></h2></div><form class="frm-form" action="'.$link.'" accept-charset="utf-8" method="post"><fieldset class="frm-group group1">';
+						$vote_form = '<div class="main-subhead"><h2 class="hn"><span><strong>'.forum_htmlencode($question).'?</strong></span></h2></div><div class="main-content main-frm"><form class="frm-form" action="'.$link.'" accept-charset="utf-8" method="post"><fieldset class="frm-group group1">';
 						$vote_form .= '<div class="hidden"><input type="hidden" name="csrf_token" value="'.generate_form_token($link).'" /></div>';
 						$vote_form .= '<fieldset class="mf-set set1"><legend><span>'.$lang_pun_poll['Options'].'</span></legend><div class="mf-box">';
 
@@ -1057,7 +1057,7 @@
 						$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
 						$num = 0;
-						$vote_results = isset($vote_form) ? '' : '<div class="main-subhead"><h2 class="hn"><span><strong>'.forum_htmlencode($question).'?</strong></span></h2></div>';
+						$vote_results = isset($vote_form) ? '' : '<div class="main-subhead"><h2 class="hn"><span><strong>'.forum_htmlencode($question).'?</strong></span></h2></div><div class="main-content main-frm">';
 						$vote_results .= '<div class="ct-group"><table cellspacing="0"><thead><th class="tc0" scope="col">&nbsp;</th><th class="tc1" scope="col">&nbsp;</th><th class="tc2" scope="col">&nbsp;</th></thead><tbody>';
 						while (list($answer, $count_v) = $forum_db->fetch_row($result_pun_poll))
 						{
@@ -1067,7 +1067,8 @@
 							$vote_results .= '<td class="tc1">'.forum_number_format($count_v).'</td>';
 							$vote_results .= '<td class="tc2">'.forum_number_format((float)$count_v/$vote_count * 100, 2).'%</td></tr>';
 						}
-						$vote_results .= '<tr><td colspan="3" style="text-align: center;">'.$lang_pun_poll['Users count'].$vote_count.'</td></tr>';
+						$num++;
+						$vote_results .= '<trclass="'.($num % 2 == 0 ? 'even' : 'odd').'"><td class="tc0" colspan="3" style="text-align: center;">'.$lang_pun_poll['Users count'].$vote_count.'</td></tr>';
 						$vote_results .= '</tbody></table></div>';
 					}
 					else
@@ -1078,7 +1079,7 @@
 
 				if (!empty($main_elements['<!-- forum_main_pagepost_top -->']))
 					$tmp_pagepost = $main_elements['<!-- forum_main_pagepost_top -->'];
-				$main_elements['<!-- forum_main_pagepost_top -->'] = '<div class="main-head"><h2 class="hn">'.$lang_pun_poll['Header note'].'</h2></div><div class="main-content main-frm">';
+				$main_elements['<!-- forum_main_pagepost_top -->'] = '<div class="main-head"><h2 class="hn">'.$lang_pun_poll['Header note'].'</h2></div>';
 				$main_elements['<!-- forum_main_pagepost_top -->'] .= isset($vote_form) ? $vote_form : '';
 				$main_elements['<!-- forum_main_pagepost_top -->'] .= $vote_results;
 				$main_elements['<!-- forum_main_pagepost_top -->'] .= '</div>';
