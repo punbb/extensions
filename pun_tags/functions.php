@@ -11,7 +11,7 @@
 if (!defined('FORUM'))
 	die();
 
-// Generate Pun Tags cache file	
+// Generate Pun Tags cache file
 function pun_tags_generate_cache()
 {
 	global $forum_db;
@@ -28,7 +28,7 @@ function pun_tags_generate_cache()
 			array(
 				'LEFT JOIN'	=>	'tags AS tg',
 				'ON'		=>	'tt.tag_id = tg.id'
-			)			
+			)
 		)
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
@@ -220,6 +220,8 @@ function pun_tags_add_new($tag, $topic_id)
 		'VALUES'	=> $topic_id.', '.$new_tagid
 	);
 	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
+	
+	return $new_tagid;
 }
 
 function pun_tags_add_existing_tag($tag_id, $topic_id)
@@ -269,4 +271,256 @@ function min_max_tags_weights($tags)
 	return array($min_pop, $max_pop);
 }
 
+function show_section_pun_tags()
+{
+	global $forum_user, $forum_db, $forum_page, $lang_pun_tags, $base_url, $pun_tags_url, $forum_config, $lang_topic,
+		$forum_url, $lang_ul;
+	
+	pun_tags_generate_cache();
+	include FORUM_ROOT.'cache/cache_pun_tags.php';
+	
+	if ((isset($pun_tags['topics'])) && (!empty($pun_tags['topics'])))
+	{
+		$tmp_arr = array();
+		$tags_arr_topic_names = array();
+		$tags_arr_ID = array();
+		$tags_arr_unindex = array();
+		$tags_lines_arr = array();
+		$tags_forums_ID = array(); //forums ID. access by [topic_id] => forum_id
+		
+		foreach($pun_tags['index'] as $key => $value)
+			$tags_arr_unindex[$value] = $key;
+		
+		$tmp_arr = $pun_tags['topics'];
+		$tags_arr_ID = $tmp_arr = array_keys($tmp_arr); //topics ID
+		sort($tags_arr_ID);
+		$count_tags_arr_ID = count($tags_arr_ID);
+		if (!empty($tmp_arr))
+		{
+			$query_get_names = array(
+				'SELECT'	=>	'id, subject',
+				'FROM'		=>	'topics',
+				'WHERE'		=>	'id IN ('.implode(', ', $tmp_arr).')'
+			);
+			
+			$result_get_names = $forum_db->query_build($query_get_names) or error(__FILE__, __LINE__);
+			
+			while(list($key, $value) = $forum_db->fetch_row($result_get_names))
+			{
+				$tags_arr_topic_names[$key] = $value;
+				$tmp_arr = array();
+				$tmp_arr = $pun_tags['topics'][$key];
+				$count_tmp_arr = count($tmp_arr);
+				$tags_lines_arr[$key] = $pun_tags['index'][$tmp_arr[0]];
+				
+				for ($iter = 1; $iter < $count_tmp_arr; $iter++)
+				{
+					$tags_lines_arr[$key] .= ', '.$pun_tags['index'][$tmp_arr[$iter]];
+				}
+			}
+			$query_get_forums = array(
+				'SELECT'	=>	't.forum_id, t.id',
+				'FROM'		=>	'forums AS f',
+				'JOINS'		=>	array(
+					array(
+						'INNER JOIN'	=>	'topics AS t',
+						'ON'			=>	't.forum_id=f.id'
+					),
+					array(
+						'INNER JOIN'	=>	'topic_tags AS tt',
+						'ON'			=>	'tt.topic_id=t.id'
+					)
+				)
+			);
+			
+			$result_get_forums = $forum_db->query_build($query_get_forums) or error(__FILE__, __LINE__);
+			
+			while(list($forum_id, $topic_id) = $forum_db->fetch_row($result_get_forums))
+				$tags_forums_ID[$topic_id] = $forum_id;
+		}
+		if (isset($_POST['change_tags']))
+		{
+			if ($count_tags_arr_ID > 0)
+			{
+				$texts = array();
+				$texts = $_POST['line_tags'];
+				
+				for($i = 0; $i < $count_tags_arr_ID; $i++)
+				{
+					$tags_arr_new = pun_tags_parse_string(trim($texts[$tags_arr_ID[$i]]));
+					$tags_arr_old = explode(', ', $tags_lines_arr[$tags_arr_ID[$i]]);
+					
+					$intersect_arrs = array();
+					$intersect_arrs = array_intersect($tags_arr_old, $tags_arr_new);
+					$old_diff = array_diff($tags_arr_old, $intersect_arrs);//elements, which is for delete
+					$new_diff = array_diff($tags_arr_new, $intersect_arrs);//elements, which is for create
+					$cur_forum_ID = $tags_forums_ID[$tags_arr_ID[$i]]; //we find forum ID via the topic ID
+					
+					if (!empty($old_diff)) //elements, which is for delete
+					{
+						foreach($old_diff as $key => $name_tag) //explode array of difference as a key and value.
+						{
+							//key - position
+							//value - name of tag
+							$cur_tag_ID = $tags_arr_unindex[$name_tag]; //we find tag ID via the name of tag
+							$cur_forum_ID = $tags_forums_ID[$tags_arr_ID[$i]]; //we find forum ID via the topic ID
+							$count_tags_forum = 0;
+							
+							if ($pun_tags['forums'][$cur_forum_ID][$cur_tag_ID] == 1)
+							{
+								foreach ($pun_tags['forums'] as $forum_id => $forums_tags)
+									if (array_key_exists($cur_tag_ID, $forums_tags))
+										$count_tags_forum++;
+								
+								if ($count_tags_forum == 1)
+								{
+									$query_del_tags = array(
+										'DELETE'	=>	'tags',
+										'WHERE'		=>	'id='.$cur_tag_ID
+									);
+									
+									$forum_db->query_build($query_del_tags) or error(__FILE__, __LINE__);
+									unset($pun_tags['index'][$cur_tag_ID]);
+								}
+								
+								unset($pun_tags['forums'][$cur_forum_ID][$cur_tag_ID]);
+								
+								$query_del_tags = array(
+									'DELETE'	=>	'topic_tags',
+									'WHERE'		=>	'(tag_id='.$cur_tag_ID.' AND topic_id='.$tags_arr_ID[$i].')'
+								);
+								
+								$forum_db->query_build($query_del_tags) or error(__FILE__, __LINE__);
+								
+								$key_arr = array_search($cur_tag_ID, $pun_tags['topics'][$tags_arr_ID[$i]]);
+								if ($key_arr)
+									array_splice($pun_tags['topics'][$tags_arr_ID[$i]], $key_arr, 1);
+							}
+							else if ($pun_tags['forums'][$cur_forum_ID][$cur_tag_ID] > 1)
+							{
+								$query_del_tags = array(
+									'DELETE'	=>	'topic_tags',
+									'WHERE'		=>	'(tag_id='.$cur_tag_ID.' AND topic_id='.$tags_arr_ID[$i].')'
+								);
+								
+								$forum_db->query_build($query_del_tags) or error(__FILE__, __LINE__);
+								
+								$pun_tags['forums'][$cur_forum_ID][$cur_tag_ID]--;
+								$key_arr = array_search($cur_tag_ID, $pun_tags['topics'][$tags_arr_ID[$i]]);
+								
+								if ($key_arr)
+									array_splice($pun_tags['topics'][$tags_arr_ID[$i]], $key_arr, 1);
+							}
+						}
+					}
+					$tags_arr_unindex = array();
+					
+					foreach($pun_tags['index'] as $key => $value)
+						$tags_arr_unindex[$value] = $key;
+					
+					if (!empty($new_diff)) //elements, which is for create
+					{
+						foreach($new_diff as $key => $name_tag)
+						{
+							if (array_key_exists($name_tag, $tags_arr_unindex))
+							{
+								$cur_tag_ID = $tags_arr_unindex[$name_tag]; //we find tag ID via the name of tag
+								
+								pun_tags_add_existing_tag($cur_tag_ID, $tags_arr_ID[$i]);
+								//update array $pun_tags
+								if (array_key_exists($cur_tag_ID, $pun_tags['forums'][$cur_forum_ID]))
+									$pun_tags['forums'][$cur_forum_ID][$cur_tag_ID]++;
+								else
+									$pun_tags['forums'][$cur_forum_ID][$cur_tag_ID] = 1;
+								
+								array_push($pun_tags['topics'][$tags_arr_ID[$i]], $cur_tag_ID);
+							}
+							else
+							{
+								$tag_id = pun_tags_add_new($name_tag, $tags_arr_ID[$i]);
+								$pun_tags['forums'][$cur_forum_ID][$tag_id] = 1;
+								array_push($pun_tags['topics'][$tags_arr_ID[$i]], $tag_id);
+								$pun_tags['index'][$tag_id] = $name_tag;
+							}
+						}
+					}
+				}
+				pun_tags_remove_orphans();
+				pun_tags_generate_cache();
+			}
+			redirect(forum_link($pun_tags_url['Section pun_tags']), $lang_pun_tags['Redirect with changes']);
+		}
+		
+		$forum_page['form_action'] = $base_url.'/'.$pun_tags_url['Section tags'];
+		$forum_page['item_count'] = 0;
+		
+		$forum_page['table_header'] = array();
+		$forum_page['table_header']['name'] = '<th class="tc'.count($forum_page['table_header']).'" scope=col">'.$lang_pun_tags['Name topic'].'</th>';
+		$forum_page['table_header']['tags'] = '<th class="tc'.count($forum_page['table_header']).'" scope=col" style="width: 60%">'.$lang_pun_tags['Tags of topic'].'</th>';
+
+		?>
+		<div class="main-subhead">
+			<h2 class="hn">
+				<span><?php echo $lang_pun_tags['Section tags']; ?></span>
+			</h2>
+		</div>
+		<div class="main-content main-forum">
+			<form class="frm-form" id="afocus" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
+				<div class="hidden">
+					<input type="hidden" name="form_sent" value="1" />
+					<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
+				</div>
+					<div class="ct-group">
+						<table cellspacing="0" summary="<?php echo $lang_ul['Table summary'] ?>">
+							<thead>
+								<tr>
+									<?php echo implode("\n\t\t\t\t\t\t", $forum_page['table_header'])."\n" ?>
+								</tr>
+							</thead>
+							<tbody>
+					<?php
+					
+						for($iter = 0; $iter < $count_tags_arr_ID; $iter++)
+						{
+							$forum_page['table_row']['name'] = '<td class="tc'.count($forum_page['table_header']).'" scope=col"><a class="permalink" rel="bookmark" href="'.forum_link($forum_url['topic'], $tags_arr_ID[$iter]).'">'.forum_htmlencode($tags_arr_topic_names[$tags_arr_ID[$iter]]).'</a></td>';
+							$forum_page['table_row']['tags'] = '<td class="tc'.count($forum_page['table_header']).'" scope=col"><input id="fld'.$forum_page['item_count'].'" type="text" value="'.forum_htmlencode($tags_lines_arr[$tags_arr_ID[$iter]]).'" size="100%" name="line_tags['.$tags_arr_ID[$iter].']"/></td>';
+							
+							++$forum_page['item_count'];
+							
+					?>
+									<tr class="<?php echo ($forum_page['item_count'] % 2 != 0) ? 'odd' : 'even' ?><?php echo ($forum_page['item_count'] == 1) ? ' row1' : '' ?>">
+										<?php echo implode("\n\t\t\t\t\t\t", $forum_page['table_row'])."\n" ?>
+									</tr>
+					<?php
+					
+						}
+						
+					?>
+							</tbody>
+						</table>
+					</div>
+					<div class="frm-buttons">
+						<span class="submit"><input type="submit" name="change_tags" value="<?php echo $lang_pun_tags['Submit changes'] ?>" /></span>
+					</div>
+			</form>
+		</div>
+		<?php
+	}
+	else
+	{
+		?>
+			<div class="main-subhead">
+				<h2 class="hn">
+					<span><?php echo $lang_pun_tags['Section tags']; ?></span>
+				</h2>
+			</div>
+			<div class="main-content main-forum">
+				<div class="ct-box">
+					<h3 class="hn"><span><strong><?php echo $lang_pun_tags['No tags']; ?></strong></span></h3>
+				</div>
+			</div>
+			
+		<?php
+	}
+}
 ?>

@@ -26,7 +26,15 @@ $lang_pun_tags = array(
 	'Permissions'					=>	'Tags permission',
 	'Name check'					=>	'Allow users to tag topics.',
 	'Title'							=>	'<strong>Tags:</strong> ',
-	'Create tags perms'				=>	'Create tags'
+	'Create tags perms'				=>	'Create tags',
+	'Section pun_tags'				=>	'Pun Tags',
+	'Section tags'					=>	'Tags Management',
+	'ID topic'						=>	'ID',
+	'Name topic'					=>	'Topic name',
+	'Tags of topic'					=>	'Tags list',
+	'Submit changes'				=>	'Submit changes',
+	'Redirect with changes'			=>	'Saving changes are successful',
+	'No tags'						=>	'There are no tags.'
 );
 
 ?>
