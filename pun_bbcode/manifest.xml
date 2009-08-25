@@ -80,7 +80,7 @@ if ($forum_user['pun_bbcode_enabled'])
 
 		<hook id="ft_about_pre_copyright"><![CDATA[
 			if (isset($bbar_temp))
-				echo '<script type="text/javascript"><!--'."\n".'document.getElementById("pun_bbcode_bar").innerHTML = "'.$bbar_temp.'";'."\n".'document.getElementById("pun_bbcode_bar").style.display = "block";'."\n".'document.getElementById("pun_bbcode_bar").style.visibility = "visible";'."\n".'--></script>'."\n";
+				echo '<script type="text/javascript"><!--'."\n".'var bbcode_bar = document.getElementById("pun_bbcode_bar");'."\n".'if (bbcode_bar) {'."\n".'bbcode_bar.innerHTML = "'.$bbar_temp.'";'."\n".'bbcode_bar.style.display = "block";'."\n".'bbcode_bar.style.visibility = "visible";'."\n".'}'."\n".'--></script>'."\n";
 		]]></hook>
 
 		<hook id="pf_change_details_settings_validation"><![CDATA[
