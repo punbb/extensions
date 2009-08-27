@@ -56,8 +56,8 @@ function add_message( $app_id )
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		
 	if (!$forum_db->num_rows($result))
-		message($lang_common['Bad request']);
-			
+		return false;
+	
 	$row = $forum_db->fetch_assoc($result) or error(__FILE__, __LINE__);
 	$post_info = array(
 		'is_guest'		=> ($row['id'] == 1) ? (true) : (false),
@@ -78,8 +78,6 @@ function add_message( $app_id )
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	$fid = $forum_db->fetch_assoc($result) or error(__FILE__, __LINE__);
 	$post_info['forum_id'] = $fid['forum_id'];
-	//add_post($post_info, $new_pid);
-	// FUNCTION ADD_POST()
 
 	// Add the post
 	$query = array(
@@ -405,7 +403,7 @@ function show_unapproved_users()
 	?>
 	
 	<div class="main-subhead">
-		<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp topics'] ?></strong></span></h2>
+		<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp users'] ?></strong></span></h2>
 	</div>
 	<div class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
 	
@@ -479,9 +477,12 @@ function show_unapproved_users()
 	{
 		?>
 		
-		<div class="gen-content">
-			<h3 class="hn"><span><strong><?php echo $lang_app_post['No results']; ?></strong></span></h3>
+		<div class="ct-box error-box">
+			<ul class="error-list">
+				<?php echo $lang_app_post['No results']; ?>
+			</ul>
 		</div>
+		
 		<?php
 	}
 	
@@ -502,6 +503,7 @@ function show_unapproved_posts()
 	$p_cr = isset($_GET['p']) ? intval($_GET['p']) : 0;
 	$topics = isset($_GET['topics']) ? intval($_GET['topics']) : 0;
 	$all_post = isset($_GET['all_post']) ? intval($_GET['all_post']) : 0;
+	$errors = array();
 	
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/topic.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/profile.php';
@@ -510,7 +512,7 @@ function show_unapproved_posts()
 	require FORUM_ROOT.'extensions/pun_approval/post_app_url.php';
 	
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
-		message($lang_common['Bad request']);
+		$errors[] = $lang_app_post['Badly address argument'];
 	
 	if (!$aptid && $appid)
 	{
@@ -648,7 +650,6 @@ function show_unapproved_posts()
 		
 		if ($forum_db->num_rows($result))
 		{
-			//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
 			$query_app_post = array(
 				'SELECT'	=> 't.forum_id, t.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
 				'FROM'		=> 'post_approval_posts AS p',
@@ -666,7 +667,6 @@ function show_unapproved_posts()
 			
 			$count_replies = 1;
 			
-			//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
 			$query_app_post = array(
 				'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
 				'INTO'		=> 'posts',
@@ -676,10 +676,8 @@ function show_unapproved_posts()
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 			$new_pid = $forum_db->insert_id();
 			
-			//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
 			$new_subject = str_replace(' (been approving)', '', $row['subject']);
 			
-			//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
 			$query_app = array(
 				'SELECT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
 				'FROM'		=> 'post_approval_topics',
@@ -693,13 +691,11 @@ function show_unapproved_posts()
 			$query = array(
 				'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
 				'INTO'		=> 'topics',
-				'VALUES'	=> $aptid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.$cur['moved_to'].', '.$cur['forum_id']
+				'VALUES'	=> $aptid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.(($cur['moved_to'] == '') ? 'NULL' : $cur['moved_to']).', '.$cur['forum_id']
 			);
 			
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 			
-			
-			//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
 			$query_app = array(
 				'UPDATE'	=> 'post_approval_topics',
 				'SET'		=> 'subject=\''.$new_subject.'\', first_post_id=0, last_post_id=0',
@@ -708,7 +704,6 @@ function show_unapproved_posts()
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			
-			// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
 			$query_app = array(
 				'UPDATE'	=> 'topics',
 				'SET'		=> 'subject=\''.$new_subject.'\'',
@@ -717,7 +712,6 @@ function show_unapproved_posts()
 			
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			
-			//ÎÁÍÎÂËÅÍÈÅ ÔÎÐÓÌÀ
 			if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
 				require FORUM_ROOT.'include/search_idx.php';
 			
@@ -725,7 +719,6 @@ function show_unapproved_posts()
 			
 			sync_forum($row['forum_id']);
 			
-			//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
 			$query_app = array(
 				'DELETE'	=> 'post_approval_posts',
 				'WHERE'		=> 'id='.$pid
@@ -755,7 +748,7 @@ function show_unapproved_posts()
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 			
 			if (!$forum_db->num_rows($result))
-				message($lang_common['Bad request']);
+				$errors[] = $lang_app_post['No db result from posts'];
 			
 			$row = $forum_db->fetch_assoc($result);
 			
@@ -1025,7 +1018,6 @@ function show_unapproved_posts()
 			//if we found first post
 			if ($forum_db->num_rows($result))
 			{
-				//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
 				$query_app_post = array(
 					'SELECT'	=> 't.forum_id, t.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
 					'FROM'		=> 'post_approval_posts AS p',
@@ -1045,7 +1037,6 @@ function show_unapproved_posts()
 				
 				$count_replies = 1;
 				
-				//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
 				$query_app_post = array(
 					'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
 					'INTO'		=> 'posts',
@@ -1055,10 +1046,8 @@ function show_unapproved_posts()
 				$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 				$new_pid = $forum_db->insert_id();
 				
-				//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
 				$new_subject = str_replace(' (been approving)', '', $row['subject']);
 				
-				//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
 				$query_app = array(
 					'SELECT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
 					'FROM'		=> 'post_approval_topics',
@@ -1072,13 +1061,11 @@ function show_unapproved_posts()
 				$query = array(
 					'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
 					'INTO'		=> 'topics',
-					'VALUES'	=> $aptid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.$cur['moved_to'].', '.$cur['forum_id']
+					'VALUES'	=> $aptid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.(($cur['moved_to'] == '') ? 'NULL' : $cur['moved_to']).', '.$cur['forum_id']
 				);
 				
 				$forum_db->query_build($query) or error(__FILE__, __LINE__);
 				
-				
-				//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
 				$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
 					'SET'		=> 'subject=\''.$new_subject.'\', first_post_id=0, last_post_id=0',
@@ -1086,7 +1073,7 @@ function show_unapproved_posts()
 				);
 				
 				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-				// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
+				
 				$query_app = array(
 					'UPDATE'	=> 'topics',
 					'SET'		=> 'subject=\''.$new_subject.'\'',
@@ -1095,7 +1082,6 @@ function show_unapproved_posts()
 				
 				$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 				
-				//ÎÁÍÎÂËÅÍÈÅ ÔÎÐÓÌÀ
 				if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
 					require FORUM_ROOT.'include/search_idx.php';
 				
@@ -1103,7 +1089,6 @@ function show_unapproved_posts()
 				
 				sync_forum($row['forum_id']);
 				
-				//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
 				$query_app = array(
 					'DELETE'	=> 'post_approval_posts',
 					'WHERE'		=> 'id='.$pid
@@ -1133,7 +1118,7 @@ function show_unapproved_posts()
 					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 					
 					if (!$forum_db->num_rows($result))
-						message($lang_common['Bad request']);
+						$errors[] = $lang_app_post['No db result from posts'];
 					
 					while ($row = $forum_db->fetch_assoc($result))
 					{
@@ -1337,7 +1322,6 @@ function show_unapproved_posts()
 				
 				if ($forum_db->num_rows($result))
 				{
-					//ÂÛÁÎÐÊÀ Ñ ËÅÂÎÉ
 					$query_app_post = array(
 						'SELECT'	=> 't.forum_id, t.subject, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id',
 						'FROM'		=> 'post_approval_posts AS p',
@@ -1356,7 +1340,6 @@ function show_unapproved_posts()
 					
 					$count_replies = 1;
 					
-					//ÂÑÒÀÂÊÀ Â ÏÐÀÂÎÅ
 					$query_app_post = array(
 						'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id, app_timestamp, app_username',
 						'INTO'		=> 'posts',
@@ -1366,10 +1349,8 @@ function show_unapproved_posts()
 					$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 					$new_pid = $forum_db->insert_id();
 					
-					//ÈÇÌÅÍÅÍÈÅ ÍÀÇÂÀÍÈß ÒÎÏÈÊÀ
 					$new_subject = str_replace(' (been approving)', '', $row['subject']);
 					
-					//ÊÎÏÈÐÎÂÀÍÈÅ ÒÎÏÈÊÀ
 					$query_app = array(
 						'SELECT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
 						'FROM'		=> 'post_approval_topics',
@@ -1383,13 +1364,11 @@ function show_unapproved_posts()
 					$query = array(
 						'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
 						'INTO'		=> 'topics',
-						'VALUES'	=> $aptid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.$cur['moved_to'].', '.$cur['forum_id']
+						'VALUES'	=> $aptid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.(($cur['moved_to'] == '') ? 'NULL' : $cur['moved_to']).', '.$cur['forum_id']
 					);
 					
 					$forum_db->query_build($query) or error(__FILE__, __LINE__);
 					
-					
-					//ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ËÅÂÎÉ
 					$query_app = array(
 						'UPDATE'	=> 'post_approval_topics',
 						'SET'		=> 'subject=\''.$new_subject.'\', first_post_id=0, last_post_id=0',
@@ -1397,7 +1376,7 @@ function show_unapproved_posts()
 					);
 					
 					$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-					// ÎÁÍÎÂËÅÍÈÅ ÒÎÏÈÊÀ ÏÐÀÂÎÉ
+					
 					$query_app = array(
 						'UPDATE'	=> 'topics',
 						'SET'		=> 'subject=\''.$new_subject.'\'',
@@ -1406,7 +1385,6 @@ function show_unapproved_posts()
 					
 					$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 					
-					//ÎÁÍÎÂËÅÍÈÅ ÔÎÐÓÌÀ
 					if (!defined('FORUM_SEARCH_IDX_FUNCTIONS_LOADED'))
 						require FORUM_ROOT.'include/search_idx.php';
 					
@@ -1414,7 +1392,6 @@ function show_unapproved_posts()
 					
 					sync_forum($row['forum_id']);
 					
-					//ÓÄÀËÅÍÈÅ ÑÎÎÁÙÅÍÈß ËÅÂÎÉ
 					$query_app = array(
 						'DELETE'	=> 'post_approval_posts',
 						'WHERE'		=> 'id='.$pid
@@ -1581,7 +1558,29 @@ function show_unapproved_posts()
 		<div class="main-subhead">
 			<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp topics'] ?></strong></span></h2>
 		</div>
-		<div class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
+		<div class="main-content main-forum">
+		
+		<?php
+		// If there were any errors, show them
+		if (!empty($errors))
+		{
+			$forum_page['errors'] = array();
+			foreach ($errors as $cur_error)
+				$forum_page['errors'][] = '<li class="warn"><span>'.$cur_error.'</span></li>';
+
+			($hook = get_hook('po_pre_post_errors')) ? eval($hook) : null;
+
+			?>
+				<div class="ct-box error-box">
+					<h2 class="warn hn"><?php echo $lang_app_post['Post errors'] ?></h2>
+					<ul class="error-list">
+						<?php echo implode("\n\t\t\t\t", $forum_page['errors'])."\n" ?>
+					</ul>
+				</div>
+			<?php
+
+		}
+		?>
 		
 		<?php
 			
@@ -1674,21 +1673,14 @@ function show_unapproved_posts()
 			{
 				$result_app_topic_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 				
-				if (empty($forum_page['item_status']))
-					$forum_page['item_status']['normal'] = 'normal';
-					
-					?>
-						<div id="topic" class="main-item">
-							<span class="icon <?php echo implode(' ', $forum_page['item_status']) ?>"><!-- --></span>
-							<div class="item-subject">
-								<?php echo $lang_app_post['no posts'] ?>
-							</div>
-							<ul class="item-info">
-								
-							</ul>
-						</div>
-						
-					<?php
+				
+				?>
+					<div class="ct-box error-box">
+						<ul class="error-list">
+							<?php echo $lang_app_post['no posts']; ?>
+						</ul>
+					</div>
+				<?php
 				
 			}
 			
@@ -1730,7 +1722,7 @@ function show_unapproved_posts()
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		
 		if (!$forum_db->num_rows($result))
-			message($lang_common['Bad request']);
+			$errors[] = $lang_app_post['No db result from posts'];
 		else
 			$num_posts = $forum_db->result($result);
 		
@@ -1772,7 +1764,7 @@ function show_unapproved_posts()
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		if (!$forum_db->num_rows($result))
-			message($lang_common['Bad request']);
+			$errors[] = $lang_app_post['Error app topic'];
 
 		$cur_topic = $forum_db->fetch_assoc($result);
 		
@@ -1858,18 +1850,6 @@ function show_unapproved_posts()
 		<div class="main-subhead">
 			<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp posts'] ?></strong></span></h2>
 		</div>
-		<div class="main-head">
-		<?php
-			if (!empty($forum_page['main_head_options']))
-				echo "\n\t\t".'<p class="options">'.implode(' ', $forum_page['main_head_options']).'</p>';
-		?>
-			<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
-		</div>
-		<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
-			<div class="main-content main-topic">
-				<div class="hidden">
-					<?php echo implode("\n\t\t\t\t", $forum_page['hidden_fields'])."\n" ?>
-				</div>
 		
 	<?php
 		
@@ -1878,24 +1858,32 @@ function show_unapproved_posts()
 		{
 		
 		?>
-				<div class="post replypost">
-					<div class="postmain">
-						<div class="postbody">
-							<div class="post-entry">
-								<div class="entry-content">
-									<p>
-										<?php echo $lang_app_post['No posts']; ?>
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
+			<div class="main-content main-forum">
+				<div class="ct-box error-box">
+					<ul class="error-list">
+						<?php echo $lang_app_post['No posts']; ?>
+					</ul>
 				</div>
+			</div>
 		<?php
 		
 		}
 		else
 		{
+			?>
+			<div class="main-head">
+			<?php
+				if (!empty($forum_page['main_head_options']))
+					echo "\n\t\t".'<p class="options">'.implode(' ', $forum_page['main_head_options']).'</p>';
+			?>
+				<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
+			</div>
+			<div class="main-content main-topic">
+				<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
+					<div class="hidden">
+						<?php echo implode("\n\t\t\t\t", $forum_page['hidden_fields'])."\n" ?>
+					</div>
+			<?php
 			$start = $forum_page['start_from'];
 			$forum_page['item_count'] = 0;
 			
@@ -2140,8 +2128,8 @@ function show_unapproved_posts()
 					
 						<span class="submit"><input type="submit" name="app_all" value="Approve all" /></span>
 					</div>
-				</div>
-			</form>
+				</form>
+			</div>
 			<div class="main-foot">
 				<?php
 					if (!empty($forum_page['main_foot_options']))
