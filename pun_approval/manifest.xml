@@ -404,8 +404,10 @@
 				
 				?>
 				
-				<div class="frm-info">
-					<p><?php echo $lang_app_post['warning'] ?></p>
+				<div class="txt-set set3">
+					<label for="fld1">
+						<small><p><?php echo $lang_app_post['warning'] ?></p></small>
+					</label>
 				</div>
 				
 				<?php
@@ -423,8 +425,11 @@
 			{
 
 				?>
-				<div class="frm-info">
-					<p><?php echo $lang_app_post['Topic warning'] ?></p>
+				
+				<div class="txt-set set3">
+					<label for="fld1">
+						<small><p><?php echo $lang_app_post['Topic warning'] ?></p></small>
+					</label>
 				</div>
 				<?php
 
