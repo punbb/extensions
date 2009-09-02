@@ -24,8 +24,8 @@
 if (!defined('FORUM')) die();
 
 $lang_pun_karma = array(
-	'Plus mark'			=>	'+1',
-	'Minus mark'		=>	'-1',
+	'Plus mark'			=>	'+',
+	'Minus mark'		=>	'-',
 	'Cancel mark'		=>	'X',
 	'Vote'				=> 	'<strong>Your vote:</strong>',
 	'Post mark'			=> 	'<strong>Post Karma:</strong>',

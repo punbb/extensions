@@ -1,4 +1,4 @@
-<?
+<?php
 
 /***********************************************************************
 
@@ -21,37 +21,24 @@
 
 ***********************************************************************/
 
-if (!defined('FORUM')) die();
+if (!defined('FORUM'))
+	die();
 
-function plus_mark_to_post( $post_id )
+function karma_plus($post_id)
 {
 	global $forum_db, $forum_user;
 
-	//Check if post_id exists
-	$query = array(
-		'SELECT'	=> 'id',
-		'FROM'		=> 'posts',
-		'WHERE'		=> 'id = '.$post_id
-	);
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-	$pid = $forum_db->fetch_row($result);
-	if (!$pid)
-		return false;
-
 	//Check if user tries to vote for his own post
 	$query = array(
-		'SELECT'	=> 'id',
+		'SELECT'	=> '1',
 		'FROM'		=> 'posts',
 		'WHERE'		=> 'poster_id = '.$forum_user['id'].' AND id = '.$post_id
 	);
-
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	$pid = $forum_db->fetch_row($result);
+	if ($forum_db->num_rows($result) > 0)
+		return FALSE;
 
-	if ($pid[0] > 0)
-		return false;
-
+	//Check if user voted yet
 	$query = array(
 		'SELECT'	=> '1',
 		'FROM'		=> 'pun_karma',
@@ -60,52 +47,47 @@ function plus_mark_to_post( $post_id )
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	if (!$forum_db->num_rows($result))
+	{
 		$query = array(
-			'INSERT'		=> 'user_id, post_id, mark',
+			'INSERT'		=> 'user_id, post_id, mark, updated_at',
 			'INTO'			=> 'pun_karma',
-			'VALUES'		=> $forum_user['id'].', '.$post_id.', 1'
+			'VALUES'		=> $forum_user['id'].', '.$post_id.', 1, '.time()
 		);
-	else
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		//This query is needed to set num posts to 0 for correct karma calcualation.
 		$query = array(
-			'UPDATE'		=> 'pun_karma',
-			'SET'			=> 'mark = 1',
-			'WHERE'			=> 'user_id = '.$forum_user['id'].' AND post_id = '.$post_id
+			'UPDATE'		=> 'posts',
+			'SET'			=> 'karma = 0',
+			'WHERE'			=> 'karma IS NULL AND id = '.$post_id
 		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-	return true;
+		$query = array(
+			'UPDATE'		=> 'posts',
+			'SET'			=> 'karma = karma + 1',
+			'WHERE'			=> 'id = '.$post_id
+		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	}
+	return TRUE;
 }
 
-function minus_mark_to_post( $post_id )
+function karma_minus($post_id)
 {
 	global $forum_db, $forum_user;
 
-	//Check if post_id exists
-	$query = array(
-		'SELECT'	=> 'id',
-		'FROM'		=> 'posts',
-		'WHERE'		=> 'id = '.$post_id
-	);
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-	$pid = $forum_db->fetch_row($result);
-	if (!$pid)
-		return false;
-
 	//Check if user tries to vote for his own post
 	$query = array(
-		'SELECT'	=> 'id',
+		'SELECT'	=> '1',
 		'FROM'		=> 'posts',
 		'WHERE'		=> 'poster_id = '.$forum_user['id'].' AND id = '.$post_id
 	);
-
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	$pid = $forum_db->fetch_row($result);
+	if ($forum_db->num_rows($result) > 0)
+		return FALSE;
 
-	if ($pid[0] > 0)
-		return false;
-
+	//Check if user voted yet
 	$query = array(
 		'SELECT'	=> '1',
 		'FROM'		=> 'pun_karma',
@@ -114,101 +96,80 @@ function minus_mark_to_post( $post_id )
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	if (!$forum_db->num_rows($result))
+	{
 		$query = array(
-			'INSERT'		=> 'user_id, post_id, mark',
+			'INSERT'		=> 'user_id, post_id, mark, updated_at',
 			'INTO'			=> 'pun_karma',
-			'VALUES'		=> $forum_user['id'].', '.$post_id.', -1'
+			'VALUES'		=> $forum_user['id'].', '.$post_id.', -1, '.time()
 		);
-	else
-		$query = array(
-			'UPDATE'		=> 'pun_karma',
-			'SET'			=> 'mark = -1',
-			'WHERE'			=> 'user_id = '.$forum_user['id'].' AND post_id = '.$post_id
-		);
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	return true;
+		//This query is needed to set num posts to 0 for correct karma calcualation. 
+		$query = array(
+			'UPDATE'		=> 'posts',
+			'SET'			=> 'karma = 0',
+			'WHERE'			=> 'karma IS NULL AND id = '.$post_id
+		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		$query = array(
+			'UPDATE'		=> 'posts',
+			'SET'			=> 'karma = karma - 1',
+			'WHERE'			=> 'id = '.$post_id
+		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	}
+	return TRUE;
 };
 
-function cancel_mark_to_post( $post_id )
+function karma_cancel($post_id)
 {
 	global $forum_db, $forum_user;
 
-	//Check if post_id exists
-	$query = array(
-		'SELECT'	=> 'id',
-		'FROM'		=> 'posts',
-		'WHERE'		=> 'id = '.$post_id
-	);
-	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-	$pid = $forum_db->fetch_row($result);
-	if (!$pid)
-		return false;
-
 	//Check if user tries to vote for his own post
 	$query = array(
-		'SELECT'	=> 'id',
+		'SELECT'	=> '1',
 		'FROM'		=> 'posts',
 		'WHERE'		=> 'poster_id = '.$forum_user['id'].' AND id = '.$post_id
 	);
-
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	$pid = $forum_db->fetch_row($result);
-
-	if ($pid[0] > 0)
-		return false;
+	if ($forum_db->num_rows($result) > 0)
+		return FALSE;
 
 	$query = array(
-		'SELECT'	=> '1',
+		'SELECT'	=> 'mark',
 		'FROM'		=> 'pun_karma',
 		'WHERE'		=> 'user_id = '.$forum_user['id'].' AND post_id = '.$post_id
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
 	if (!$forum_db->num_rows($result))
-		return false;
+		return FALSE;
 
+	list($prev_mark) = $forum_db->fetch_row($result);
 	$query = array(
 		'DELETE'		=> 'pun_karma',
 		'WHERE'			=> 'user_id = '.$forum_user['id'].' AND post_id = '.$post_id
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	return true;
-}
-
-function post_mark( $post_id )
-{
-	global $forum_db;
-
 	$query = array(
-		'SELECT'	=> 'SUM(mark)',
-		'FROM'		=> 'pun_karma',
-		'WHERE'		=> 'post_id = '.$post_id,
-		'GROUP BY'	=> 'post_id'
+		'UPDATE'		=> 'posts',
+		'SET'			=> 'karma = karma - '.$prev_mark,
+		'WHERE'			=> 'id = '.$post_id
 	);
-
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	if ($forum_db->num_rows($result))
-	{
-		list($sum) = $forum_db->fetch_row($result);
-		return $sum;
-	}
-	else
-		return 0;
+	return TRUE;
 }
 
-function delete_post_karma( $post_id )
+function delete_post_karma($post_id)
 {
 	global $forum_db;
 
-	// Delete the post from pun_karma
+	// Delete all marks for the post
 	$query = array(
 		'DELETE'	=> 'pun_karma',
 		'WHERE'		=> 'post_id = '.$post_id
 	);
-
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
