@@ -21,7 +21,7 @@ $lang_pun_antispam = array(
 
 	'Signature info'				=>	'You should have more than %s posts to add a signature.',
 	'Min posts for sig'				=>	'Minimum posts',
-	'Min posts for sig info'		=>	'The minimum count of posts before a user can add a signature to his posts.'
+	'Min posts for sig info'		=>	'The minimum count of posts before a user can add a signature to his posts (pun_antispam extension).'
 );
 
 ?>
