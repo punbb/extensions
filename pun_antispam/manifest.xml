@@ -15,7 +15,7 @@
 	<id>pun_antispam</id>
 	<title>Antispam System</title>
 	<version>1.3</version>
-	<description>Adds CAPTCHA to the register, login and guest post form.</description>
+	<description>Adds CAPTCHA to the register, login and guest post form. Allow setting restrictions for adding user signatures.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
