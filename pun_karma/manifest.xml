@@ -60,15 +60,46 @@ if (!$forum_db->table_exists('pun_karma'))
 	);
 	$forum_db->create_table('pun_karma', $schema);
 }
+
 $forum_db->add_field('posts', 'karma', 'INT(10)', TRUE);
+
+// Add extension options to the config table
+$pun_karma_config = array(
+	'o_pun_karma_minus_cancel'			=> '0',
+	'o_pun_karma_minus_interval'		=> '2',
+	'o_pun_karma_plus_interval'			=> '2'
+);
+
+foreach ($pun_karma_config as $conf_name => $conf_value)
+{
+	if (!array_key_exists($conf_name, $forum_config))
+	{
+		$query = array(
+			'INSERT'	=> 'conf_name, conf_value',
+			'INTO'		=> 'config',
+			'VALUES'	=> '\''.$conf_name.'\', \''.$conf_value.'\''
+		);
+
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	}
+}
 	]]></install>
 
 	<uninstall><![CDATA[
 $forum_db->drop_table('pun_karma');
 $forum_db->drop_field('posts', 'karma');
+$query = array(
+	'DELETE'	=>	'config',
+	'WHERE'		=>	'conf_name IN (\'o_pun_karma_minus_cancel\', \'o_pun_karma_minus_interval\', \'o_pun_karma_plus_interval\')'
+);
+$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	]]></uninstall>
 
 	<hooks>
+		<hook id="hd_head"><![CDATA[
+if (FORUM_PAGE == 'viewtopic')
+	$forum_head['style_karma'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
+		]]></hook>
 		<hook id="re_rewrite_rules"><![CDATA[
 $forum_rewrite_rules['/^post[\/_-]([0-9]+)[\/_-]karma(plus|minus|cancel)(\.html?|\/)?$/i'] = 'viewtopic.php?pid=$1&karma$2';
 		]]></hook>
@@ -78,18 +109,52 @@ $pun_karma_posts = array();
 $pun_karma_authors = array();
 		]]></hook>
 		<hook id="vt_modify_topic_info"><![CDATA[
+//Including lang file
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+require $ext_info['path'].'/url/'.$forum_config['o_sef'].'/forum_urls.php';
 require $ext_info['path'].'/functions.php';
 if (!$forum_user['is_guest'] && (isset($_GET['karmaplus']) || isset($_GET['karmaminus']) || isset($_GET['karmacancel'])))
 {
 	if (isset($_GET['karmaplus']))
+	{
+		$pun_karma_query = array(
+			'SELECT'	=>	'MAX(updated_at)',
+			'FROM'		=>	'pun_karma',
+			'WHERE'		=>	'user_id = '.$forum_user['id'].' AND mark = 1'
+		);
+		$pun_karma_result = $forum_db->query_build($pun_karma_query) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($pun_karma_result) > 0)
+		{
+			list($updated_at) = $forum_db->fetch_row($pun_karma_result);
+			if ((time() - $updated_at) < $forum_config['o_pun_karma_plus_interval'] * 60 && (time() - $updated_at) >= 0)
+				message(sprintf($lang_pun_karma['Plus interval rest'], $forum_config['o_pun_karma_plus_interval']));
+		}
 		karma_plus($pid);
+	}
 	else if (isset($_GET['karmaminus']))
+	{
+		$pun_karma_query = array(
+			'SELECT'	=>	'MAX(updated_at)',
+			'FROM'		=>	'pun_karma',
+			'WHERE'		=>	'user_id = '.$forum_user['id'].' AND mark = -1'
+		);
+		$pun_karma_result = $forum_db->query_build($pun_karma_query) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($pun_karma_result) > 0)
+		{
+			list($updated_at) = $forum_db->fetch_row($pun_karma_result);
+			if ((time() - $updated_at) < $forum_config['o_pun_karma_minus_interval'] * 60 && (time() - $updated_at) >= 0)
+				message(sprintf($lang_pun_karma['Minus interval rest'], $forum_config['o_pun_karma_minus_interval']));
+		}
 		karma_minus($pid);
+	}
 	else if (isset($_GET['karmacancel']))
 		karma_cancel($pid);
 }
 		]]></hook>
-		<hook id="vt_pre_header_load"><![CDATA[
+		<hook id="aop_features_pre_header_load"><![CDATA[
 //Including lang file
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -136,11 +201,55 @@ foreach ($karma_matches[0] as $match_index => $match_string)
 		if (in_array($karma_matches[1][$match_index], $user_karma_posts))
 			$post_karma = '<p class="post-karma">'.$post_karma.' <a href="'.forum_link($forum_url['karmacancel'], array($karma_matches[1][$match_index])).'">'.$lang_pun_karma['Cancel mark'].'</a></p>';
 		else
-			$post_karma = '<p class="post-karma"><a href="'.forum_link($forum_url['karmaplus'], array($karma_matches[1][$match_index])).'">'.$lang_pun_karma['Plus mark'].'</a> '.$post_karma.' <a href="'.forum_link($forum_url['karmaminus'], array($karma_matches[1][$match_index])).'">'.$lang_pun_karma['Minus mark'].'</a></p>';
+			$post_karma = '<p class="post-karma"><a href="'.forum_link($forum_url['karmaplus'], array($karma_matches[1][$match_index])).'">'.$lang_pun_karma['Plus mark'].'</a> '.$post_karma.($forum_config['o_pun_karma_minus_cancel'] == '0' ? ' <a href="'.forum_link($forum_url['karmaminus'], array($karma_matches[1][$match_index])).'">'.$lang_pun_karma['Minus mark'].'</a>' : '').'</p>';
 	}
 	$buffer = str_replace($match_string, $post_karma, $buffer);
 }
 $tpl_main = str_replace('<!-- forum_main -->', $buffer, $tpl_main);
+		]]></hook>
+		<hook id="aop_features_validation"><![CDATA[
+if (!isset($form['pun_karma_minus_cancel']) || $form['pun_karma_minus_cancel'] != '1') 
+	$form['pun_karma_minus_cancel'] = '0';
+if (!isset($form['pun_karma_plus_interval']))
+	$form['pun_karma_plus_interval'] = 2;
+else
+	$form['pun_karma_plus_interval'] = intval($form['pun_karma_plus_interval']);
+if (!isset($form['pun_karma_minus_interval']))
+	$form['pun_karma_minus_interval'] = 2;
+else
+	$form['pun_karma_minus_interval'] = intval($form['pun_karma_minus_interval']);
+		]]></hook>
+		<hook id="aop_features_avatars_fieldset_end"><![CDATA[
+
+$forum_page['group_count'] = $forum_page['item_count'] = 0;
+
+?>
+<div class="content-head">
+	<h2 class="hn"><span><?php echo $lang_pun_karma['Karma features'] ?></span></h2>
+</div>
+<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+	<legend class="group-legend"><span><?php echo $lang_pun_karma['Karma legend'] ?></span></legend>
+	<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+		<div class="sf-box checkbox">
+			<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_karma_minus_cancel]" value="1"<?php if ($forum_config['o_pun_karma_minus_cancel'] == '1') echo ' checked="checked"' ?> /></span>
+			<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_pun_karma['Disable minus'] ?></span> <?php echo $lang_pun_karma['Disable minus info'] ?></label>
+		</div>
+	</div>
+	<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+		<div class="sf-box text">
+			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_karma['Plus interval'] ?></span><small><?php echo $lang_pun_karma['Plus interval info'] ?></small></label><br />
+			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[pun_karma_plus_interval]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_karma_plus_interval'] ?>" /></span>
+		</div>
+	</div>
+	<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+		<div class="sf-box text">
+			<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_karma['Minus interval'] ?></span><small><?php echo $lang_pun_karma['Minus interval info'] ?></small></label><br />
+			<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[pun_karma_minus_interval]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_karma_minus_interval'] ?>" /></span>
+		</div>
+	</div>
+</fieldset>
+<?php
+
 		]]></hook>
 		<hook id="dl_form_submitted"><![CDATA[
 require_once $ext_info['path'].'/functions.php';

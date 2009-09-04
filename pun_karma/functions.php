@@ -26,7 +26,7 @@ if (!defined('FORUM'))
 
 function karma_plus($post_id)
 {
-	global $forum_db, $forum_user;
+	global $forum_db, $forum_user, $lang_pun_karma;
 
 	//Check if user tries to vote for his own post
 	$query = array(
@@ -36,7 +36,7 @@ function karma_plus($post_id)
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	if ($forum_db->num_rows($result) > 0)
-		return FALSE;
+		message($lang_pun_karma['Vote error']);
 
 	//Check if user voted yet
 	$query = array(
@@ -70,12 +70,16 @@ function karma_plus($post_id)
 		);
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
-	return TRUE;
+	else
+		message($lang_pun_karma['Already voted']);
 }
 
 function karma_minus($post_id)
 {
-	global $forum_db, $forum_user;
+	global $forum_db, $forum_user, $forum_config, $lang_pun_karma;
+
+	if ($forum_config['o_pun_karma_minus_cancel'])
+		message($lang_pun_karma['Minus mark cancel']);
 
 	//Check if user tries to vote for his own post
 	$query = array(
@@ -85,7 +89,7 @@ function karma_minus($post_id)
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	if ($forum_db->num_rows($result) > 0)
-		return FALSE;
+		message($lang_pun_karma['Vote error']);
 
 	//Check if user voted yet
 	$query = array(
@@ -104,7 +108,7 @@ function karma_minus($post_id)
 		);
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-		//This query is needed to set num posts to 0 for correct karma calcualation. 
+		//This query is needed to set num posts to 0 for correct karma calcualation.
 		$query = array(
 			'UPDATE'		=> 'posts',
 			'SET'			=> 'karma = 0',
@@ -119,12 +123,13 @@ function karma_minus($post_id)
 		);
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
-	return TRUE;
+	else
+		message($lang_pun_karma['Already voted']);
 };
 
 function karma_cancel($post_id)
 {
-	global $forum_db, $forum_user;
+	global $forum_db, $forum_user, $lang_pun_karma;
 
 	//Check if user tries to vote for his own post
 	$query = array(
@@ -134,7 +139,7 @@ function karma_cancel($post_id)
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	if ($forum_db->num_rows($result) > 0)
-		return FALSE;
+		message($lang_pun_karma['Vote error']);
 
 	$query = array(
 		'SELECT'	=> 'mark',
@@ -143,7 +148,7 @@ function karma_cancel($post_id)
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	if (!$forum_db->num_rows($result))
-		return FALSE;
+		message($lang_pun_karma['Cancel error']);
 
 	list($prev_mark) = $forum_db->fetch_row($result);
 	$query = array(
@@ -158,7 +163,6 @@ function karma_cancel($post_id)
 		'WHERE'			=> 'id = '.$post_id
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-	return TRUE;
 }
 
 function delete_post_karma($post_id)
