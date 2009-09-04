@@ -30,8 +30,8 @@
 	<version>1.0b.1</version>
 	<description>Adds karma/reputation to posts.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3 Beta</minversion>
-	<maxtestedon>1.3 Beta</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
 
 	<install><![CDATA[
 if (!$forum_db->table_exists('pun_karma'))
