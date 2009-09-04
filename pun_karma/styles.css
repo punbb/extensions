@@ -1,3 +1,11 @@
+/**
+ * Styles for pun_karma extension
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_karma
+ */
+ 
 .brd .postfoot .post-karma {
 	padding: 0.5em 1.5em 0.5em 1em;
 	text-align: left;

@@ -1,12 +1,12 @@
 <?php
+
 /**
- * Regular URL scheme.
+ * Folder based SEF URL scheme.
  *
  * @copyright (C) 2008-2009 PunBB, partially based on code (C) 2008-2009 FluxBB.org
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package PunBB
+ * @package pun_karma
  */
-
 
 // Make sure no one attempts to run this script "directly"
 if (!defined('FORUM'))
