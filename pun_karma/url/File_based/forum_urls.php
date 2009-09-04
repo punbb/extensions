@@ -12,6 +12,6 @@
 if (!defined('FORUM'))
 	exit;
 
-$forum_url['karmaplus'] = 'post-$1-karmaplus.html#p$1';
-$forum_url['karmaminus'] = 'post-$1-karmaminus.html#p$1';
-$forum_url['karmacancel'] = 'post-$1-karmacancel.html#p$1';
+$forum_url['karmaplus'] = 'post-$1-karmaplus-$2.html#p$1';
+$forum_url['karmaminus'] = 'post-$1-karmaminus-$2.html#p$1';
+$forum_url['karmacancel'] = 'post-$1-karmacancel-$2.html#p$1';

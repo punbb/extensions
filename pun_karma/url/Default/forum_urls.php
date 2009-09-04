@@ -12,6 +12,6 @@
 if (!defined('FORUM'))
 	exit;
 
-$forum_url['karmaplus'] = 'viewtopic.php?pid=$1&amp;karmaplus#p$1';
-$forum_url['karmaminus'] = 'viewtopic.php?pid=$1&amp;karmaminus#p$1';
-$forum_url['karmacancel'] = 'viewtopic.php?pid=$1&amp;karmacancel#p$1';
+$forum_url['karmaplus'] = 'viewtopic.php?pid=$1&amp;karmaplus&amp;csrf_token=$2#p$1';
+$forum_url['karmaminus'] = 'viewtopic.php?pid=$1&amp;karmaminus&amp;csrf_token=$2#p$1';
+$forum_url['karmacancel'] = 'viewtopic.php?pid=$1&amp;karmacancel&amp;csrf_token=$2#p$1';
