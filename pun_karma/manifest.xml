@@ -251,13 +251,36 @@ $forum_page['group_count'] = $forum_page['item_count'] = 0;
 <?php
 
 		]]></hook>
-		<hook id="dl_form_submitted"><![CDATA[
-require_once $ext_info['path'].'/functions.php';
-if (isset($_POST['req_confirm']))
-	if ($cur_post['is_topic'])
-		delete_topic_karma( $cur_post['tid'] );
-	else
-		delete_post_karma( $id );
+		<hook id="fn_delete_topic_end"><![CDATA[
+if (!empty($post_ids))
+{
+	$query = array(
+		'DELETE'	=>	'pun_karma',
+		'WHERE'		=>	'post_id IN('.implode(',', $post_ids).')'
+	);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+}
+		]]></hook>
+		<hook id="fn_delete_post_end"><![CDATA[
+$query = array(
+	'DELETE'	=>	'pun_karma',
+	'WHERE'		=>	'post_id = '.$post_id
+);
+$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		]]></hook>
+		<hook id="mr_confirm_delete_posts_pre_redirect"><![CDATA[
+$query = array(
+	'DELETE'	=>	'pun_karma',
+	'WHERE'		=>	'post_id IN('.implode(',', $posts).')'
+);
+$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		]]></hook>
+		<hook id="mr_confirm_delete_topics_pre_redirect"><![CDATA[
+$query = array(
+	'DELETE'	=>	'pun_karma',
+	'WHERE'		=>	'post_id IN('.implode(',', $post_ids).')'
+);
+$forum_db->query_build($query) or error(__FILE__, __LINE__);
 		]]></hook>
 	</hooks>
 </extension>

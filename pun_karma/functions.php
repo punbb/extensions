@@ -165,28 +165,4 @@ function karma_cancel($post_id)
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
-function delete_post_karma($post_id)
-{
-	global $forum_db;
-
-	// Delete all marks for the post
-	$query = array(
-		'DELETE'	=> 'pun_karma',
-		'WHERE'		=> 'post_id = '.$post_id
-	);
-	$forum_db->query_build($query) or error(__FILE__, __LINE__);
-}
-
-function delete_topic_karma( $topic_id )
-{
-	global $forum_db;
-
-	$qdelete = 'DELETE FROM '.$forum_db->prefix.'pun_karma
-		USING '.$forum_db->prefix.'pun_karma, '.$forum_db->prefix.'posts
-		WHERE '.$forum_db->prefix.'posts.topic_id = '.$topic_id.'
-			AND '.$forum_db->prefix.'pun_karma.post_id = '.$forum_db->prefix.'posts.id';
-
-	$forum_db->query( $qdelete ) or error(__FILE__, __LINE__);
-}
-
 ?>
