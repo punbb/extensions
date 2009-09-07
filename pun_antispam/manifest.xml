@@ -14,7 +14,7 @@
 	<extension engine="1.0">
 	<id>pun_antispam</id>
 	<title>Antispam System</title>
-	<version>1.3</version>
+	<version>1.3.1</version>
 	<description>Adds CAPTCHA to the register, login and guest post form. Allow setting restrictions for adding user signatures.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
@@ -290,10 +290,12 @@ if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $
 	message(sprintf($lang_pun_antispam['Signature info'], $forum_config['p_sig_min_posts']));
 }
 		]]></hook>
+
 		<hook id="pf_change_details_identity_validation"><![CDATA[
 if (isset($form['url']) && $forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
 	message(sprintf($lang_pun_antispam['Website info'], $forum_config['p_sig_min_posts']));
 		]]></hook>
+
 		<hook id="pf_change_details_identity_pre_header_load"><![CDATA[
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -310,6 +312,7 @@ if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $
 
 }
 		]]></hook>
+
 		<hook id="pf_change_details_identity_pre_url"><![CDATA[
 if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
 {
@@ -370,6 +373,7 @@ if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $
 		require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
+
 		<hook id="pf_change_details_signature_output_start"><![CDATA[
 if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
 {
@@ -396,6 +400,7 @@ if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $
 		require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
+
 		<hook id="aop_pre_update_configuration"><![CDATA[
 if ($form['sig_min_posts'] > $forum_config['p_sig_min_posts'])
 {
@@ -407,6 +412,7 @@ if ($form['sig_min_posts'] > $forum_config['p_sig_min_posts'])
 	$forum_db->query_build($pun_antispam_query) or error(__FILE__, __LINE__);
 }
 		]]></hook>
+
 		<hook id="co_common"><![CDATA[
 $pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
 		]]></hook>
