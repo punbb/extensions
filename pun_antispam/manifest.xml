@@ -290,7 +290,86 @@ if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $
 	message(sprintf($lang_pun_antispam['Signature info'], $forum_config['p_sig_min_posts']));
 }
 		]]></hook>
+		<hook id="pf_change_details_identity_validation"><![CDATA[
+if (isset($form['url']) && $forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
+	message(sprintf($lang_pun_antispam['Website info'], $forum_config['p_sig_min_posts']));
+		]]></hook>
+		<hook id="pf_change_details_identity_pre_header_load"><![CDATA[
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		]]></hook>
+		<hook id="pf_change_details_identity_pre_personal_fieldset"><![CDATA[
+if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
+{
 
+	?>
+	<div class="ct-box info-box"><?php printf($lang_pun_antispam['Website info'], $forum_config['p_sig_min_posts']); ?></div>
+	<?php
+
+}
+		]]></hook>
+		<hook id="pf_change_details_identity_pre_url"><![CDATA[
+if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
+{
+
+?>
+<?php ($hook = get_hook('pf_change_details_identity_pre_jabber')) ? eval($hook) : null; ?>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['Jabber'] ?></span></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[jabber]" value="<?php echo(isset($form['jabber']) ? forum_htmlencode($form['jabber']) : forum_htmlencode($user['jabber'])) ?>" size="40" maxlength="80" /></span>
+					</div>
+				</div>
+<?php ($hook = get_hook('pf_change_details_identity_pre_icq')) ? eval($hook) : null; ?>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['ICQ'] ?></span></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[icq]" value="<?php echo(isset($form['icq']) ? forum_htmlencode($form['icq']) : $user['icq']) ?>" size="12" maxlength="12" /></span>
+					</div>
+				</div>
+<?php ($hook = get_hook('pf_change_details_identity_pre_msn')) ? eval($hook) : null; ?>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['MSN'] ?></span></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[msn]" value="<?php echo(isset($form['msn']) ? forum_htmlencode($form['msn']) : forum_htmlencode($user['msn'])) ?>" size="40" maxlength="80" /></span>
+					</div>
+				</div>
+<?php ($hook = get_hook('pf_change_details_identity_pre_aim')) ? eval($hook) : null; ?>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['AOL IM'] ?></span></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[aim]" value="<?php echo(isset($form['aim']) ? forum_htmlencode($form['aim']) : forum_htmlencode($user['aim'])) ?>" size="20" maxlength="30" /></span>
+					</div>
+				</div>
+<?php ($hook = get_hook('pf_change_details_identity_pre_yahoo')) ? eval($hook) : null; ?>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['Yahoo'] ?></span></label><br />
+						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[yahoo]" value="<?php echo(isset($form['yahoo']) ? forum_htmlencode($form['yahoo']) : forum_htmlencode($user['yahoo'])) ?>" size="20" maxlength="30" /></span>
+					</div>
+				</div>
+<?php ($hook = get_hook('pf_change_details_identity_pre_contact_fieldset_end')) ? eval($hook) : null; ?>
+			</fieldset>
+<?php ($hook = get_hook('pf_change_details_identity_contact_fieldset_end')) ? eval($hook) : null; ?>
+			<div class="frm-buttons">
+				<span class="submit"><input type="submit" name="update" value="<?php echo $lang_profile['Update profile'] ?>" /> <?php echo $lang_profile['Instructions'] ?></span>
+			</div>
+		</form>
+	</div>
+<?php
+
+		($hook = get_hook('pf_change_details_identity_end')) ? eval($hook) : null;
+
+		$tpl_temp = forum_trim(ob_get_contents());
+		$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+		ob_end_clean();
+		// END SUBST - <!-- forum_main -->
+
+		require FORUM_ROOT.'footer.php';
+}
+		]]></hook>
 		<hook id="pf_change_details_signature_output_start"><![CDATA[
 if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
 {
@@ -317,7 +396,17 @@ if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $
 		require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
-
+		<hook id="aop_pre_update_configuration"><![CDATA[
+if ($form['sig_min_posts'] > $forum_config['p_sig_min_posts'])
+{
+	$pun_antispam_query = array(
+		'UPDATE'	=>	'users',
+		'SET'		=>	'signature = \'\', url = \'\'',
+		'WHERE'		=>	'num_posts < '.$form['sig_min_posts']
+	);
+	$forum_db->query_build($pun_antispam_query) or error(__FILE__, __LINE__);
+}
+		]]></hook>
 		<hook id="co_common"><![CDATA[
 $pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
 		]]></hook>

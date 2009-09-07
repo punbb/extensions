@@ -20,8 +20,9 @@ $lang_pun_antispam = array(
 	'Captcha guestpost info'		=>	'Require a captcha for guest posting (if enabled one).',
 
 	'Signature info'				=>	'You should have more than %s posts to add a signature.',
+	'Website info'					=>	'You should have more than %s posts to add a website link.',
 	'Min posts for sig'				=>	'Minimum posts',
-	'Min posts for sig info'		=>	'The minimum count of posts before a user can add a signature to his posts (pun_antispam extension).'
+	'Min posts for sig info'		=>	'The minimum count of posts before a user can add a signature and website link to his posts (pun_antispam extension). If the new value of an option is more than the old value, the links and signatures of users who have fewer posts than the new value will be cleared.'
 );
 
 ?>
