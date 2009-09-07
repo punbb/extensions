@@ -20,7 +20,7 @@
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
 
-	<note type="install" timing="pre">WARNING! If pun_antispam 1.3 is already installed on your forum, web links of the users whose number of posts is fewer than the "Minimal posts" parameter will be cleared.</note>
+	<note type="install" timing="pre">WARNING! If pun_antispam 1.3 is already installed on your forum, web links and signatures of the users whose number of posts is fewer than the "Minimal posts" parameter will be cleared.</note>
 
 	<install><![CDATA[
 
