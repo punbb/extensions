@@ -15,10 +15,12 @@
 	<id>pun_antispam</id>
 	<title>Antispam System</title>
 	<version>1.3.1</version>
-	<description>Adds CAPTCHA to the register, login and guest post form. Allow setting restrictions for adding user signatures.</description>
+	<description>Adds CAPTCHA to the register, login and guest post form. Allow setting restrictions for adding user signatures, web link.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
+
+	<note type="install" timing="pre">WARNING! If pun_antispam 1.3 is already installed on your forum, web links of the users whose number of posts is fewer than the "Minimal posts" parameter will be cleared.</note>
 
 	<install><![CDATA[
 
@@ -47,6 +49,15 @@ foreach ($pun_antispam_config as $conf_name => $conf_value)
 
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
+}
+if ($forum_config['p_sig_min_posts'] > 0)
+{
+	$pun_antispam_query = array(
+		'UPDATE'	=> 'users',
+		'SET'		=> 'signature = \'\', url = \'\'',
+		'WHERE'		=> 'num_posts < '.$forum_config['p_sig_min_posts']
+	);
+	$forum_db->query_build($pun_antispam_query) or error(__FILE__, __LINE__);
 }
 	]]></install>
 
