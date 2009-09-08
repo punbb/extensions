@@ -305,11 +305,15 @@ if (isset($_GET['pun_repository_download_and_update']))
 				require $ext_info['path'].'/pun_repository_tar_extract.php';
 		}
 
-		// Rename old extension dir
-		if (is_writable(FORUM_ROOT.'extensions/'.$ext_id) && @rename(FORUM_ROOT.'extensions/'.$ext_id, FORUM_ROOT.'extensions/'.$ext_id.'.old'))
-			$pun_repository_error = pun_repository_download_extension($ext_id, $ext_data); // Download extension
-		else
-			$pun_repository_error = sprintf($lang_pun_repository['Unable to rename old dir'], FORUM_ROOT.'extensions/'.$ext_id);
+		$pun_repository_error = pun_repository_download_extension($ext_id, $ext_data, FORUM_ROOT.'extensions/'.$ext_id.'.new'); // Download the extension
+
+		if ($pun_repository_error == '')
+		{
+			if (is_writable(FORUM_ROOT.'extensions/'.$ext_id))
+				pun_repository_dir_copy(FORUM_ROOT.'extensions/'.$ext_id.'.new/'.$ext_id, FORUM_ROOT.'extensions/'.$ext_id);
+			else
+				$pun_repository_error = sprintf($lang_pun_repository['Copy fail'], FORUM_ROOT.'extensions/'.$ext_id);
+		}
 	}
 
 	if ($pun_repository_error == '')
@@ -331,15 +335,11 @@ if (isset($_GET['pun_repository_download_and_update']))
 		($hook = get_hook('pun_repository_download_and_update_ok')) ? eval($hook) : null;
 
 		// Everything is OK. Start installation.
-		pun_repository_rm_recursive(FORUM_ROOT.'extensions/'.$ext_id.'.old');
+		pun_repository_rm_recursive(FORUM_ROOT.'extensions/'.$ext_id.'.new');
 		redirect($base_url.'/admin/extensions.php?install='.urlencode($ext_id), $lang_pun_repository['Download successful']);
 	}
 
 	($hook = get_hook('pun_repository_download_and_update_error')) ? eval($hook) : null;
-
-	// Get old version back
-	@pun_repository_rm_recursive(FORUM_ROOT.'extensions/'.$ext_id);
-	@rename(FORUM_ROOT.'extensions/'.$ext_id.'.old', FORUM_ROOT.'extensions/'.$ext_id);
 
 	// Enable extension
 	$query = array(

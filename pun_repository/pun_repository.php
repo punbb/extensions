@@ -66,21 +66,27 @@ function pun_repository_generate_cache(&$error)
 // Remove directory recursively
 function pun_repository_rm_recursive($file)
 {
-	if (is_dir($file) && !is_link($file))
-	{
-		foreach (glob($file.'/*') as $sf)
-			if (!pun_repository_rm_recursive($sf))
-				return false;
-		return rmdir($file);
-	}
-	else
+	if (is_file($file))
 		return unlink($file);
+	$dir = opendir($file);
+	while (($cur_file = readdir($dir)) !== false)
+	{
+		if ($cur_file == '.' || $cur_file == '..')
+			continue;
+
+		if (is_dir($file.'/'.$cur_file))
+			pun_repository_rm_recursive($file.'/'.$cur_file);
+		else
+			unlink($file.'/'.$cur_file);
+	}
+	closedir($dir);
+	rmdir($file);
 }
 
 // Download extension from remote repository
 // Put extension data to $ext_data
 // Returns error string on any problems or '' on success
-function pun_repository_download_extension($ext_id, &$ext_data)
+function pun_repository_download_extension($ext_id, &$ext_data, $ext_path = FALSE)
 {
 	global $base_url, $lang_pun_repository;
 
@@ -88,21 +94,33 @@ function pun_repository_download_extension($ext_id, &$ext_data)
 
 	clearstatcache();
 
-	if (!is_dir(FORUM_ROOT.'extensions/'.$ext_id))
+	if (!$ext_path)
 	{
-		// Create new directory  with 777 mode
-		if (@mkdir(FORUM_ROOT.'extensions/'.$ext_id) == false)
-			return sprintf($lang_pun_repository['Can\'t create directory'], 'extensions/'.$ext_id);
-		@chmod(FORUM_ROOT.'extensions/'.$ext_id, 0777);
+		$ext_path = FORUM_ROOT.'extensions/'.$ext_id;
+		$extract_folder = FORUM_ROOT.'extensions/';
+		$manifiest_path = $ext_path.'/manifest.xml';
 	}
 	else
-		return sprintf($lang_pun_repository['Directory already exists'], FORUM_ROOT.'extensions/'.$ext_id);
+	{
+		$extract_folder = $ext_path;
+		$manifiest_path = $ext_path.'/'.$ext_id.'/manifest.xml';
+	}
+
+	if (!is_dir($ext_path))
+	{
+		// Create new directory  with 777 mode
+		if (@mkdir($ext_path) == false)
+			return sprintf($lang_pun_repository['Can\'t create directory'], $ext_path);
+		@chmod($ext_path, 0777);
+	}
+	else
+		return sprintf($lang_pun_repository['Directory already exists'], $ext_path);
 
 	// Download extension archive
 	$pun_repository_archive = get_remote_file(PUN_REPOSITORY_URL.'/'.$ext_id.'/'.$ext_id.'.tgz', 10);
 	if (empty($pun_repository_archive) || empty($pun_repository_archive['content']))
 	{
-		rmdir(FORUM_ROOT.'extensions/'.$ext_id);
+		rmdir($ext_path);
 		return $lang_pun_repository['Extension download failed'];
 	}
 
@@ -119,7 +137,7 @@ function pun_repository_download_extension($ext_id, &$ext_data)
 
 	// Extract files from archive
 	$pun_repository_tar = new Archive_Tar_Ex(FORUM_ROOT.'extensions/'.$ext_id.'.tgz');
-	if (!$pun_repository_tar->extract(FORUM_ROOT.'extensions/', 0777))
+	if (!$pun_repository_tar->extract($extract_folder, 0777))
 	{
 		$error = $lang_pun_repository['Can\'t extract'];
 
@@ -127,7 +145,7 @@ function pun_repository_download_extension($ext_id, &$ext_data)
 			$error .= ' '.$lang_pun_repository['Extract errors:'] . '<br />' . implode('<br />', $pun_repository_tar->errors);
 
 		unlink(FORUM_ROOT.'extensions/'.$ext_id.'.tgz');
-		@pun_repository_rm_recursive(FORUM_ROOT.'extensions/'.$ext_id);
+		@pun_repository_rm_recursive($ext_path);
 
 		return $error;
 	}
@@ -136,7 +154,7 @@ function pun_repository_download_extension($ext_id, &$ext_data)
 	unlink(FORUM_ROOT.'extensions/'.$ext_id.'.tgz');
 
 	// Verify downloaded and extracted extension
-	$ext_data = xml_to_array(@file_get_contents(FORUM_ROOT.'extensions/'.$ext_id.'/manifest.xml'));
+	$ext_data = xml_to_array(@file_get_contents($manifiest_path));
 
 	($hook = get_hook('pun_repository_download_extension_end')) ? eval($hook) : null;
 
@@ -182,6 +200,24 @@ function pun_repository_check_dependencies($inst_exts, $dependencies)
 	($hook = get_hook('pun_repository_check_dependencies_end')) ? eval($hook) : null;
 
 	return compact('dependencies', 'unresolved');
+}
+
+function pun_repository_dir_copy($src, $dest)
+{
+	$dir = opendir($src);
+	if (!file_exists($dest))
+		mkdir($dest);
+	while (($file = readdir($dir)) !== false)
+	{
+		if ($file == '.' || $file == '..')
+			continue;
+
+		if (is_dir($src.'/'.$file))
+			pun_repository_dir_copy($src.'/'.$file, $dest.'/'.$file);
+		else
+			copy($src.'/'.$file, $dest.'/'.$file);
+	}
+	closedir($dir);
 }
 
 ?>

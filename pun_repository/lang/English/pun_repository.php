@@ -32,7 +32,7 @@ $lang_pun_repository = array(
 	'Resolve dependencies:'			=> 'Please resolve next dependencies first to install this extension:',
 	'Clear cache'					=> 'Clear cache',
 	'Unable to remove cached file'	=> 'Unable to remove cached file.',
-	'Cache has been successfully cleared' => 'Cache has been successfully cleared',
+	'Cache has been successfully cleared' => 'Cache has been successfully cleared.',
 
 	'Unsupported compression type'	=>	'Unsupported compression type',
 	'Supported types are'			=>	'Supported types are \'gz\' and \'bz2\'',
@@ -62,6 +62,7 @@ $lang_pun_repository = array(
 	'Error while opening {} in write binary mode'	=>	'Error while opening {\'%s\'} in write binary mode',
 	'Extracted file does not have the correct file size'	=>	'Extracted file \'%s\' does not have the correct file size',
 	'Archive may be corrupted'		=>	'Archive may be corrupted.',
+	'Copy fail'						=>	'Can\'t copy new files of the extension to the old directory %s.',
 );
 
 ?>
