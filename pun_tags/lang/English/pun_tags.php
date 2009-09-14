@@ -28,12 +28,12 @@ $lang_pun_tags = array(
 	'Title'							=>	'<strong>Tags:</strong> ',
 	'Create tags perms'				=>	'Create tags',
 	'Section pun_tags'				=>	'Pun Tags',
-	'Section tags'					=>	'Tags Management',
+	'Section tags'					=>	'Tags management',
 	'ID topic'						=>	'ID',
 	'Name topic'					=>	'Topic name',
 	'Tags of topic'					=>	'Tags list',
 	'Submit changes'				=>	'Submit changes',
-	'Redirect with changes'			=>	'Saving changes are successful',
+	'Redirect with changes'			=>	'The list of tags updated.',
 	'No tags'						=>	'There are no tags.'
 );
 
