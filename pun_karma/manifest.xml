@@ -49,6 +49,36 @@ if (!$forum_db->table_exists('pun_karma'))
 }
 
 $forum_db->add_field('posts', 'karma', 'INT(10)', TRUE);
+$forum_db->add_field('users', 'karma', 'INT(10)', TRUE);
+
+//Upgrading
+if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.0', '<='))
+{
+	@set_time_limit(0);
+	$pun_karma_query = array(
+		'SELECT'	=>	'poster_id, SUM(mark) AS user_karma',
+		'FROM'		=>	$forum_db->prefix.'posts AS p, '.$forum_db->prefix.'pun_karma AS pk',
+		'WHERE'		=>	'p.id = pk.post_id',
+		'GROUP BY'	=>	'poster_id',
+		'PARAMS'	=>	array(
+			'NO_PREFIX'	=>	true
+		)
+	);
+	$pun_karma_res = $forum_db->query_build($pun_karma_query) or error(__FILE__, __LINE__);
+
+	if ($forum_db->num_rows($pun_karma_res) > 0)
+	{
+		while ($cur_karma = $forum_db->fetch_assoc($pun_karma_res))
+		{
+			$pun_karma_update_query = array(
+				'UPDATE'	=>	'users',
+				'SET'		=>	'karma = '.$cur_karma['user_karma'],
+				'WHERE'		=>	'id = '.$cur_karma['poster_id']
+			);
+			$forum_db->query_build($pun_karma_update_query) or error(__FILE__, __LINE__);
+		}
+	}
+}
 
 // Add extension options to the config table
 $pun_karma_config = array(
@@ -75,6 +105,7 @@ foreach ($pun_karma_config as $conf_name => $conf_value)
 	<uninstall><![CDATA[
 $forum_db->drop_table('pun_karma');
 $forum_db->drop_field('posts', 'karma');
+$forum_db->drop_field('users', 'karma');
 $query = array(
 	'DELETE'	=>	'config',
 	'WHERE'		=>	'conf_name IN (\'o_pun_karma_minus_cancel\', \'o_pun_karma_minus_interval\', \'o_pun_karma_plus_interval\')'
@@ -91,9 +122,13 @@ if (FORUM_PAGE == 'viewtopic')
 $forum_rewrite_rules['/^post[\/_-]([0-9]+)[\/_-]karma(plus|minus|cancel)[\/_-]([a-z0-9]+)(\.html?|\/)?$/i'] = 'viewtopic.php?pid=$1&karma$2&csrf_token=$3';
 		]]></hook>
 		<hook id="vt_qr_get_posts"><![CDATA[
-$query['SELECT'] .= ', p.karma';
+$query['SELECT'] .= ', p.karma AS post_karma, u.karma AS user_karma';
 $pun_karma_posts = array();
 $pun_karma_authors = array();
+		]]></hook>
+		<hook id="vt_row_pre_post_actions_merge"><![CDATA[
+if (!is_null($cur_post['user_karma']) && !isset($user_data_cache[$cur_post['poster_id']]['author_info']))
+	$forum_page['author_info']['karma'] = '<li><span>'.$lang_pun_karma['User Karma'].' <strong>'.forum_number_format($cur_post['user_karma']).'</strong></span></li>';
 		]]></hook>
 		<hook id="vt_modify_topic_info"><![CDATA[
 //Including lang file
@@ -105,6 +140,16 @@ require $ext_info['path'].'/url/'.$forum_config['o_sef'].'/forum_urls.php';
 require $ext_info['path'].'/functions.php';
 if (!$forum_user['is_guest'] && (isset($_GET['karmaplus']) || isset($_GET['karmaminus']) || isset($_GET['karmacancel'])))
 {
+	//Check if user tries to vote for his own post
+	$pun_karma_query = array(
+		'SELECT'	=> '1',
+		'FROM'		=> 'posts',
+		'WHERE'		=> 'poster_id = '.$forum_user['id'].' AND id = '.$pid
+	);
+	$result = $forum_db->query_build($pun_karma_query) or error(__FILE__, __LINE__);
+	if ($forum_db->num_rows($result) > 0)
+		message($lang_pun_karma['Vote error']);
+
 	if (isset($_GET['karmaplus']))
 	{
 		if (!isset($_GET['csrf_token']) || ($_GET['csrf_token'] != generate_form_token('karmaplus'.$pid)))
@@ -158,7 +203,7 @@ else
 require $ext_info['path'].'/url/'.$forum_config['o_sef'].'/forum_urls.php';
 		]]></hook>
 		<hook id="vt_post_loop_start"><![CDATA[
-$pun_karma_posts[$cur_post['id']] = $cur_post['karma'];
+$pun_karma_posts[$cur_post['id']] = $cur_post['post_karma'];
 $pun_karma_authors[$cur_post['id']] = $cur_post['poster_id'];
 		]]></hook>
 		<hook id="vt_row_pre_display"><![CDATA[
@@ -194,9 +239,9 @@ foreach ($karma_matches[0] as $match_index => $match_string)
 	{
 		//User vote for this post?
 		if (in_array($karma_matches[1][$match_index], $user_karma_posts))
-			$post_karma = '<p class="post-karma">'.$post_karma.' <a href="'.forum_link($forum_url['karmacancel'], array($karma_matches[1][$match_index], generate_form_token('karmacancel'.$karma_matches[1][$match_index]))).'">'.$lang_pun_karma['Cancel mark'].'</a></p>';
+			$post_karma = '<p class="post-karma">'.$post_karma.' <a href="'.forum_link($forum_url['karmacancel'], array($karma_matches[1][$match_index], generate_form_token('karmacancel'.$karma_matches[1][$match_index]))).'"><img src="'.$ext_info['url'].'/icons/cancel.gif" alt="'.$lang_pun_karma['Alt cancel'].'" /></a></p>';
 		else
-			$post_karma = '<p class="post-karma"><a href="'.forum_link($forum_url['karmaplus'], array($karma_matches[1][$match_index], generate_form_token('karmaplus'.$karma_matches[1][$match_index]))).'">'.$lang_pun_karma['Plus mark'].'</a> '.$post_karma.($forum_config['o_pun_karma_minus_cancel'] == '0' ? ' <a href="'.forum_link($forum_url['karmaminus'], array($karma_matches[1][$match_index], generate_form_token('karmaminus'.$karma_matches[1][$match_index]))).'">'.$lang_pun_karma['Minus mark'].'</a>' : '').'</p>';
+			$post_karma = '<p class="post-karma"><a href="'.forum_link($forum_url['karmaplus'], array($karma_matches[1][$match_index], generate_form_token('karmaplus'.$karma_matches[1][$match_index]))).'"><img src="'.$ext_info['url'].'/icons/thumbs_up.gif" alt="'.$lang_pun_karma['Alt thumbs up'].'"/></a> '.$post_karma.($forum_config['o_pun_karma_minus_cancel'] == '0' ? ' <a href="'.forum_link($forum_url['karmaminus'], array($karma_matches[1][$match_index], generate_form_token('karmaminus'.$karma_matches[1][$match_index]))).'"><img src="'.$ext_info['url'].'/icons/thumbs_down.gif" alt="'.$lang_pun_karma['Alt thumbs down'].'" /></a>' : '').'</p>';
 	}
 	$buffer = str_replace($match_string, $post_karma, $buffer);
 }

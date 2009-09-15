@@ -11,12 +11,7 @@
 if (!defined('FORUM')) die();
 
 $lang_pun_karma = array(
-	'Plus mark'			=>	'+',
-	'Minus mark'		=>	'-',
-	'Cancel mark'		=>	'X',
-	'Vote'				=> 	'<strong>Your vote:</strong>',
-	'Post mark'			=> 	'<strong>Post Karma:</strong>',
-	'User Karma'		=> 	'<strong>User Karma:</strong>',
+	'User Karma'		=> 	'User Karma:',
 	'Minus mark cancel'	=>	'Karma down option was cancelled by the Forum administrator.',
 	'Vote error'		=>	'You can\'t vote your own post.',
 	'Already voted'		=>	'You have already voted for this post.',
@@ -30,7 +25,10 @@ $lang_pun_karma = array(
 	'Minus interval'	=>	'Minus mark interval',
 	'Minus interval info'=>	'The number of minutes users have to wait before voting for a post with down (minus) mark again.',
 	'Plus interval rest' =>	'At least %s minutes have to pass between votes with the plus mark. Please wait a while and try voting again.',
-	'Minus interval rest'=>	'At least %s minutes have to pass between votes with the minus mark. Please wait a while and try voting again.'
+	'Minus interval rest'=>	'At least %s minutes have to pass between votes with the minus mark. Please wait a while and try voting again.',
+	'Alt cancel'		=>	'Cancel',
+	'Alt thumbs up'		=>	'Thumbs up',
+	'Alt thumbs down'	=>	'Thumbs down'
 );
 
 ?>
