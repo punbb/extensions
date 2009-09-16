@@ -5,8 +5,8 @@ div#pun_bbcode_bar
 	margin: 0;
 	padding: 0 1em 0 18em;
 	position: relative;
-	display:none;
-	visibility:hidden;
+	display: none;
+	visibility: hidden;
 }
 
 div#pun_bbcode_bar div#pun_bbcode_wrapper
@@ -22,7 +22,7 @@ div#pun_bbcode_bar .graphical div#pun_bbcode_buttons
 
 div#pun_bbcode_bar .graphical div#pun_bbcode_buttons img
 {
-	margin: 0px 3px;
+	margin: 0 3px;
 }
 
 div#pun_bbcode_bar .graphical div#pun_bbcode_smilies
@@ -32,5 +32,5 @@ div#pun_bbcode_bar .graphical div#pun_bbcode_smilies
 
 div#pun_bbcode_bar .graphical div#pun_bbcode_smilies img
 {
-	margin: 0px 1px;
+	margin: 0 1px;
 }

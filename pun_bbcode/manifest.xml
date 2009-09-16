@@ -67,20 +67,26 @@ if ($forum_user['pun_bbcode_enabled'])
 		]]></hook>
 
 		<hook id="po_pre_post_contents, vt_quickpost_pre_message_box, ed_pre_message_box, pun_pm_fn_send_form_pre_textarea_output"><![CDATA[
-			if ($forum_user['pun_bbcode_enabled'])
-				echo '<div class="sf-set" id="pun_bbcode_bar"></div>';
-		]]></hook>
-		<hook id="ft_about_output_start" priority="0"><![CDATA[
-			if ($forum_user['pun_bbcode_enabled'] && ((FORUM_PAGE == 'viewtopic' && $forum_config['o_quickpost']) || (in_array(FORUM_PAGE, array('post', 'postedit')) || substr(FORUM_PAGE, 0, 6) == 'pun_pm-')))
-			{
-				$bbar_temp = '';
-				include $ext_info['path'].'/bar.php';
-			}
+if ($forum_user['pun_bbcode_enabled']) {
+	define('PUN_BBCODE_BAR_INCLUDE', 1);
+	echo "\t\t\t".'<div class="sf-set" id="pun_bbcode_bar"></div>'."\n";
+}
 		]]></hook>
 
 		<hook id="ft_about_pre_copyright"><![CDATA[
-			if (isset($bbar_temp))
-				echo '<script type="text/javascript"><!--'."\n".'var bbcode_bar = document.getElementById("pun_bbcode_bar");'."\n".'if (bbcode_bar) {'."\n".'bbcode_bar.innerHTML = "'.$bbar_temp.'";'."\n".'bbcode_bar.style.display = "block";'."\n".'bbcode_bar.style.visibility = "visible";'."\n".'}'."\n".'--></script>'."\n";
+if (defined('PUN_BBCODE_BAR_INCLUDE')) {
+	include $ext_info['path'].'/bar.php';
+?>
+<script type="text/javascript"><!--
+var pun_bbcode_bar = document.getElementById("pun_bbcode_bar");
+if (pun_bbcode_bar) {
+	pun_bbcode_bar.innerHTML = "<?php echo pun_bbcode_bar(); ?>";
+	pun_bbcode_bar.style.display = "block";
+	pun_bbcode_bar.style.visibility = "visible";
+}
+--></script>
+<?php
+}
 		]]></hook>
 
 		<hook id="pf_change_details_settings_validation"><![CDATA[
