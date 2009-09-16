@@ -373,7 +373,7 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 		$query = array(
 			'UPDATE'		=> 'pun_pm_messages',
 			'SET'			=> 'status = \'sent\', receiver_id = '.$receiver_id.', lastedited_at = '.$now.', subject = \''.$forum_db->escape($subject).'\', body=\''.$forum_db->escape($body).'\'',
-			'WHERE'			=> 'id = '.$forum_db->escape($message_id).' AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\')'
+			'WHERE'			=> 'id = '.$message_id.' AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\')'
 		);
 
 		($hook = get_hook('pun_pm_fn_send_message_pre_draft_send_query')) ? eval($hook) : null;
@@ -465,7 +465,7 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 		$query = array(
 			'UPDATE'		=> 'pun_pm_messages',
 			'SET'			=> 'status = \'draft\', receiver_id = '.$receiver_id.', lastedited_at = '.$now.', subject = \''.$forum_db->escape($subject).'\', body=\''.$forum_db->escape($body).'\'',
-			'WHERE'			=> 'id = '.$forum_db->escape($message_id).' AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\')'
+			'WHERE'			=> 'id = '.$message_id.' AND sender_id = '.$forum_user['id'].' AND (status = \'draft\' OR status = \'sent\')'
 		);
 
 		($hook = get_hook('pun_pm_fn_save_message_pre_edit_query')) ? eval($hook) : null;
@@ -511,8 +511,10 @@ function pun_pm_edit_message()
 {
 	global $forum_db, $forum_user, $lang_pun_pm;
 
+	$pun_pm_message_id = (int) $_GET['message_id'];
+
 	$errors = array();
-	$pun_pm_message_id = intval($_GET['message_id']);
+
 	// Verify input data
 	$query = array(
 		'SELECT'	=> 'm.id as id, m.sender_id as sender_id, m.status as status, u.username as username, m.subject as subject, m.body as body',
@@ -883,7 +885,7 @@ function pun_pm_get_page(&$page)
 				if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== generate_form_token(forum_link($forum_url['pun_pm_edit'], $_GET['message_id'])))
 					csrf_confirm_form();
 
-				return pun_pm_delete_message(array((int) $_GET['message_id']));
+				return pun_pm_delete_message(array($_GET['message_id']));
 			}
 			else
 				return pun_pm_edit_message();

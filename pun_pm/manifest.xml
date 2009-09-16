@@ -103,13 +103,13 @@ else if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.1b2',
 }
 
 // Add extension options to the config table
-$config = array(
+$pun_pm_config = array(
 	'o_pun_pm_inbox_size'		=> '100',
 	'o_pun_pm_outbox_size'		=> '100',
 	'o_pun_pm_show_new_count'	=> '1',
 	'o_pun_pm_show_global_link'	=> '0',
 );
-foreach ($config as $conf_name => $conf_value)
+foreach ($pun_pm_config as $conf_name => $conf_value)
 {
 	if(!array_key_exists($conf_name, $forum_config))
 	{
@@ -228,7 +228,7 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 	$pun_pm_body = isset($_POST['req_message']) ? $_POST['req_message'] : '';
 	$pun_pm_subject = isset($_POST['pm_subject']) ? $_POST['pm_subject'] : '';
 	$pun_pm_receiver_username = isset($_POST['pm_receiver']) ? $_POST['pm_receiver'] : '';
-	$pun_pm_message_id = isset($_POST['message_id']) ? intval($_POST['message_id']) : false;
+	$pun_pm_message_id = isset($_POST['message_id']) ? (int) $_POST['message_id'] : false;
 
 	if (isset($_POST['send_action']) && in_array($_POST['send_action'], array('send', 'draft', 'delete', 'preview')))
 		$pun_pm_send_action = $_POST['send_action'];
@@ -269,7 +269,7 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 	}
 	elseif ($pun_pm_send_action == 'delete' && $pun_pm_message_id !== false)
 	{
-		pun_pm_delete_from_outbox(array((int) $pun_pm_message_id));
+		pun_pm_delete_from_outbox(array($pun_pm_message_id));
 		redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message deleted']);
 	}
 	elseif ($pun_pm_send_action == 'preview')
