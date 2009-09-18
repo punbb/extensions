@@ -1,11 +1,11 @@
 <?php
 
 /**
- * pun_broadcast_email page
+ * pun_admin_broadcast_email page
  *
  * @copyright (C) 2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_broadcast_email
+ * @package pun_admin_broadcast_email
  */
 
 require FORUM_ROOT.'header.php';
@@ -16,13 +16,13 @@ ob_start();
 ?>
 <div class="main-subhead">
 	<h2 class="hn">
-		<span><?php echo $lang_pun_broadcast_email['Ext name']; ?></span>
+		<span><?php echo $lang_pun_admin_broadcast_email['Ext name']; ?></span>
 	</h2>
 </div>
 <div class="main-content main-forum">
 <?php if (!empty($forum_page['errors'])) : ?>
 	<div class="ct-box error-box">
-		<h2 class="warn hn"><?php echo $lang_pun_broadcast_email['Email errors'] ?></h2>
+		<h2 class="warn hn"><?php echo $lang_pun_admin_broadcast_email['Email errors'] ?></h2>
 		<ul class="error-list">
 			<?php foreach ($forum_page['errors'] as $cur_error) { ?>
 				<li class="warn"><span><?php echo $cur_error; ?></span></li>
@@ -44,12 +44,12 @@ ob_start();
 			<?php } ?>
 		</div>
 		<div class="ct-group">
-			<table cellspacing="0" summary="<?php echo $lang_pun_broadcast_email['Table summary'] ?>">
+			<table cellspacing="0" summary="<?php echo $lang_pun_admin_broadcast_email['Table summary'] ?>">
 				<thead>
 					<tr>
-						<th class="tc0" scope="col"><?php echo $lang_pun_broadcast_email['Group'] ?></th>
-						<th class="tc1" scope="col"><?php echo $lang_pun_broadcast_email['Group title'] ?> </th>
-						<th class="tc2" scope="col"><?php echo $lang_pun_broadcast_email['Members count'] ?> </th>
+						<th class="tc0" scope="col"><?php echo $lang_pun_admin_broadcast_email['Group'] ?></th>
+						<th class="tc1" scope="col"><?php echo $lang_pun_admin_broadcast_email['Group title'] ?> </th>
+						<th class="tc2" scope="col"><?php echo $lang_pun_admin_broadcast_email['Members count'] ?> </th>
 						<th class="tc3" scope="col"></th>
 					</tr>
 				</thead>
@@ -71,8 +71,8 @@ ob_start();
 					<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="checkbox" <?php echo isset($forum_page['parse_mail']) && $forum_page['parse_mail'] ? 'checked="checked" ' : '';?>value="1" name="parse_mail" />
 				</span>
 				<label for="fld<?php echo $forum_page['fld_count'] ?>">
-					<span><?php echo $lang_pun_broadcast_email['Tpl vars'] ?></span>
-					<?php echo sprintf($lang_pun_broadcast_email['Tpl vars info'], forum_link($forum_url['pun_broadcast_email_help'])) ?>
+					<span><?php echo $lang_pun_admin_broadcast_email['Tpl vars'] ?></span>
+					<?php echo sprintf($lang_pun_admin_broadcast_email['Tpl vars info'], forum_link($forum_url['pun_broadcast_email_help'])) ?>
 				</label>
 			</div>
 		</div>
@@ -80,7 +80,7 @@ ob_start();
 			<div class="sf-box text required">
 				<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
 					<span>
-						<?php echo $lang_pun_broadcast_email['Email subject'] ?>
+						<?php echo $lang_pun_admin_broadcast_email['Email subject'] ?>
 						<em><?php echo $lang_common['Required'] ?></em>
 					</span>
 				</label>
@@ -94,7 +94,7 @@ ob_start();
 			<div class="txt-box textarea required">
 				<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
 					<span>
-						<?php echo $lang_pun_broadcast_email['Email message'] ?>
+						<?php echo $lang_pun_admin_broadcast_email['Email message'] ?>
 						<em><?php echo $lang_common['Required'] ?></em>
 					</span>
 				</label>
@@ -106,8 +106,8 @@ ob_start();
 			</div>
 		</div>
 		<div class="frm-buttons">
-			<span class="submit"><input type="submit" name="submit" value="<?php echo $lang_pun_broadcast_email['Submit'] ?>" /></span>
-			<span class="submit"><input type="submit" name="preview" value="<?php echo $lang_pun_broadcast_email['Preview'] ?>" /></span>
+			<span class="submit"><input type="submit" name="submit" value="<?php echo $lang_pun_admin_broadcast_email['Submit'] ?>" /></span>
+			<span class="submit"><input type="submit" name="preview" value="<?php echo $lang_pun_admin_broadcast_email['Preview'] ?>" /></span>
 		</div>
 	</form>
 	<?php endif; ?>

@@ -1,9 +1,17 @@
 <?php
 
+/**
+ * Lang file for pun_admin_broadcast_email
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_admin_broadcast_email
+ */
+
 if (!defined('FORUM'))
 	exit;
 
-$lang_pun_broadcast_email = array(
+$lang_pun_admin_broadcast_email = array(
 	'Email errors'	=>	'<strong>Warning!</strong> The following errors must be corrected before sending e-mails:',
 	'Ext name'		=>	'Broadcast e-mail',
 	'Group'			=>	'Group',

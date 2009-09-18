@@ -1,11 +1,11 @@
 <?php
 
 /**
- * pun_broadcast_email help page
+ * pun_admin_broadcast_email help page
  *
  * @copyright (C) 2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_broadcast_email
+ * @package pun_admin_broadcast_email
  */
 
 require FORUM_ROOT.'header.php';
@@ -16,13 +16,13 @@ ob_start();
 ?>
 <div class="main-subhead">
 	<h2 class="hn">
-		<span><?php echo $lang_pun_broadcast_email['Ext help'] ?></span>
+		<span><?php echo $lang_pun_admin_broadcast_email['Ext help'] ?></span>
 	</h2>
 </div>
 <div class="main-content main-forum">
 	<div class="ct-box help-box">
 		<h3 class="hn">
-			<span><?php echo $lang_pun_broadcast_email['Ext help header'] ?></span>
+			<span><?php echo $lang_pun_admin_broadcast_email['Ext help header'] ?></span>
 		</h3>
 		<?php foreach ($forum_page['help_vars'] as $var_name => $var_info) { ?> 
 		<div class="entry-content">

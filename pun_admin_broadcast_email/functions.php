@@ -1,26 +1,26 @@
 <?php
 /**
- * pun_broadcast_email functions
+ * pun_admin_broadcast_email functions
  *
  * @copyright (C) 2008-2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_broadcast_email
+ * @package pun_admin_broadcast_email
  */
  
 // Make sure no one attempts to run this script "directly"
 if (!defined('FORUM'))
 	exit;
 
-function pun_broadcast_email_parse_string($subject, $user_info)
+function pun_admin_broadcast_email_parse_string($subject, $user_info)
 {	
-	$tpl_vars = pun_broadcast_email_gen_tpl_vars($user_info);
+	$tpl_vars = pun_admin_broadcast_email_gen_tpl_vars($user_info);
 	foreach ($tpl_vars as $tpl_var => $tpl_value)
 		$subject = str_ireplace($tpl_var, $tpl_value, $subject);
 
 	return $subject;
 }
 
-function pun_broadcast_email_gen_tpl_vars($user_data)
+function pun_admin_broadcast_email_gen_tpl_vars($user_data)
 {
 	global $forum_url;
 
@@ -39,10 +39,10 @@ function pun_broadcast_email_gen_tpl_vars($user_data)
 	return $tpl_vars;
 }
 
-function pun_broadcast_email_send_mail($subject, $message, $user_data, $parse_message = TRUE)
+function pun_admin_broadcast_email_send_mail($subject, $message, $user_data, $parse_message = TRUE)
 {
-	$tmp_subject = $parse_message ? pun_broadcast_email_parse_string($subject, $user_data) : $subject;
-	$tmp_message = $parse_message ? pun_broadcast_email_parse_string($message, $user_data) : $message;
+	$tmp_subject = $parse_message ? pun_admin_broadcast_email_parse_string($subject, $user_data) : $subject;
+	$tmp_message = $parse_message ? pun_admin_broadcast_email_parse_string($message, $user_data) : $message;
 
 	forum_mail($user_data['email'], $tmp_subject, $tmp_message);
 }

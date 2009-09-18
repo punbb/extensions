@@ -7,12 +7,12 @@
  *
  * @copyright (C) 2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_broadcast_email
+ * @package pun_admin_broadcast_email
  */
 -->
 
 <extension engine="1.0">
-	<id>pun_broadcast_email</id>
+	<id>pun_admin_broadcast_email</id>
 	<title>Broadcast e-mail.</title>
 	<version>0.1</version>
 	<description>Add posibility to send e-mail messages to groups of users.</description>
@@ -47,22 +47,22 @@
 					$forum_page['selected_groups'] = array_map('intval', $forum_page['selected_groups']);
 
 					if (empty($forum_page['selected_groups']))
-						$forum_page['errors'][] = $lang_pun_broadcast_email['Err no groups'];
+						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err no groups'];
 					if (in_array(FORUM_GUEST, $forum_page['selected_groups']))
-						$forum_page['errors'][] = $lang_pun_broadcast_email['Err guest group'];
+						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err guest group'];
 
 					$forum_page['email_subject'] = forum_trim($_POST['req_subject']);
 					if ($forum_page['email_subject'] == '')
-						$forum_page['errors'][] = $lang_pun_broadcast_email['Err no subject'];
+						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err no subject'];
 					else if (utf8_strlen($forum_page['email_subject']) > 70)
-						$forum_page['errors'][] = $lang_pun_broadcast_email['Err long subject'];
+						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err long subject'];
 
 					// Clean up message from POST
 					$forum_page['email_message'] = forum_linebreaks(forum_trim($_POST['req_message']));
 					if ($forum_page['email_message'] == '')
-						$forum_page['errors'][] = $lang_pun_broadcast_email['Err no message'];
+						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err no message'];
 					if (strlen($forum_page['email_message']) > FORUM_MAX_POSTSIZE_BYTES)
-						$forum_page['errors'][] = sprintf($lang_pun_broadcast_email['Err long message'], forum_number_format(strlen($forum_page['email_message'])), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
+						$forum_page['errors'][] = sprintf($lang_pun_admin_broadcast_email['Err long message'], forum_number_format(strlen($forum_page['email_message'])), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
 
 					include $ext_info['path'].'/functions.php';
 					if (!defined('FORUM_EMAIL_FUNCTIONS_LOADED'))
@@ -81,25 +81,25 @@
 						$pun_broadcast_result = $forum_db->query_build($pun_broadcast_query) or error(__FILE__, __LINE__);
 
 						while ($cur_user = $forum_db->fetch_assoc($pun_broadcast_result))
-							pun_broadcast_email_send_mail($forum_page['email_subject'], $forum_page['email_message'], $cur_user, $forum_page['parse_mail']);
+							pun_admin_broadcast_email_send_mail($forum_page['email_subject'], $forum_page['email_message'], $cur_user, $forum_page['parse_mail']);
 
-						redirect(forum_link($forum_url['pun_broadcast_email']), $lang_pun_broadcast_email['Email sent'].' '.$lang_common['Redirecting']);
+						redirect(forum_link($forum_url['pun_broadcast_email']), $lang_pun_admin_broadcast_email['Email sent'].' '.$lang_common['Redirecting']);
 					}
 				}
 
 				if (isset($_GET['help']))
 				{
 					$forum_page['help_vars'] = array();
-					$forum_page['help_vars']['%_username_%'] = array('description' => $lang_pun_broadcast_email['Help username'], 'example' => $forum_user['username']);
-					$forum_page['help_vars']['%_title_%'] = array('description' => $lang_pun_broadcast_email['Help user title'], 'example' => $forum_user['title']);
-					$forum_page['help_vars']['%_realname_%'] = array('description' => $lang_pun_broadcast_email['Help realname'], 'example' => $forum_user['realname']);
-					$forum_page['help_vars']['%_num_posts_%'] = array('description' => $lang_pun_broadcast_email['Help num posts'], 'example' => $forum_user['num_posts']);
-					$forum_page['help_vars']['%_last_post_%'] = array('description' => $lang_pun_broadcast_email['Help last post'], 'example' => format_time($forum_user['last_post']));
-					$forum_page['help_vars']['%_registered_%'] = array('description' => $lang_pun_broadcast_email['Help reg date'], 'example' => format_time($forum_user['registered']));
-					$forum_page['help_vars']['%_registration_ip_%'] = array('description' => $lang_pun_broadcast_email['Help reg IP'], 'example' => $forum_user['registration_ip']);
-					$forum_page['help_vars']['%_last_visit_%'] = array('description' => $lang_pun_broadcast_email['Help last visit'], 'example' => format_time($forum_user['last_visit']));
-					$forum_page['help_vars']['%_admin_note_%'] = array('description' => $lang_pun_broadcast_email['Help admin note'], 'example' => $forum_user['admin_note']);
-					$forum_page['help_vars']['%_profile_url_%'] = array('description' => $lang_pun_broadcast_email['Help user profile'], 'example' => forum_link($forum_url['user'], $forum_user['id']));
+					$forum_page['help_vars']['%_username_%'] = array('description' => $lang_pun_admin_broadcast_email['Help username'], 'example' => $forum_user['username']);
+					$forum_page['help_vars']['%_title_%'] = array('description' => $lang_pun_admin_broadcast_email['Help user title'], 'example' => $forum_user['title']);
+					$forum_page['help_vars']['%_realname_%'] = array('description' => $lang_pun_admin_broadcast_email['Help realname'], 'example' => $forum_user['realname']);
+					$forum_page['help_vars']['%_num_posts_%'] = array('description' => $lang_pun_admin_broadcast_email['Help num posts'], 'example' => $forum_user['num_posts']);
+					$forum_page['help_vars']['%_last_post_%'] = array('description' => $lang_pun_admin_broadcast_email['Help last post'], 'example' => format_time($forum_user['last_post']));
+					$forum_page['help_vars']['%_registered_%'] = array('description' => $lang_pun_admin_broadcast_email['Help reg date'], 'example' => format_time($forum_user['registered']));
+					$forum_page['help_vars']['%_registration_ip_%'] = array('description' => $lang_pun_admin_broadcast_email['Help reg IP'], 'example' => $forum_user['registration_ip']);
+					$forum_page['help_vars']['%_last_visit_%'] = array('description' => $lang_pun_admin_broadcast_email['Help last visit'], 'example' => format_time($forum_user['last_visit']));
+					$forum_page['help_vars']['%_admin_note_%'] = array('description' => $lang_pun_admin_broadcast_email['Help admin note'], 'example' => $forum_user['admin_note']);
+					$forum_page['help_vars']['%_profile_url_%'] = array('description' => $lang_pun_admin_broadcast_email['Help user profile'], 'example' => forum_link($forum_url['user'], $forum_user['id']));
 				}
 				else
 				{
@@ -139,8 +139,8 @@
 				{
 					$pattern = array("\n", "\t", '  ', '  ');
 					$replace = array('<br />', '&nbsp; &nbsp; ', '&nbsp; ', ' &nbsp;');
-					$forum_page['preview']['email_subject'] = str_replace($pattern, $replace, $forum_page['parse_mail'] ? pun_broadcast_email_parse_string($forum_page['email_subject'], $forum_user) : $forum_page['email_subject']);
-					$forum_page['preview']['email_message'] = str_replace($pattern, $replace, $forum_page['parse_mail'] ? pun_broadcast_email_parse_string($forum_page['email_message'], $forum_user) : $forum_page['email_message']);
+					$forum_page['preview']['email_subject'] = str_replace($pattern, $replace, $forum_page['parse_mail'] ? pun_admin_broadcast_email_parse_string($forum_page['email_subject'], $forum_user) : $forum_page['email_subject']);
+					$forum_page['preview']['email_message'] = str_replace($pattern, $replace, $forum_page['parse_mail'] ? pun_admin_broadcast_email_parse_string($forum_page['email_message'], $forum_user) : $forum_page['email_message']);
 				}
 				// Setup breadcrumbs
 				$forum_page['crumbs'] = array(
@@ -166,7 +166,7 @@
 				else
 					include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
-				$forum_page['admin_submenu']['broadcast_mail'] = '<li class="'.((FORUM_PAGE == 'admin-broadcast_email') ? 'active' : 'normal').((empty($forum_page['admin_submenu'])) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['pun_broadcast_email']).'">'.$lang_pun_broadcast_email['Ext name'].'</a></li>';
+				$forum_page['admin_submenu']['broadcast_mail'] = '<li class="'.((FORUM_PAGE == 'admin-broadcast_email') ? 'active' : 'normal').((empty($forum_page['admin_submenu'])) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['pun_broadcast_email']).'">'.$lang_pun_admin_broadcast_email['Ext name'].'</a></li>';
 			}
 		]]></hook>
 	</hooks>
