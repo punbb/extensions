@@ -80,10 +80,14 @@
 						);
 						$pun_broadcast_result = $forum_db->query_build($pun_broadcast_query) or error(__FILE__, __LINE__);
 
+						$forum_page['email_num'] = 0;
 						while ($cur_user = $forum_db->fetch_assoc($pun_broadcast_result))
+						{
 							pun_admin_broadcast_email_send_mail($forum_page['email_subject'], $forum_page['email_message'], $cur_user, $forum_page['parse_mail']);
+							$forum_page['email_num']++;
+						}
 
-						redirect(forum_link($forum_url['pun_broadcast_email']), $lang_pun_admin_broadcast_email['Email sent'].' '.$lang_common['Redirecting']);
+						redirect(forum_link($forum_url['pun_broadcast_email']), ($forum_page['email_num'] > 1 ? $lang_pun_admin_broadcast_email['Emails sent'] : $lang_pun_admin_broadcast_email['Email sent']).' '.$lang_common['Redirecting'].'…');
 					}
 				}
 

@@ -32,6 +32,7 @@ $lang_pun_admin_broadcast_email = array(
 	'Err no message'	=>	'No message',
 	'Err long message'	=>	'The length of your e-mail message is %s bytes. This exceeds the %s bytes limit.',
 	'Email sent'		=>	'E-mail message has been sent.',
+	'Emails sent'		=>	'E-mail messages has been sent.',
 	'Table summary'		=>	'Groups',
 	'Help username'		=>	'produces username.',
 	'Help user title'	=>	'produces user title.',
