@@ -31,8 +31,12 @@ ob_start();
 	</div>
 <?php endif; ?>
 <?php if (empty($forum_page['errors']) && isset($_POST['preview'])): ?>
-<div>
+<div class="post singlepost">
+	<?php echo $lang_pun_admin_broadcast_email['Email subject'] ?>
 	<p><?php echo $forum_page['preview']['email_subject']; ?></p>
+</div>
+<div class="post singlepost">
+	<?php echo $lang_pun_admin_broadcast_email['Email message'] ?>
 	<p><?php echo $forum_page['preview']['email_message']; ?></p>
 </div>
 <?php endif; ?>
