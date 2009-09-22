@@ -27,7 +27,7 @@ $lang_pun_poll = array(
 // general
 	'Users count'					=>	'Votes: ',
 	'Preview poll'					=>	'Preview of your edited poll.',
-	'Preview poll question'			=>	'<strong>%s?</strong>',
+	'Preview poll question'			=>	'<strong>%s</strong>',
 	'Revote'						=>	'Revote poll',
 	'Summary count'					=>	'Number of poll options',
 	'Allow days'					=>	'Run poll for (days)',

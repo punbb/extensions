@@ -111,7 +111,7 @@
 		$query_pun_poll = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name = "p_pun_poll_enable_read"'
+			'WHERE'		=>	'conf_name = \'p_pun_poll_enable_read\''
 		);
 		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
@@ -120,7 +120,7 @@
 			$query_pun_poll = array(
 				'INSERT'	=>	'conf_name, conf_value',
 				'INTO'		=>	'config',
-				'VALUES'	=>	'"p_pun_poll_enable_read", "0"'
+				'VALUES'	=>	'\'p_pun_poll_enable_read\', \'0\''
 			);
 
 			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
@@ -129,7 +129,7 @@
 		$query_pun_poll = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name = "p_pun_poll_enable_revote"'
+			'WHERE'		=>	'conf_name = \'p_pun_poll_enable_revot\''
 		);
 		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
@@ -138,7 +138,7 @@
 			$query_pun_poll = array(
 				'INSERT'	=>	'conf_name, conf_value',
 				'INTO'		=>	'config',
-				'VALUES'	=>	'"p_pun_poll_enable_revote", "0"'
+				'VALUES'	=>	'\'p_pun_poll_enable_revote\', \'0\''
 			);
 
 			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
@@ -147,7 +147,7 @@
 		$query_pun_poll = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name = "p_pun_poll_max_answers"'
+			'WHERE'		=>	'conf_name = \'p_pun_poll_max_answers\''
 		);
 		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
@@ -156,7 +156,7 @@
 			$query_pun_poll = array(
 				'INSERT'	=>	'conf_name, conf_value',
 				'INTO'		=>	'config',
-				'VALUES'	=>	'"p_pun_poll_max_answers", "7"'
+				'VALUES'	=>	'\'p_pun_poll_max_answers\', \'7\''
 			);
 
 			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
@@ -171,7 +171,7 @@
 
 		$query_poll = array(
 			'DELETE'	=>	'config',
-			'WHERE'		=>	'conf_name = "p_pun_poll_enable_read" OR conf_name = "p_pun_poll_enable_revote" OR conf_name = "p_pun_poll_max_answers"'
+			'WHERE'		=>	'conf_name = \'p_pun_poll_enable_read\' OR conf_name = \'p_pun_poll_enable_revote\' OR conf_name = \'p_pun_poll_max_answers\''
 		);
 		$forum_db->query_build($query_poll) or error(__FILE__, __LINE__);
 	]]></uninstall>
@@ -1068,7 +1068,7 @@
 							$vote_results .= '<td class="tc2">'.forum_number_format((float)$count_v/$vote_count * 100, 2).'%</td></tr>';
 						}
 						$num++;
-						$vote_results .= '<trclass="'.($num % 2 == 0 ? 'even' : 'odd').'"><td class="tc0" colspan="3" style="text-align: center;">'.$lang_pun_poll['Users count'].$vote_count.'</td></tr>';
+						$vote_results .= '<tr class="'.($num % 2 == 0 ? 'even' : 'odd').'"><td class="tc0" colspan="3" style="text-align: center;">'.$lang_pun_poll['Users count'].$vote_count.'</td></tr>';
 						$vote_results .= '</tbody></table></div>';
 					}
 					else
