@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_poll</id>
 	<title>Pun poll</title>
-	<version>1.1.3</version>
+	<version>1.1.4</version>
 	<description>Adds polls feature for topics.</description>
 	<author>PunBB Development team</author>
 	<minversion>1.3</minversion>
@@ -129,7 +129,7 @@
 		$query_pun_poll = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name = \'p_pun_poll_enable_revot\''
+			'WHERE'		=>	'conf_name = \'p_pun_poll_enable_revote\''
 		);
 		$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
 
