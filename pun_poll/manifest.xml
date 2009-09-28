@@ -590,7 +590,7 @@
 			$error_poll = array();
 			
 			//Validate of input in pun_poll form
-			if (isset($can_edit_subject) && !$forum_user['is_guest'])
+			if ($can_edit_subject && !$forum_user['is_guest'])
 			{
 				//Get info about poll
 				$query_pun_poll = array(
