@@ -226,7 +226,7 @@ function pun_pm_get_receiver_id($username, &$errors)
 
 function pun_pm_get_username($id)
 {
-	global $lang_pun_pm, $forum_db, $forum_user;
+	global $forum_db;
 
 	$query = array(
 		'SELECT'	=> 'username',
@@ -246,6 +246,50 @@ function pun_pm_get_username($id)
 	($hook = get_hook('pun_pm_fn_get_username_end')) ? eval($hook) : null;
 
 	return $username;
+}
+
+function pun_pm_get_last_senders()
+{
+	global $forum_db, $forum_user;
+
+	// Obtaining IDs of last senders
+	$query = array(
+		'SELECT'	=> 'DISTINCT sender_id',
+		'FROM'		=> 'pun_pm_messages',
+		'WHERE'		=> 'receiver_id = '.$forum_user['id'].' AND (status = \'read\' OR status = \'delivered\') AND deleted_by_receiver = 0',
+		'ORDER BY'	=> 'lastedited_at DESC',
+		'LIMIT'		=> '3'
+	);
+
+	($hook = get_hook('pun_pm_fn_get_last_senders_pre_ids_query')) ? eval($hook) : null;
+
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	$ids = array();
+	while ($row = $forum_db->fetch_assoc($result))
+		$ids[] = $row['sender_id'];
+
+	// Obtaining their usernames
+	$query = array(
+		'SELECT'	=> 'username, id',
+		'FROM'		=> 'users',
+		'WHERE'		=> 'id IN ('.implode(', ', $ids).')',
+	);
+
+	($hook = get_hook('pun_pm_fn_get_last_senders_pre_usernames_query')) ? eval($hook) : null;
+
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	$links = $usernames = array();
+	while ($row = $forum_db->fetch_assoc($result))
+		$usernames[$row['id']] = $row['username'];
+
+	foreach ($ids as $id)
+		$links[] = '<a href="#" onclick="document.forms.pun_pm_sendform.pm_receiver.value = \''.$usernames[$id].'\'; return false;">'.$usernames[$id].'</a>';
+
+	($hook = get_hook('pun_pm_fn_get_last_senders_end')) ? eval($hook) : null;
+
+	return ' '.implode(', ', $links);
 }
 
 $pun_pm_my_inbox_count = false;
@@ -1319,7 +1363,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['To'].' <em>'.$lang_common['Required'].'</em>' ?></span> <small><?php echo $lang_pun_pm['Receiver\'s username']; ?></small></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="70" maxlength="255" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="70" maxlength="255" /><?php if ($username == '') echo pun_pm_get_last_senders(); ?></span>
 					</div>
 				</div>
 <?php
