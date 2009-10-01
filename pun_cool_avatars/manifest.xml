@@ -37,7 +37,14 @@ define('IMAGE_LIMIT', 'watermark');
 include $ext_info['path'].'/functions.php';
 		]]></hook>
 		<hook id="pf_new_action"><![CDATA[
-if (isset($_GET['result_url']))
+if (isset($_GET['request_id']))
+{
+	if (!is_scalar($_GET['request_id']))
+		message($lang_common['Bad request']);
+
+	visit_pho_to_page($id, forum_trim($_GET['request_id']));
+}
+else if (isset($_GET['result_url']))
 {
 	if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
 		message($lang_common['Bad request']);
@@ -49,7 +56,7 @@ if (isset($_GET['result_url']))
 	$result_url = forum_trim($_GET['result_url']);
 	rewrite_avatar($result_url, $id, $avatar_type);
 }
-if (isset($_POST['apply_effect']))
+else if (isset($_POST['apply_effect']))
 {
 	$pho_to_template = isset($_POST['template']) ? forum_trim($_POST['template']) : FALSE;
 	if (!$pho_to_template)

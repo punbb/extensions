@@ -112,35 +112,43 @@ function get_new_avatar($template, $user_id, $type = 'jpg')
 
 		$get_response = xml_to_array(forum_trim($queue_response['content']));
 		if (strtolower($get_response['image_process_response']['status']) == 'ok' && !empty($get_response['image_process_response']['request_id']))
-		{
-			$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($get_response['image_process_response']['request_id'])), 10);
-			$get_result_response = xml_to_array($get_result_response['content']);
-			if (!empty($get_result_response['image_process_response']['status']))
-			{
-				switch ($get_result_response['image_process_response']['status'])
-				{
-					case 'InProgress':
-						$errors[] = 'The task is in progress';
-						break;
-					case 'Error':
-						$errors[] = 'Error has occurred while processing the task: '.$get_result_response['image_process_response']['description'];
-						break;
-					case 'WrongID':
-						$errors[] = 'There is no task with such request_id';
-						break;
-				}
-				//Redirect to pho.to page
-				if (empty($errors))
-					header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['profile_avatar'], array($user_id)))));
-			}
-			else
-				$errors[] = 'Something goes wrong!';
-		}
+			visit_pho_to_page($user_id, $get_response['image_process_response']['request_id']);
 		else
 			$errors[] = 'Something goes wrong!';
 	}
 	else
 		$errors[] = 'Service unavailable!';
+}
+
+function visit_pho_to_page($user_id, $request_id)
+{
+	global $forum_url, $errors;
+
+	if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
+		require FORUM_ROOT.'include/xml.php';
+
+	$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($request_id)), 10);
+	$get_result_response = xml_to_array($get_result_response['content']);
+	if (!empty($get_result_response['image_process_response']['status']))
+	{
+		switch ($get_result_response['image_process_response']['status'])
+		{
+			case 'InProgress':
+				$errors[] = 'The task is in progress. Wait for a while and visit this <a href="'.forum_link($forum_url['profile_avatar'], array($user_id)).'&amp;request_id='.$request_id.'">link</a>.';
+				break;
+			case 'Error':
+				$errors[] = 'Error has occurred while processing the task: '.$get_result_response['image_process_response']['description'];
+				break;
+			case 'WrongID':
+				$errors[] = 'There is no task with such request_id';
+				break;
+		}
+		//Redirect to pho.to page
+		if (empty($errors))
+			header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['profile_avatar'], array($user_id)))));
+	}
+	else
+		$errors[] = 'Something goes wrong!';
 }
 
 function get_avatar_type($user_id)
