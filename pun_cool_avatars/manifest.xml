@@ -34,20 +34,20 @@ $forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=g
 		<hook id="pf_start"><![CDATA[
 define('FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
 define('IMAGE_LIMIT', 'watermark');
+include $ext_info['path'].'/functions.php';
 		]]></hook>
 		<hook id="pf_new_action"><![CDATA[
-//include $ext_info['path'].'/functions.php';
 if (isset($_GET['result_url']))
 {
-	if (!is_scalar($_GET['result_url']) || preg_match('~\.pho\.to~', $_GET['result_url']))
+	if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
 		message($lang_common['Bad request']);
 	$avatar_type = get_avatar_type($id);
+
 	if (!$avatar_type)
 		message($lang_common['Bad request']);
 
 	$result_url = forum_trim($_GET['result_url']);
 	rewrite_avatar($result_url, $id, $avatar_type);
-	$section = 'avatar';
 }
 if (isset($_POST['apply_effect']))
 {
@@ -77,7 +77,18 @@ if (!defined('PHO.TO_TEMPLATES_LOADED') || $pho_to_templates['cached'] < (time()
 }
 		]]></hook>
 		<hook id="pf_change_details_avatar_end"><![CDATA[
-include $ext_info['path'].'/pho.to_block.php';
+if (!empty($forum_page['avatar_markup']))
+	include $ext_info['path'].'/pho.to_block.php';
+		]]></hook>
+		<hook id="ft_about_end" priority="9"><![CDATA[
+			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+			{
+				define('PUN_EXTENSIONS_USED', 1);
+				if (count($pun_extensions_used) == 1)
+					echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+				else
+					echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+			}
 		]]></hook>
 	</hooks>
 </extension>

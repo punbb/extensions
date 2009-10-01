@@ -131,8 +131,7 @@ function get_new_avatar($template, $user_id, $type = 'jpg')
 				}
 				//Redirect to pho.to page
 				if (empty($errors))
-					header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.str_replace('&amp;', '&', forum_link($forum_url['profile_avatar'], 
-array($user_id))));
+					header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['profile_avatar'], array($user_id)))));
 			}
 			else
 				$errors[] = 'Something goes wrong!';
