@@ -26,6 +26,7 @@ function generate_templates_cache()
 	if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
 		require FORUM_ROOT.'include/xml.php';
 
+	$group_reg_exp_pattern = '~group:([a-zA-Z0-9_]+)~';
 	$pho_to_templates = array();
 	$aet_templates_response = get_remote_file($forum_url['pho.to_AET_templates'], 10);
 	if (!empty($aet_templates_response['content']))
@@ -37,7 +38,7 @@ function generate_templates_cache()
 			foreach ($data_aet_templates['response']['template'] as $template)
 			{
 				//Fetch template group
-				preg_match('~group:([a-zA-Z0-9]+)~', $template['tags'], $group);
+				preg_match($group_reg_exp_pattern, $template['tags'], $group);
 				if (empty($pho_to_templates['AET']['templates'][$group[1]]))
 					$pho_to_templates['AET']['templates'][$group[1]] = array();
 				$pho_to_templates['AET']['templates'][$group[1]][] = $template['name'];
@@ -59,7 +60,7 @@ function generate_templates_cache()
 			foreach ($data_fet_templates['response']['template'] as $template)
 			{
 				//Fetch template group
-				preg_match('~group:([a-zA-Z0-9]+)~', $template['tags'], $group);
+				preg_match($group_reg_exp_pattern, $template['tags'], $group);
 				if (empty($pho_to_templates['FET']['templates'][$group[1]]))
 					$pho_to_templates['FET']['templates'][$group[1]] = array();
 				$pho_to_templates['FET']['templates'][$group[1]][] = $template['name'];
@@ -84,7 +85,7 @@ function generate_templates_cache()
 	fclose($fh);
 }
 
-function rewrite_avatar($user_id, $pho_to_result_url, $type = 'jpg')
+function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 {
 	global $forum_url, $forum_config, $errors;
 
@@ -99,11 +100,11 @@ function rewrite_avatar($user_id, $pho_to_result_url, $type = 'jpg')
 		$errors[] = 'No image';
 }
 
-function get_new_avatar($user_id, $type = 'jpg')
+function get_new_avatar($template, $user_id, $type = 'jpg')
 {
 	global $forum_url, $errors;
 
-	$queue_response = get_remote_file(gen_link($forum_url['pho.to_queue'], array(FREE_KEY, forum_link('img/avatars/'.$user_id.'.'.$type), IMAGE_LIMIT)), 10);
+	$queue_response = get_remote_file(gen_link($forum_url['pho.to_queue'], array(FREE_KEY, forum_link('img/avatars/'.$user_id.'.'.$type), IMAGE_LIMIT, $template)), 10);
 	if (!empty($queue_response['content']))
 	{
 		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
@@ -140,6 +141,22 @@ function get_new_avatar($user_id, $type = 'jpg')
 	}
 	else
 		$errors[] = 'Service unavailable!';
+}
+
+function get_avatar_type($user_id)
+{
+	global $forum_config;
+
+	$avatar_type = FALSE;
+
+	$filetypes = array('jpg', 'gif', 'png');
+	foreach ($filetypes as $cur_type)
+	{
+		if (file_exists(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$user_id.'.'.$cur_type))
+			return $cur_type;
+	}
+
+	return FALSE;
 }
 
 ?>
