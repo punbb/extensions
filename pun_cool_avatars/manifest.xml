@@ -19,9 +19,37 @@
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
+	<install><![CDATA[
+// Add extension options to the config table
+$config = array(
+	'o_pun_cool_avatars_file_dir'	=> 'img/avatars/tmp',
+	'o_pun_cool_avatars_max_height'	=> '1024',
+	'o_pun_cool_avatars_max_width'	=> '1024',
+	'o_pun_cool_avatars_max_size'	=> '1048576',
+);
+foreach ($config as $conf_name => $conf_value)
+{
+	if(!array_key_exists($conf_name, $forum_config))
+	{
+		$query = array(
+			'INSERT'	=> 'conf_name, conf_value',
+			'INTO'		=> 'config',
+			'VALUES'	=> '\''.$conf_name.'\', \''.$conf_value.'\''
+		);
+
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	}
+}
+	]]></install>	
 	<uninstall><![CDATA[
-		if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
-			unlink(FORUM_CACHE_DIR.'cache_pho_to_templates.php');
+$query = array(
+	'DELETE'	=> 'config',
+	'WHERE'		=> 'conf_name in (\'o_pun_cool_avatars_file_dir\', \'o_pun_cool_avatars_max_height\', \'o_pun_cool_avatars_max_width\', \'o_pun_cool_avatars_max_size\')',
+);
+$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
+	unlink(FORUM_CACHE_DIR.'cache_pho_to_templates.php');
 	]]></uninstall>
 
 	<hooks>
@@ -30,6 +58,7 @@ $forum_url['pho.to_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=
 $forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
 $forum_url['pho.to_AET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=AET';
 $forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
+$forum_url['edit_avatar'] = 'profile.php?section=edit_avatar&amp;id=$1';
 		]]></hook>
 		<hook id="pf_start"><![CDATA[
 define('FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
@@ -39,7 +68,7 @@ include $ext_info['path'].'/functions.php';
 		<hook id="pf_new_action"><![CDATA[
 if (isset($_GET['request_id']))
 {
-	if (!is_scalar($_GET['request_id']))
+	if (!is_scalar($_GET['result_url']))
 		message($lang_common['Bad request']);
 
 	visit_pho_to_page($id, forum_trim($_GET['request_id']));
