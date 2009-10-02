@@ -92,7 +92,7 @@ function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 	$photo_image = get_remote_file($pho_to_result_url, 10);
 	if (!empty($photo_image['content']))
 	{
-		$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$user_id.'.'.$type, 'w');
+		$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type, 'w');
 		fwrite($avatar_handler, $photo_image['content']);
 		fclose($avatar_handler);
 	}
@@ -102,9 +102,9 @@ function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 
 function get_new_avatar($template, $user_id, $type = 'jpg')
 {
-	global $forum_url, $errors;
+	global $forum_url, $errors, $forum_config;
 
-	$queue_response = get_remote_file(gen_link($forum_url['pho.to_queue'], array(FREE_KEY, forum_link('img/avatars/'.$user_id.'.'.$type), IMAGE_LIMIT, $template)), 10);
+	$queue_response = get_remote_file(gen_link($forum_url['pho.to_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), IMAGE_LIMIT, $template)), 10);
 	if (!empty($queue_response['content']))
 	{
 		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
@@ -124,17 +124,15 @@ function visit_pho_to_page($user_id, $request_id)
 {
 	global $forum_url, $errors;
 
-	if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
-		require FORUM_ROOT.'include/xml.php';
-
 	$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($request_id)), 10);
 	$get_result_response = xml_to_array($get_result_response['content']);
+
 	if (!empty($get_result_response['image_process_response']['status']))
 	{
 		switch ($get_result_response['image_process_response']['status'])
 		{
 			case 'InProgress':
-				$errors[] = 'The task is in progress. Wait for a while and visit this <a href="'.forum_link($forum_url['profile_avatar'], array($user_id)).'&amp;request_id='.$request_id.'">link</a>.';
+				$errors[] = 'The task is in progress. Wait for a while and visit this <a href="'.forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id.'">link</a>.';
 				break;
 			case 'Error':
 				$errors[] = 'Error has occurred while processing the task: '.$get_result_response['image_process_response']['description'];
@@ -145,7 +143,7 @@ function visit_pho_to_page($user_id, $request_id)
 		}
 		//Redirect to pho.to page
 		if (empty($errors))
-			header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['profile_avatar'], array($user_id)))));
+			header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['edit_avatar'], array($user_id)))));
 	}
 	else
 		$errors[] = 'Something goes wrong!';
@@ -165,6 +163,127 @@ function get_avatar_type($user_id)
 	}
 
 	return FALSE;
+}
+
+function get_file_type($user_id)
+{
+	global $forum_config;
+
+	$avatar_type = FALSE;
+
+	$filetypes = array('jpg', 'gif', 'png');
+	foreach ($filetypes as $cur_type)
+	{
+		if (file_exists(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$cur_type))
+			return $cur_type;
+	}
+
+	return FALSE;	
+}
+function upload_photo($id)
+{
+	global $errors, $forum_config, $lang_profile, $lang_pun_cool_avatars;
+
+	if (!isset($_FILES['req_file']))
+		$errors[] = $lang_profile['No file'];
+	else
+		$uploaded_file = $_FILES['req_file'];
+	if (!empty($errors))
+		return;
+	// Make sure the upload went smooth
+	if (isset($uploaded_file['error']) && empty($errors))
+	{
+		switch ($uploaded_file['error'])
+		{
+			case 1:	// UPLOAD_ERR_INI_SIZE
+			case 2:	// UPLOAD_ERR_FORM_SIZE
+				$errors[] = $lang_profile['Too large ini'];
+				break;
+
+			case 3:	// UPLOAD_ERR_PARTIAL
+				$errors[] = $lang_profile['Partial upload'];
+				break;
+
+			case 4:	// UPLOAD_ERR_NO_FILE
+				$errors[] = $lang_profile['No file'];
+				break;
+
+			case 6:	// UPLOAD_ERR_NO_TMP_DIR
+				$errors[] = $lang_profile['No tmp directory'];
+				break;
+
+			default:
+				// No error occured, but was something actually uploaded?
+				if ($uploaded_file['size'] == 0)
+					$errors[] = $lang_profile['No file'];
+				break;
+		}
+	}
+
+	if (is_uploaded_file($uploaded_file['tmp_name']) && empty($errors))
+	{
+		$allowed_types = array('image/gif', 'image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png');
+
+		if (!in_array($uploaded_file['type'], $allowed_types))
+			$errors[] = $lang_profile['Bad type'];
+		else
+		{
+			// Make sure the file isn't too big
+			if ($uploaded_file['size'] > $forum_config['o_pun_cool_avatars_max_size'])
+				$errors[] = sprintf($lang_profile['Too large'], forum_number_format($forum_config['o_pun_cool_avatars_max_size']));
+		}
+
+		if (empty($errors))
+		{
+			// Determine type
+			$extension = null;
+			if ($uploaded_file['type'] == 'image/gif')
+				$extension = '.gif';
+			else if ($uploaded_file['type'] == 'image/jpeg' || $uploaded_file['type'] == 'image/pjpeg')
+				$extension = '.jpg';
+			else
+				$extension = '.png';
+
+			// Move the file to the avatar directory. We do this before checking the width/height to circumvent open_basedir restrictions.
+			if (!@move_uploaded_file($uploaded_file['tmp_name'], $forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.'.tmp'))
+				$errors[] = sprintf($lang_profile['Move failed'], '<a href="mailto:'.forum_htmlencode($forum_config['o_admin_email']).'">'.forum_htmlencode($forum_config['o_admin_email']).'</a>');
+
+			if (empty($errors))
+			{
+				// Now check the width/height
+				list($width, $height, $type,) = getimagesize($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.'.tmp');
+				if (empty($width) || empty($height) || $width > $forum_config['o_pun_cool_avatars_max_width'] || $height > $forum_config['o_pun_cool_avatars_max_height'])
+				{
+					@unlink($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.'.tmp');
+					$errors[] = sprintf($lang_profile['Too wide or high'], $forum_config['o_pun_cool_avatars_max_width'], $forum_config['o_pun_cool_avatars_max_height']);
+				}
+				else if ($type == 1 && $uploaded_file['type'] != 'image/gif')	// Prevent dodgy uploads
+				{
+					@unlink($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.'.tmp');
+					$errors[] = $lang_profile['Bad type'];
+				}
+
+				if (empty($errors))
+				{
+					// Put the new avatar in its place
+					@rename($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.'.tmp', $forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.$extension);
+					@chmod($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.$extension, 0644);
+				}
+			}
+		}
+	}
+	else if (empty($errors))
+		$errors[] = $lang_profile['Unknown failure'];
+}
+
+function remove_photo($user_id)
+{
+	global $lang_common, $forum_config;
+
+	$type = get_file_type($user_id);
+	if (!$type)
+		message($lang_common['Bad request']);
+	unlink(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type);
 }
 
 ?>

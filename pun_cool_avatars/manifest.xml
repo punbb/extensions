@@ -40,6 +40,7 @@ foreach ($config as $conf_name => $conf_value)
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
 }
+//Temporary directory creating
 	]]></install>	
 	<uninstall><![CDATA[
 $query = array(
@@ -64,67 +65,189 @@ $forum_url['edit_avatar'] = 'profile.php?section=edit_avatar&amp;id=$1';
 define('FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
 define('IMAGE_LIMIT', 'watermark');
 include $ext_info['path'].'/functions.php';
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		]]></hook>
 		<hook id="pf_new_action"><![CDATA[
-if (isset($_GET['request_id']))
+if ($section == 'edit_avatar')
 {
-	if (!is_scalar($_GET['result_url']))
-		message($lang_common['Bad request']);
-
-	visit_pho_to_page($id, forum_trim($_GET['request_id']));
-}
-else if (isset($_GET['result_url']))
-{
-	if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
-		message($lang_common['Bad request']);
-	$avatar_type = get_avatar_type($id);
-
-	if (!$avatar_type)
-		message($lang_common['Bad request']);
-
-	$result_url = forum_trim($_GET['result_url']);
-	rewrite_avatar($result_url, $id, $avatar_type);
-}
-else if (isset($_POST['apply_effect']))
-{
-	$pho_to_template = isset($_POST['template']) ? forum_trim($_POST['template']) : FALSE;
-	if (!$pho_to_template)
-		$errors[] = 'You need to select template for applaying';
-	else if (!is_scalar($pho_to_template))
-		message($lang_common['Bad request']);
-
-	if (empty($errors))
+	//View blocks
+	$view_blocks = array();
+	$forum_page = array();
+	//Add csrf where needed
+	if (isset($_POST['photo_upload']))
 	{
-		$avatar_type = get_avatar_type($id);
-		if (!$avatar_type)
+		$file_type = get_file_type($id);
+		if (!$file_type)
+			upload_photo($id);
+		else
+			$errors[] = $lang_pun_cool_avatars['File exist'];
+
+		if (!empty($errors))
+			$view_blocks[] = 'upload_form';
+		else
+		{
+			$view_blocks[] = 'image_link';
+			$view_blocks[] = 'effects';
+		}			
+	}
+	//Sending request to pho.to service
+	else if (isset($_POST['apply_effect']))
+	{
+		$pho_to_template = isset($_POST['template']) ? forum_trim($_POST['template']) : FALSE;
+		if (!is_scalar($pho_to_template))
+			message($lang_common['Bad request']);
+		if (!$pho_to_template)
+		{
+			$errors[] = $lang_pun_cool_avatars['No templates'];
+			$view_blocks[] = 'image_link';
+			$view_blocks[] = 'effects';
+		}
+
+		if (empty($errors))
+		{
+			$file_type = get_file_type($id);
+			if (!$file_type)
+				message($lang_common['Bad request']);
+
+			get_new_avatar($id, $file_type, $pho_to_template);
+		}
+		if (!empty($errors))
+		{
+			$view_blocks[] = 'image_link';
+			$view_blocks[] = 'effects';
+		}
+	}
+	else if (isset($_GET['result_url']))
+	{
+		if (!is_scalar($_GET['result_url']) || preg_match('~\.pho\.to~', $_GET['result_url']))
 			message($lang_common['Bad request']);
 
-		get_new_avatar($pho_to_template, $id, $avatar_type);
+		$view_blocks[] = 'image_link';
+		$view_blocks[] = 'result_link';
+		$view_blocks[] = 'effects';
+	}
+	//Avatar rewriting
+	else if (isset($_GET['rewrite_avatar']))
+	{
+		if (isset($_GET['result_url']))
+		{
+			if (!is_scalar($_GET['result_url']) || preg_match('~\.pho\.to~', $_GET['result_url']))
+				message($lang_common['Bad request']);
+			$file_type = get_file_type($id);
+			if (!$file_type)
+				message($lang_common['Bad request']);
+
+			$result_url = forum_trim($_GET['result_url']);
+			rewrite_avatar($result_url, $id, $file_type);
+
+			redirect(forum_link($forum_url['profile_avatar'], $id), $lang_profile['Profile redirect']);
+		}
+		else
+			message($lang_common['Bad request']);
+	}
+	//Remove file
+	else if (isset($_GET['remove_file']))
+	{
+		remove_photo($id);
+		$view_blocks[] = 'upload_form';
+	}
+	//Default display
+	if (empty($view_blocks))
+	{
+		if (!get_file_type($id))
+			$view_blocks[] = 'upload_form';
+		else
+		{
+			$view_blocks[] = 'image_link';
+			$view_blocks[] = 'effects';
+		}
+	}
+	if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
+		include FORUM_CACHE_DIR.'cache_pho_to_templates.php';
+	if (!defined('PHO.TO_TEMPLATES_LOADED') || $pho_to_templates['cached'] < (time() - 43200))
+	{
+		generate_templates_cache();
+		require FORUM_CACHE_DIR.'cache_pho_to_templates.php';
 	}
 }
 		]]></hook>
-		<hook id="pf_change_details_avatar_pre_header_load"><![CDATA[
-if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
-	include FORUM_CACHE_DIR.'cache_pho_to_templates.php';
-if (!defined('PHO.TO_TEMPLATES_LOADED') || $pho_to_templates['cached'] < (time() - 43200))
+		<hook id="pf_change_details_new_section"><![CDATA[
+if ($section == 'edit_avatar')
 {
-	generate_templates_cache();
-	require FORUM_CACHE_DIR.'cache_pho_to_templates.php';
+	//View
+	if (in_array('effects', $view_blocks) || in_array('upload_form', $view_blocks))
+		$forum_page['form_action'] = forum_link($forum_url['edit_avatar'], $id);
+	if (in_array('image_link', $view_blocks))
+	{
+		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_cool_avatars_file_dir']).'/'.$id.'.'.get_file_type($id);
+		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar'], $id).'&amp;remove_file';
+	}
+	if (in_array('result_link', $view_blocks))
+	{
+		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
+		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar']).'&amp;rewrite_avatar&amp;';
+	}
+	// Setup breadcrumbs
+	$forum_page['crumbs'] = array(
+		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+		array(sprintf($lang_profile['Users profile'], $user['username']), forum_link($forum_url['user'], $id)),
+		array($lang_profile['Section avatar'],forum_link($forum_url['edit_avatar'], $id))
+	);
+
+	$forum_page['item_count'] = $forum_page['fld_count'] = 0;
+
+	// Setup the form
+	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
+
+	$forum_page['hidden_fields'] = array(
+		'form_sent'		=> '<input type="hidden" name="form_sent" value="1" />',
+		'max_file_size'	=> '<input type="hidden" name="MAX_FILE_SIZE" value="'.$forum_config['o_pun_cool_avatars_max_size'].'" />'		
+	);
+	if (isset($forum_page['form_action']))
+		$forum_page['hidden_fields']['csrf_token'] = '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />';
+
+	define('FORUM_PAGE', 'profile-edit-avatar');
+	require FORUM_ROOT.'header.php';
+
+	// START SUBST - <!-- forum_main -->
+	ob_start();
+
+?>
+	<div class="main-content main-frm">
+<?php
+
+	$blocks_order = array('upload_form', 'image_link', 'result_link', 'effects');
+	foreach ($blocks_order as $block)
+	{
+		if (in_array($block, $view_blocks))
+			include $ext_info['path'].'/view/block_'.$block.'.php';
+	}
+
+?>
+	</div>
+
+<?php
+
+	$tpl_temp = forum_trim(ob_get_contents());
+	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+	ob_end_clean();
+	// END SUBST - <!-- forum_main -->
+
+	require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
-		<hook id="pf_change_details_avatar_end"><![CDATA[
-if (!empty($forum_page['avatar_markup']))
-	include $ext_info['path'].'/pho.to_block.php';
-		]]></hook>
 		<hook id="ft_about_end" priority="9"><![CDATA[
-			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
-			{
-				define('PUN_EXTENSIONS_USED', 1);
-				if (count($pun_extensions_used) == 1)
-					echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
-				else
-					echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
-			}
+	if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+	{
+		define('PUN_EXTENSIONS_USED', 1);
+		if (count($pun_extensions_used) == 1)
+			echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+		else
+			echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+	}
 		]]></hook>
 	</hooks>
 </extension>
