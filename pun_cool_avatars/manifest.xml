@@ -54,6 +54,17 @@ if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
 	]]></uninstall>
 
 	<hooks>
+		<hook id="hd_main_elements"><![CDATA[
+if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $forum_config['o_avatars'])
+{
+	$main_elements['<!-- forum_main_menu -->'] .= '<div class="admin-submenu gen-content">
+		<ul>
+			<li class="'.(FORUM_PAGE == 'profile-avatar' ? 'active ' : '').'first-item"><a href="'.forum_link($forum_url['profile_avatar'], $id).'">'.$lang_pun_cool_avatars['Avatar'].'</a></li>
+			<li class="'.(FORUM_PAGE == 'profile-edit-avatar' ? 'active ' : '').'first-item"><a href="'.forum_link($forum_url['edit_avatar'], $id).'">'.$lang_pun_cool_avatars['Edit avatar'].'</a></li>
+		</ul>
+	</div>';
+}
+		]]></hook>
 		<hook id="co_modify_url_scheme"><![CDATA[
 $forum_url['pho.to_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&animated_effect:template_name=$4';
 $forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
@@ -112,7 +123,7 @@ if ($section == 'edit_avatar')
 			if (!$file_type)
 				message($lang_common['Bad request']);
 
-			get_new_avatar($id, $file_type, $pho_to_template);
+			get_new_avatar($pho_to_template, $id, $file_type);
 		}
 		if (!empty($errors))
 		{

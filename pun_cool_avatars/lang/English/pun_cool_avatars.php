@@ -6,7 +6,9 @@ $lang_pun_cool_avatars = array(
 	'Templates desc'	=>	'Templates description',
 	'Apply effect'	=>	'Apply effect',
 	'Upload photo'	=>	'Upload photo',
-	'Upload'		=>	'Upload'
+	'Upload'		=>	'Upload',
+	'Avatar'		=>	'Avatar',
+	'Edit avatar'	=>	'Edit avatar'
 );
 
 
