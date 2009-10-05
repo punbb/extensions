@@ -66,7 +66,7 @@ if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $
 }
 		]]></hook>
 		<hook id="co_modify_url_scheme"><![CDATA[
-$forum_url['pho.to_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&animated_effect:template_name=$4';
+$forum_url['pho.to_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=animated_effect:template_name=$4';
 $forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
 $forum_url['pho.to_AET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=AET';
 $forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
@@ -131,26 +131,17 @@ if ($section == 'edit_avatar')
 			$view_blocks[] = 'effects';
 		}
 	}
-	else if (isset($_GET['result_url']))
-	{
-		if (!is_scalar($_GET['result_url']) || preg_match('~\.pho\.to~', $_GET['result_url']))
-			message($lang_common['Bad request']);
-
-		$view_blocks[] = 'image_link';
-		$view_blocks[] = 'result_link';
-		$view_blocks[] = 'effects';
-	}
 	//Avatar rewriting
 	else if (isset($_GET['rewrite_avatar']))
 	{
 		if (isset($_GET['result_url']))
 		{
-			if (!is_scalar($_GET['result_url']) || preg_match('~\.pho\.to~', $_GET['result_url']))
+			if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
 				message($lang_common['Bad request']);
 			$file_type = get_file_type($id);
 			if (!$file_type)
 				message($lang_common['Bad request']);
-
+		
 			$result_url = forum_trim($_GET['result_url']);
 			rewrite_avatar($result_url, $id, $file_type);
 
@@ -159,11 +150,32 @@ if ($section == 'edit_avatar')
 		else
 			message($lang_common['Bad request']);
 	}
+	else if (isset($_GET['result_url']))
+	{
+		if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
+			message($lang_common['Bad request']);
+
+		$view_blocks[] = 'image_link';
+		$view_blocks[] = 'result_link';
+		$view_blocks[] = 'effects';
+	}
 	//Remove file
 	else if (isset($_GET['remove_file']))
 	{
 		remove_photo($id);
 		$view_blocks[] = 'upload_form';
+	}
+	else if (isset($_GET['request_id']))
+	{
+		if (!is_scalar($_GET['request_id']))
+			message($lang_common['Bad request']);
+
+		visit_pho_to_page($id, forum_trim($_GET['request_id']));
+		if (!empty($errors))
+		{
+			$view_blocks[] = 'image_url';
+			$view_blocks[] = 'effects';
+		}
 	}
 	//Default display
 	if (empty($view_blocks))
@@ -199,7 +211,7 @@ if ($section == 'edit_avatar')
 	if (in_array('result_link', $view_blocks))
 	{
 		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
-		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar']).'&amp;rewrite_avatar&amp;';
+		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar'],$id).'&amp;rewrite_avatar&amp;result_url='.$forum_page['result_image_link'];
 	}
 	// Setup breadcrumbs
 	$forum_page['crumbs'] = array(

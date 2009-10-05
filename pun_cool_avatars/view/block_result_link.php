@@ -19,7 +19,7 @@
 		</ul>
 	</div>
     <?php endif; ?>
-	<div>
-    	<img src="<?php echo $forum_page['result_image_link'] ?>" /></br>
-		<a href="<?php echo $forum_page['rewrite_avatar'] ?>">Replace or create avatar with this one.</a>
+	<div class="ct-set">
+		<p><img src="<?php echo $forum_page['result_image_link'] ?>" /></p>
+		<p><a href="<?php echo $forum_page['rewrite_avatar'] ?>">Replace or create avatar with this one.</a></p>
     </div>

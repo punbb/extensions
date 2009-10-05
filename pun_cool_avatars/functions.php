@@ -92,7 +92,9 @@ function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 	$photo_image = get_remote_file($pho_to_result_url, 10);
 	if (!empty($photo_image['content']))
 	{
-		$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type, 'w');
+		if (file_exists(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$user_id.'.'.$type))
+			unlink(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$user_id.'.'.$type);
+		$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$user_id.'.'.substr($pho_to_result_url, strrpos($pho_to_result_url, '.') + 1), 'w');
 		fwrite($avatar_handler, $photo_image['content']);
 		fclose($avatar_handler);
 	}
@@ -125,9 +127,16 @@ function visit_pho_to_page($user_id, $request_id)
 	global $forum_url, $errors;
 
 	$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($request_id)), 10);
-	$get_result_response = xml_to_array($get_result_response['content']);
+	if (!empty($get_result_response['content']))
+	{
+		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
+			require FORUM_ROOT.'include/xml.php';
+		$get_result_response = xml_to_array($get_result_response['content']);
+	}
+	else
+		$errors[] = 'Something goes wrong! Wait for a while and visit this <a href="'.forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id.'">link</a>.';
 
-	if (!empty($get_result_response['image_process_response']['status']))
+	if (empty($errors) && !empty($get_result_response['image_process_response']['status']))
 	{
 		switch ($get_result_response['image_process_response']['status'])
 		{
