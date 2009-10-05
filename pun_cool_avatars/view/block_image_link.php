@@ -11,15 +11,15 @@
 if (!empty($errors)):	
 ?>
 	<div class="ct-box error-box">
-		<h2 class="warn hn"><strong>Warning!</strong> The following errors must be corrected before your profile can be updated:</h2>
+		<h2 class="warn hn"><?php echo $lang_pun_cool_avatars['Error warning']; ?></h2>
 		<ul class="error-list">
-        <?php foreach ($errors as $error) { ?>
+		<?php foreach ($errors as $error) { ?>
 			<li class="warn"><span><?php echo $error ?></span></li>
 		<?php }?>
 		</ul>
 	</div>
-    <?php endif; ?>
+	<?php endif; ?>
 	<div class="ct-box info-box">
-    	<a href="<?php echo $forum_page['uploaded_image_link'] ?>">Here</a> you can view you uploaded image. To remove it visit this <a href="<?php echo $forum_page['uploaded_image_remove'] ?>">link</a>.
-    </div>
+		<a href="<?php echo $forum_page['uploaded_image_link'] ?>">Here</a> you can view you uploaded image. To remove it visit this <a href="<?php echo $forum_page['uploaded_image_remove'] ?>">link</a>.
+	</div>
 

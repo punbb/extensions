@@ -87,7 +87,7 @@ function generate_templates_cache()
 
 function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 {
-	global $forum_url, $forum_config, $errors;
+	global $forum_url, $forum_config, $errors, $lang_pun_cool_avatars;
 
 	$photo_image = get_remote_file($pho_to_result_url, 10);
 	if (!empty($photo_image['content']))
@@ -99,12 +99,12 @@ function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 		fclose($avatar_handler);
 	}
 	else
-		$errors[] = 'No image';
+		$errors[] = $lang_pun_cool_avatars['Pho.to error result image'];
 }
 
 function get_new_avatar($template, $user_id, $type = 'jpg')
 {
-	global $forum_url, $errors, $forum_config;
+	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
 
 	$queue_response = get_remote_file(gen_link($forum_url['pho.to_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), IMAGE_LIMIT, $template)), 10);
 	if (!empty($queue_response['content']))
@@ -116,15 +116,15 @@ function get_new_avatar($template, $user_id, $type = 'jpg')
 		if (strtolower($get_response['image_process_response']['status']) == 'ok' && !empty($get_response['image_process_response']['request_id']))
 			visit_pho_to_page($user_id, $get_response['image_process_response']['request_id']);
 		else
-			$errors[] = 'Something goes wrong!';
+			$errors[] = $lang_pun_cool_avatars['Pho.to error server'];
 	}
 	else
-		$errors[] = 'Service unavailable!';
+		$errors[] = $lang_pun_cool_avatars['Pho.to server unavailable'];
 }
 
 function visit_pho_to_page($user_id, $request_id)
 {
-	global $forum_url, $errors;
+	global $forum_url, $errors, $lang_pun_cool_avatars;
 
 	$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($request_id)), 10);
 	if (!empty($get_result_response['content']))
@@ -134,20 +134,20 @@ function visit_pho_to_page($user_id, $request_id)
 		$get_result_response = xml_to_array($get_result_response['content']);
 	}
 	else
-		$errors[] = 'Something goes wrong! Wait for a while and visit this <a href="'.forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id.'">link</a>.';
+		$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error get response'], forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id);
 
 	if (empty($errors) && !empty($get_result_response['image_process_response']['status']))
 	{
 		switch ($get_result_response['image_process_response']['status'])
 		{
 			case 'InProgress':
-				$errors[] = 'The task is in progress. Wait for a while and visit this <a href="'.forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id.'">link</a>.';
+				$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error task in progress'], forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id);
 				break;
 			case 'Error':
-				$errors[] = 'Error has occurred while processing the task: '.$get_result_response['image_process_response']['description'];
+				$errors[] = $lang_pun_cool_avatars['Pho.to error other errors'].$get_result_response['image_process_response']['description'];
 				break;
 			case 'WrongID':
-				$errors[] = 'There is no task with such request_id';
+				$errors[] = $lang_pun_cool_avatars['Pho.to error wrongId'];
 				break;
 		}
 		//Redirect to pho.to page
@@ -155,7 +155,7 @@ function visit_pho_to_page($user_id, $request_id)
 			header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['edit_avatar'], array($user_id)))));
 	}
 	else
-		$errors[] = 'Something goes wrong!';
+		$errors[] = $lang_pun_cool_avatars['Pho.to error server'];
 }
 
 function get_avatar_type($user_id)

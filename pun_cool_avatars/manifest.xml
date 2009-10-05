@@ -141,7 +141,8 @@ if ($section == 'edit_avatar')
 			$file_type = get_file_type($id);
 			if (!$file_type)
 				message($lang_common['Bad request']);
-		
+
+		
 			$result_url = forum_trim($_GET['result_url']);
 			rewrite_avatar($result_url, $id, $file_type);
 
@@ -212,6 +213,13 @@ if ($section == 'edit_avatar')
 	{
 		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
 		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar'],$id).'&amp;rewrite_avatar&amp;result_url='.$forum_page['result_image_link'];
+		$forum_page['rewrite_avatar_notice'] = get_avatar_type($id) ? $lang_pun_cool_avatars['Replace avatar'] : $lang_pun_cool_avatars['Create avatar'];
+	}
+	if (in_array('upload_form', $view_blocks))
+	{
+		$forum_page['upload_help'][] = $lang_pun_cool_avatars['Cool avatars upload info none'];
+		$forum_page['upload_help'][] = $lang_pun_cool_avatars['Cool avatars upload info type'];
+		$forum_page['upload_help'][] = sprintf($lang_pun_cool_avatars['Cool avatars upload info size'], $forum_config['o_pun_cool_avatars_max_width'], $forum_config['o_pun_cool_avatars_max_height'], forum_number_format($forum_config['o_pun_cool_avatars_max_size']), forum_number_format(ceil($forum_config['o_pun_cool_avatars_max_size'] / 1024)));
 	}
 	// Setup breadcrumbs
 	$forum_page['crumbs'] = array(
@@ -262,6 +270,85 @@ if ($section == 'edit_avatar')
 	require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
+		<hook id="aop_features_pre_header_load"><![CDATA[
+
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+		]]></hook>
+
+		<hook id="aop_features_validation"><![CDATA[
+
+			if (substr($form['pun_cool_avatars_file_dir' ], -1) == '/')
+				$form['pun_cool_avatars_file_dir'] = substr($form['pun_cool_avatars_file_dir'], 0, -1);
+ 
+			$form['pun_cool_avatars_max_width'] = intval($form['pun_cool_avatars_max_width']);
+			$form['pun_cool_avatars_max_height'] = intval($form['pun_cool_avatars_max_height']);
+			$form['pun_cool_avatars_max_size'] = intval($form['pun_cool_avatars_max_size']);
+
+		]]></hook>
+		<hook id="aop_features_avatars_fieldset_end"><![CDATA[
+
+			?>
+					<div class="content-head">
+						<h2 class="hn"><span><?php echo $lang_pun_cool_avatars['Cool avatars head'] ?></span></h2>
+					</div>
+					<fieldset class="frm-group group1">
+						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+							<div class="sf-box text">
+								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+									<span><?php echo $lang_pun_cool_avatars['Cool avatars directory label'] ?></span>
+									<small><?php echo $lang_pun_cool_avatars['Cool avatars directory help'] ?></small>
+								</label>
+								</br>
+								<span class="fld-input">
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_file_dir]" size="35" maxlength="50" value="<?php echo $forum_config['o_pun_cool_avatars_file_dir'] ?>"/>
+								</span>
+							</div>
+						</div>
+						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+							<div class="sf-box text">
+								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+									<span><?php echo $lang_pun_cool_avatars['Cool avatars max width label'] ?></span>
+									<small><?php echo $lang_pun_cool_avatars['Cool avatars max width help'] ?></small>
+								</label>
+								</br>
+								<span class="fld-input">
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_width]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_cool_avatars_max_width'] ?>"/>
+								</span>
+							</div>
+						</div>
+						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+							<div class="sf-box text">
+								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+									<span><?php echo $lang_pun_cool_avatars['Cool avatars max height label'] ?></span>
+									<small><?php echo $lang_pun_cool_avatars['Cool avatars max height help'] ?></small>
+								</label>
+								</br>
+								<span class="fld-input">
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_height]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_cool_avatars_max_height'] ?>" />
+								</span>
+							</div>
+						</div>
+						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+							<div class="sf-box text">
+								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
+									<span><?php echo $lang_pun_cool_avatars['Cool avatars max size label'] ?></span>
+									<small><?php echo $lang_pun_cool_avatars['Cool avatars max size help'] ?></small>
+								</label>
+								</br>
+								<span class="fld-input">
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_size]" size="12" maxlength="12" value="<?php echo $forum_config['o_pun_cool_avatars_max_size'] ?>"/>
+								</span>
+							</div>
+						</div>
+					</fieldset>
+			<?php
+
+		]]></hook>
+
 		<hook id="ft_about_end" priority="9"><![CDATA[
 	if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
 	{
