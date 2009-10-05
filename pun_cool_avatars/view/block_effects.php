@@ -19,46 +19,33 @@
 
 		?>
 		<div class="content-head">
-			<h2 class="hn">
-				<span><?php echo $lang_pun_cool_avatars['Templates desc'] ?></span>
-			</h2>
+			<h2 class="hn"><span><?php echo $lang_pun_cool_avatars['Templates desc'] ?></span></h2>
 		</div>
-		<fieldset class="frm-group group1">
-			<?php
+		<div class="sf-set set1">
+			<div class="sf-box select">
+				<label for="fld3"><span>Animated effects</span></label><br/>
+				<span class="fld-input">
+					<select name="template" id="template">
+					<?php
 
-			foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
-			{
+					foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
+					{
 
-			?>
-			<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
-				<legend><span><?php echo forum_htmlencode($group); ?></span></legend>
-				<div class="mf-box">
-				<?php
+					?>
+					<optgroup label="<?php echo forum_htmlencode($group); ?>">
+					<?php foreach ($template_list as $template) { ?>
+						<option value="<?php echo $template ?>"><?php echo $template ?></option>
+					<?php } ?>
+					</optgroup>
+					<?php
 
-				foreach ($template_list as $template)
-				{
+					}
 
-				?>
-					<div class="mf-item">
-						<span class="fld-input">
-							<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="radio" value="<?php echo forum_htmlencode($template); ?>" name="template"/>
-						</span>
-						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo forum_htmlencode($template); ?></span></label>
-					</div>
-				<?php
-
-				}
-				$forum_page['group_count']++;
-
-				?>
-				</div>
-			</fieldset>
-			<?php
-
-			}
-
-			?>
-		</fieldset>
+					?>
+					</select>
+				</span>
+			</div>
+		</div>
 		<?php endif; ?>
 		<div class="frm-buttons">
 			<span class="submit"><input type="submit" name="apply_effect" value="<?php echo $lang_pun_cool_avatars['Apply effect'] ?>" /></span>
