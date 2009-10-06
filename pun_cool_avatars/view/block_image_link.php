@@ -8,7 +8,8 @@
  * @package pun_cool_avatars
  */
  
-if (!empty($errors)):	
+if (!empty($errors)):
+
 ?>
 	<div class="ct-box error-box">
 		<h2 class="warn hn"><?php echo $lang_pun_cool_avatars['Error warning']; ?></h2>
@@ -20,11 +21,10 @@ if (!empty($errors)):
 	</div>
 <?php endif; ?>
 	<div class="content-head">
-		<h2 class="hn"><span>Uploadeded image</span></h2>
+		<h2 class="hn"><span><?php echo $lang_pun_cool_avatars['Uploaded image'] ?></span></h2>
 	</div>
 	<fieldset class="frm-group group1">
 		<img alt="<?php echo $forum_page['uploaded_image_link'] ?>" src="<?php echo $forum_page['uploaded_image_link'] ?>"/>
 		<p><a href="<?php echo $forum_page['uploaded_image_remove'] ?>">Remove</a></p>
 	</fieldset>
-
 

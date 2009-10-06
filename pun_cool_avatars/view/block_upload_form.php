@@ -8,8 +8,9 @@
  * @package pun_cool_avatars
  */
 
-	if (!empty($errors)):	
- ?>
+	if (!empty($errors)):
+
+?>
 	<div class="ct-box error-box">
 		<h2 class="warn hn"><?php echo $lang_pun_cool_avatars['Error warning']; ?></h2>
 		<ul class="error-list">
