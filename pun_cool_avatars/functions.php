@@ -124,7 +124,7 @@ function apply_aet_template($template, $user_id, $type = 'jpg')
 
 function apply_fet_template($template, $user_id, $type = 'jpg', $auto_crop = 'FALSE')
 {
-	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
+	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars, $forum_user;
 
 	$queue_response = get_remote_file(gen_link($forum_url['pho.to_FET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), IMAGE_LIMIT, $template, $auto_crop, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height']))), 10);
 	if (!empty($queue_response['content']))
@@ -144,7 +144,7 @@ function apply_fet_template($template, $user_id, $type = 'jpg', $auto_crop = 'FA
 
 function visit_pho_to_page($user_id, $request_id)
 {
-	global $forum_url, $errors, $lang_pun_cool_avatars;
+	global $forum_url, $errors, $lang_pun_cool_avatars, $forum_user;
 
 	$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($request_id)), 10);
 	if (!empty($get_result_response['content']))
@@ -161,7 +161,7 @@ function visit_pho_to_page($user_id, $request_id)
 		switch ($get_result_response['image_process_response']['status'])
 		{
 			case 'InProgress':
-				$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error task in progress'], forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id);
+				$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error task in progress'], forum_link($forum_url['edit_avatar_request'], array($user_id, $request_id, generate_form_token('request_id'.$forum_user['id']))));
 				break;
 			case 'Error':
 				$errors[] = $lang_pun_cool_avatars['Pho.to error other errors'].$get_result_response['image_process_response']['description'];

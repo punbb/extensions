@@ -65,13 +65,12 @@ if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $
 	</div>';
 }
 		]]></hook>
-		<hook id="co_modify_url_scheme"><![CDATA[
-$forum_url['pho.to_AET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=animated_effect:template_name=$4&result_size=$5';
-$forum_url['pho.to_FET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=collage:template_name=$4:crop_portrait=$5&result_size=$6';
-$forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
-$forum_url['pho.to_AET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=AET';
-$forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
-$forum_url['edit_avatar'] = 'profile.php?section=edit_avatar&amp;id=$1';
+		<hook id="re_rewrite_rules"><![CDATA[
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]remove_file[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&remove_file&csrf_token=$2';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&amp;rewrite_avatar&csrf_token=$2';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]request_id[\/_-]([0-9a-zA-Z\-]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&request_id=$2&csrf_token=$3';
+
 		]]></hook>
 		<hook id="pf_start"><![CDATA[
 define('FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
@@ -81,6 +80,18 @@ if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info
 	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 else
 	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+// Setup the URL rewriting scheme
+if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
+	require $ext_info['path'].'/url/'.$forum_config['o_sef'].'.php';
+else
+	require $ext_info['path'].'/url/Default.php';
+
+$forum_url['pho.to_AET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=animated_effect:template_name=$4&result_size=$5';
+$forum_url['pho.to_FET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=collage:template_name=$4:crop_portrait=$5&result_size=$6';
+$forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
+$forum_url['pho.to_AET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=AET';
+$forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
 		]]></hook>
 		<hook id="pf_new_action"><![CDATA[
 if ($section == 'edit_avatar')
@@ -183,7 +194,8 @@ if ($section == 'edit_avatar')
 	{
 		if (!is_scalar($_GET['request_id']))
 			message($lang_common['Bad request']);
-
+		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('request_id'.$forum_user['id']))
+			csrf_confirm_form();
 		visit_pho_to_page($id, forum_trim($_GET['request_id']));
 		if (!empty($errors))
 		{
@@ -220,12 +232,12 @@ if ($section == 'edit_avatar')
 	if (in_array('image_link', $view_blocks))
 	{
 		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_cool_avatars_file_dir']).'/'.$id.'.'.get_file_type($id);
-		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar'], $id).'&amp;remove_file&amp;csrf_token='.generate_form_token('remove_file'.$forum_user['id']);
+		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
 	}
 	if (in_array('result_link', $view_blocks))
 	{
 		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
-		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar'],$id).'&amp;rewrite_avatar&amp;result_url='.$forum_page['result_image_link'].'&amp;csrf_token='.generate_form_token('rewrite_avatar'.$forum_user['id']);
+		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar_rewrite_avatar'], array($id, generate_form_token('rewrite_avatar'.$forum_user['id'])));
 		$forum_page['rewrite_avatar_notice'] = get_avatar_type($id) ? $lang_pun_cool_avatars['Replace avatar'] : $lang_pun_cool_avatars['Create avatar'];
 	}
 	if (in_array('upload_form', $view_blocks))
@@ -241,17 +253,8 @@ if ($section == 'edit_avatar')
 		array($lang_profile['Section avatar'],forum_link($forum_url['edit_avatar'], $id))
 	);
 
-	$forum_page['item_count'] = $forum_page['fld_count'] = 0;
-
 	// Setup the form
 	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
-
-	$forum_page['hidden_fields'] = array(
-		'form_sent'		=> '<input type="hidden" name="form_sent" value="1" />',
-		'max_file_size'	=> '<input type="hidden" name="MAX_FILE_SIZE" value="'.$forum_config['o_pun_cool_avatars_max_size'].'" />'		
-	);
-	if (isset($forum_page['form_action']))
-		$forum_page['hidden_fields']['csrf_token'] = '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />';
 
 	define('FORUM_PAGE', 'profile-edit-avatar');
 	require FORUM_ROOT.'header.php';
