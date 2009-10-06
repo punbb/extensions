@@ -80,7 +80,7 @@ function generate_templates_cache()
 	if (!$fh)
 		error('Unable to write pho.to templates cache file to cache directory. Please make sure PHP has write access to the directory \'cache\'.', __FILE__, __LINE__);
 
-	fwrite($fh, '<?php'."\n\n".'define(\'PHO.TO_TEMPLATES_LOADED\', 1);'."\n\n".'$pho_to_templates = '.var_export($pho_to_templates, true).';'."\n\n".'?>');
+	fwrite($fh, '<?php'."\n\n".'if (!defined(\'PHO.TO_TEMPLATES_LOADED\')) define(\'PHO.TO_TEMPLATES_LOADED\', 1);'."\n\n".'$pho_to_templates = '.var_export($pho_to_templates, true).';'."\n\n".'?>');
 
 	fclose($fh);
 }

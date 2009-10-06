@@ -18,8 +18,13 @@ if (!empty($errors)):
 		<?php }?>
 		</ul>
 	</div>
-	<?php endif; ?>
-	<div class="ct-box info-box">
-		<a href="<?php echo $forum_page['uploaded_image_link'] ?>">Here</a> you can view you uploaded image. To remove it visit this <a href="<?php echo $forum_page['uploaded_image_remove'] ?>">link</a>.
+<?php endif; ?>
+	<div class="content-head">
+		<h2 class="hn"><span>Uploadeded image</span></h2>
 	</div>
+	<fieldset class="frm-group group1">
+		<img alt="<?php echo $forum_page['uploaded_image_link'] ?>" src="<?php echo $forum_page['uploaded_image_link'] ?>"/>
+		<p><a href="<?php echo $forum_page['uploaded_image_remove'] ?>">Remove</a></p>
+	</fieldset>
+
 
