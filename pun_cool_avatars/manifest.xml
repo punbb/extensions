@@ -144,6 +144,8 @@ if ($section == 'edit_avatar')
 	//Avatar rewriting
 	else if (isset($_GET['rewrite_avatar']))
 	{
+		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('rewrite_avatar'.$forum_user['id']))
+			csrf_confirm_form();
 		if (isset($_GET['result_url']))
 		{
 			if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
@@ -151,8 +153,7 @@ if ($section == 'edit_avatar')
 			$file_type = get_file_type($id);
 			if (!$file_type)
 				message($lang_common['Bad request']);
-
-		
+	
 			$result_url = forum_trim($_GET['result_url']);
 			rewrite_avatar($result_url, $id, $file_type);
 
@@ -173,6 +174,8 @@ if ($section == 'edit_avatar')
 	//Remove file
 	else if (isset($_GET['remove_file']))
 	{
+		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('remove_file'.$forum_user['id']))
+			csrf_confirm_form();
 		remove_photo($id);
 		$view_blocks[] = 'upload_form';
 	}
@@ -217,12 +220,12 @@ if ($section == 'edit_avatar')
 	if (in_array('image_link', $view_blocks))
 	{
 		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_cool_avatars_file_dir']).'/'.$id.'.'.get_file_type($id);
-		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar'], $id).'&amp;remove_file';
+		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar'], $id).'&amp;remove_file&amp;csrf_token='.generate_form_token('remove_file'.$forum_user['id']);
 	}
 	if (in_array('result_link', $view_blocks))
 	{
 		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
-		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar'],$id).'&amp;rewrite_avatar&amp;result_url='.$forum_page['result_image_link'];
+		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar'],$id).'&amp;rewrite_avatar&amp;result_url='.$forum_page['result_image_link'].'&amp;csrf_token='.generate_form_token('rewrite_avatar'.$forum_user['id']);
 		$forum_page['rewrite_avatar_notice'] = get_avatar_type($id) ? $lang_pun_cool_avatars['Replace avatar'] : $lang_pun_cool_avatars['Create avatar'];
 	}
 	if (in_array('upload_form', $view_blocks))
