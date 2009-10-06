@@ -11,6 +11,10 @@ $lang_pun_cool_avatars = array(
 	'Edit avatar'	=>	'Edit avatar',
 	'Error warning'	=>	'<strong>Warning!</strong> The following errors must be corrected before your avatar can be updated:',
 	'Replace avatar'	=>	'Replace your avatar with this one.',
+	'Autocrop portrait label'	=>	'If enabled, the face area will be automatically cropped.',
+	'Autocrop portrait'	=>	'Autocrop portrait',
+	'Animated effects'	=>	'Animated effects',
+	'Collages'			=>	'Collages',
 	'Create avatar'		=>	'Use this image like your avatar.',
 	'Cool avatars head'	=>	'Pun Cool Avatars extension',
 	'Cool avatars max width label'	=>	'Cool avatars max width',
@@ -30,7 +34,8 @@ $lang_pun_cool_avatars = array(
 	'Pho.to error wrongId'			=>	'There is no task with such request_id.',
 	'Pho.to error server'			=>	'Something goes wrong!',
 	'Pho.to server unavailable'		=>	'Service unavailable now.',
-	'Pho.to error result image'		=>	'No image'
+	'Pho.to error result image'		=>	'No image',
+	
 );
 
 ?>

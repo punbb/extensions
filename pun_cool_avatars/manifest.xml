@@ -66,7 +66,8 @@ if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $
 }
 		]]></hook>
 		<hook id="co_modify_url_scheme"><![CDATA[
-$forum_url['pho.to_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=animated_effect:template_name=$4&result_size=$5';
+$forum_url['pho.to_AET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=animated_effect:template_name=$4&result_size=$5';
+$forum_url['pho.to_FET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=collage:template_name=$4:crop_portrait=$5&result_size=$6';
 $forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
 $forum_url['pho.to_AET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=AET';
 $forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
@@ -105,9 +106,15 @@ if ($section == 'edit_avatar')
 		}			
 	}
 	//Sending request to pho.to service
-	else if (isset($_POST['apply_effect']))
+	else if (isset($_POST['aet_template_submit']) || isset($_POST['fet_template_submit']))
 	{
-		$pho_to_template = isset($_POST['template']) ? forum_trim($_POST['template']) : FALSE;
+		if (isset($_POST['aet_template_submit']))
+			$pho_to_template = isset($_POST['aet_template']) ? forum_trim($_POST['aet_template']) : FALSE;
+		else
+		{
+			$pho_to_template = isset($_POST['fet_template']) ? forum_trim($_POST['fet_template']) : FALSE;
+			$auto_crop = isset($_POST['auto_crop']) && intval($_POST['auto_crop']) == 1 ? 'true' : 'false';
+		}
 		if (!is_scalar($pho_to_template))
 			message($lang_common['Bad request']);
 		if (!$pho_to_template)
@@ -123,7 +130,10 @@ if ($section == 'edit_avatar')
 			if (!$file_type)
 				message($lang_common['Bad request']);
 
-			get_new_avatar($pho_to_template, $id, $file_type);
+			if (!isset($auto_crop))
+				apply_aet_template($pho_to_template, $id, $file_type);
+			else
+				apply_fet_template($pho_to_template, $id, $file_type, $auto_crop);
 		}
 		if (!empty($errors))
 		{

@@ -102,12 +102,31 @@ function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 		$errors[] = $lang_pun_cool_avatars['Pho.to error result image'];
 }
 
-function get_new_avatar($template, $user_id, $type = 'jpg')
+function apply_aet_template($template, $user_id, $type = 'jpg')
 {
 	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
 
-	$queue_response = get_remote_file(gen_link($forum_url['pho.to_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), IMAGE_LIMIT, $template, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height']))), 10);
+	$queue_response = get_remote_file(gen_link($forum_url['pho.to_AET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height'])), IMAGE_LIMIT, $template)), 10);
+	if (!empty($queue_response['content']))
+	{
+		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
+			require FORUM_ROOT.'include/xml.php';
 
+		$get_response = xml_to_array(forum_trim($queue_response['content']));
+		if (strtolower($get_response['image_process_response']['status']) == 'ok' && !empty($get_response['image_process_response']['request_id']))
+			visit_pho_to_page($user_id, $get_response['image_process_response']['request_id']);
+		else
+			$errors[] = $lang_pun_cool_avatars['Pho.to error server'];
+	}
+	else
+		$errors[] = $lang_pun_cool_avatars['Pho.to server unavailable'];
+}
+
+function apply_fet_template($template, $user_id, $type = 'jpg', $auto_crop = 'FALSE')
+{
+	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
+
+	$queue_response = get_remote_file(gen_link($forum_url['pho.to_FET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type, $auto_crop, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height'])), IMAGE_LIMIT, $template)), 10);
 	if (!empty($queue_response['content']))
 	{
 		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))

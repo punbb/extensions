@@ -8,46 +8,96 @@
  * @package pun_cool_avatars
  */
 
- ?>
+if (!$pho_to_templates['AET']['error'] || !$pho_to_templates['FET']['error']): ?>
+	<div class="content-head">
+		<h2 class="hn"><span><?php echo $lang_pun_cool_avatars['Templates desc'] ?></span></h2>
+	</div>
+<?php endif;
+if (!$pho_to_templates['AET']['error']):
+
+?>
 	<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action']; ?>" enctype="multipart/form-data">
 		<div class="hidden">
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
 		</div>
-		<?php
+		<fieldset class="frm-group frm-hdgroup group1">
+				<fieldset class="mf-set set1 mf-head">
+					<legend><span><?php echo $lang_pun_cool_avatars['Animated effects']; ?></span></legend>
+					<div class="mf-box">
+						<div class="mf-field mf-field1 text">
+							<span class="fld-input">
+								<select name="aet_template" id="aet_template">
+								<?php
 
-		if (!$pho_to_templates['AET']['error']):
+								foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
+								{
 
-		?>
-		<div class="content-head">
-			<h2 class="hn"><span><?php echo $lang_pun_cool_avatars['Templates desc'] ?></span></h2>
-		</div>
-		<div class="sf-set set1">
-			<div class="sf-box select">
-				<label for="fld3"><span>Animated effects</span></label><br/>
-				<span class="fld-input">
-					<select name="template" id="template">
-					<?php
+								?>
+								<optgroup label="<?php echo forum_htmlencode($group); ?>">
+								<?php foreach ($template_list as $template) { ?>
+									<option value="<?php echo $template ?>"><?php echo $template ?></option>
+								<?php } ?>
+								</optgroup>
+								<?php
 
-					foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
-					{
+								}
 
-					?>
-					<optgroup label="<?php echo forum_htmlencode($group); ?>">
-					<?php foreach ($template_list as $template) { ?>
-						<option value="<?php echo $template ?>"><?php echo $template ?></option>
-					<?php } ?>
-					</optgroup>
-					<?php
-
-					}
-
-					?>
-					</select>
-				</span>
-			</div>
-		</div>
-		<?php endif; ?>
-		<div class="frm-buttons">
-			<span class="submit"><input type="submit" name="apply_effect" value="<?php echo $lang_pun_cool_avatars['Apply effect'] ?>" /></span>
-		</div>
+								?>
+								</select>
+							</span>
+						</div>
+						<div class="mf-field text">
+							<span class="submit"><input type="submit" value="<?php echo $lang_pun_cool_avatars['Apply effect'] ?>" name="aet_template_submit"/></span>
+						</div>
+					</div>
+				</fieldset>
+			</fieldset>
 	</form>
+<?php endif;
+if (!$pho_to_templates['FET']['error']):
+
+?>
+	<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action']; ?>" enctype="multipart/form-data">
+		<div class="hidden">
+			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
+		</div>
+		<fieldset class="frm-group <?php echo $pho_to_templates['AET']['error'] ? 'frm-hdgroup' : '' ?> group2">
+				<div class="sf-set set1">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" value="1" name="auto_crop" id="fld1"/></span>
+						<label for="fld6"><span><?php echo $lang_pun_cool_avatars['Autocrop portrait']; ?></span><?php echo $lang_pun_cool_avatars['Autocrop portrait label']; ?></label>
+					</div>
+				</div>
+				<fieldset class="mf-set set1 mf-head">
+					<legend><span><?php echo $lang_pun_cool_avatars['Collages']; ?></span></legend>
+					<div class="mf-box">
+						<div class="mf-field mf-field1 text">
+							<span class="fld-input">
+								<select name="fet_template" id="fet_template">
+								<?php
+
+								foreach ($pho_to_templates['FET']['templates'] as $group => $template_list)
+								{
+
+								?>
+								<optgroup label="<?php echo forum_htmlencode($group); ?>">
+								<?php foreach ($template_list as $template) { ?>
+									<option value="<?php echo $template ?>"><?php echo $template ?></option>
+								<?php } ?>
+								</optgroup>
+								<?php
+
+								}
+
+								?>
+								</select>
+							</span>
+						</div>
+						<div class="mf-field text">
+							<span class="submit"><input type="submit" value="<?php echo $lang_pun_cool_avatars['Apply effect'] ?>" name="fet_template_submit"/></span>
+						</div>
+					</div>
+				</fieldset>
+			</fieldset>
+	</form>
+<?php endif; ?>
