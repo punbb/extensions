@@ -106,7 +106,7 @@ function apply_aet_template($template, $user_id, $type = 'jpg')
 {
 	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
 
-	$queue_response = get_remote_file(gen_link($forum_url['pho.to_AET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height'])), IMAGE_LIMIT, $template)), 10);
+	$queue_response = get_remote_file(gen_link($forum_url['pho.to_AET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), min($forum_config['o_avatars_width'], $forum_config['o_avatars_height']), IMAGE_LIMIT, $template)), 10);
 	if (!empty($queue_response['content']))
 	{
 		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
@@ -126,7 +126,7 @@ function apply_fet_template($template, $user_id, $type = 'jpg', $auto_crop = 'FA
 {
 	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
 
-	$queue_response = get_remote_file(gen_link($forum_url['pho.to_FET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type, $auto_crop, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height'])), IMAGE_LIMIT, $template)), 10);
+	$queue_response = get_remote_file(gen_link($forum_url['pho.to_FET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), $auto_crop, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height']), IMAGE_LIMIT, $template)), 10);
 	if (!empty($queue_response['content']))
 	{
 		if (!defined('FORUM_XML_FUNCTIONS_LOADED'))
@@ -207,7 +207,7 @@ function get_file_type($user_id)
 			return $cur_type;
 	}
 
-	return FALSE;	
+	return FALSE;
 }
 function upload_photo($id)
 {
