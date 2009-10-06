@@ -24,9 +24,7 @@
 		<h2 class="hn"><span><?php echo $lang_pun_cool_avatars['New avatar'] ?></span></h2>
 	</div>
 	<fieldset class="frm-group group1">
-		<div class="ct-set">
-			<p><img src="<?php echo $forum_page['result_image_link']; ?>" /></p>
-			<p><a href="<?php echo $forum_page['rewrite_avatar']; ?>"><?php echo $forum_page['rewrite_avatar_notice']; ?></a></p>
-		</div>
+		<p><img src="<?php echo $forum_page['result_image_link']; ?>" /></p>
+		<p><a href="<?php echo $forum_page['rewrite_avatar']; ?>"><?php echo $forum_page['rewrite_avatar_notice']; ?></a></p>
 	</fieldset>
 	<?php endif; ?>

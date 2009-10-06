@@ -25,6 +25,5 @@ if (!empty($errors)):
 	</div>
 	<fieldset class="frm-group group1">
 		<img alt="<?php echo $forum_page['uploaded_image_link'] ?>" src="<?php echo $forum_page['uploaded_image_link'] ?>"/>
-		<p><a href="<?php echo $forum_page['uploaded_image_remove'] ?>">Remove</a></p>
+		<p><a href="<?php echo $forum_page['uploaded_image_remove'] ?>"><?php echo $lang_pun_cool_avatars['Remove']; ?></a></p>
 	</fieldset>
-
