@@ -285,7 +285,7 @@ if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 
 	// Setup navigation menu
 	$forum_page['main_menu'] = array(
-		'inbox'		=> '<li><a href="'.forum_link($forum_url['pun_pm_inbox']).'"><span>'.$lang_pun_pm['Inbox'].'</span></a></li>',
+		'inbox'		=> '<li class="first-item"><a href="'.forum_link($forum_url['pun_pm_inbox']).'"><span>'.$lang_pun_pm['Inbox'].'</span></a></li>',
 		'outbox'	=> '<li><a href="'.forum_link($forum_url['pun_pm_outbox']).'"><span>'.$lang_pun_pm['Outbox'].'</span></a></li>',
 		'write'		=> '<li class="active"><a href="'.forum_link($forum_url['pun_pm_write']).'"><span>'.$lang_pun_pm['Compose message'].'</span></a></li>',
 	);
@@ -336,7 +336,7 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 
 	// Setup navigation menu
 	$forum_page['main_menu'] = array(
-		'inbox'		=> '<li'.(($pun_pm_page == 'inbox')  ? ' class="active"' : '').'><a href="'.forum_link($forum_url['pun_pm_inbox']).'"><span>'.$lang_pun_pm['Inbox'].'</span></a></li>',
+		'inbox'		=> '<li class="first-item'.($pun_pm_page == 'inbox' ? ' active' : '').'"><a href="'.forum_link($forum_url['pun_pm_inbox']).'"><span>'.$lang_pun_pm['Inbox'].'</span></a></li>',
 		'outbox'	=> '<li'.(($pun_pm_page == 'outbox') ? ' class="active"' : '').'><a href="'.forum_link($forum_url['pun_pm_outbox']).'"><span>'.$lang_pun_pm['Outbox'].'</span></a></li>',
 		'write'		=> '<li'.(($pun_pm_page == 'write') ? ' class="active"' : '').'><a href="'.forum_link($forum_url['pun_pm_write']).'"><span>'.$lang_pun_pm['Compose message'].'</span></a></li>',
 	);
