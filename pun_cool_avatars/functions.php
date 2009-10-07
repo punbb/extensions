@@ -294,7 +294,8 @@ function upload_photo($id)
 
 				if (empty($errors))
 				{
-					// Put the new avatar in its place
+					add_file_info($id, array('width' => $width, 'height' => $height));
+					// Put the new photo in its place
 					@rename($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.'.tmp', $forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.$extension);
 					@chmod($forum_config['o_pun_cool_avatars_file_dir'].'/'.$id.$extension, 0644);
 				}
@@ -307,12 +308,44 @@ function upload_photo($id)
 
 function remove_photo($user_id)
 {
-	global $lang_common, $forum_config;
+	global $lang_common, $forum_config, $forum_db;
 
 	$type = get_file_type($user_id);
 	if (!$type)
 		message($lang_common['Bad request']);
 	unlink(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type);
+
+	$query = array(
+		'DELETE'	=>	'pun_cool_avatars_files',
+		'WHERE'		=>	'user_id = '.$user_id
+	);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
+function add_file_info($user_id, $file_info)
+{
+	global $forum_db;
+
+	$query = array(
+		'INSERT'	=>	'user_id, width, height',
+		'INTO'		=>	'pun_cool_avatars_files',
+		'VALUES'	=>	$user_id.', '.$file_info['width'].', '.$file_info['height']
+	);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+}
+
+function get_file_info($user_id)
+{
+	global $forum_db;
+
+	$query = array(
+		'SELECT'	=>	'width, height',
+		'FROM'		=>	'pun_cool_avatars_files',
+		'WHERE'		=>	'user_id = '.$user_id
+	);
+	$res_file_info = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	list($width, $height) = $forum_db->fetch_row($res_file_info);
+
+	return array('width' => $width, 'height' => $height);
+}
 ?>

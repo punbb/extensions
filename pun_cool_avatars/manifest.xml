@@ -20,6 +20,33 @@
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
 	<install><![CDATA[
+if (!isset($forum_config['o_pun_cool_avatars_file_dir']) && !file_exists(FORUM_ROOT.'img/avatars/tmp'))
+	mkdir(FORUM_ROOT.'img/avatars/tmp');
+if (!$forum_db->table_exists('pun_cool_avatars_files'))
+{
+	$schema = array(
+		'FIELDS'			=> array(
+			'user_id'			=> array(
+				'datatype'		=> 'SERIAL',
+				'allow_null'	=> false
+			),
+			'width'=> array(
+				'datatype'		=> 'INT(5) UNSIGNED',
+				'allow_null'	=> false,
+				'default'		=> '0'
+			),
+			'height'=> array(
+				'datatype'		=> 'INT(5) UNSIGNED',
+				'allow_null'	=> false,
+				'default'		=> '0'
+			)
+		),
+		'PRIMARY KEY'	=> array('user_id')
+	);
+
+	$forum_db->create_table('pun_cool_avatars_files', $schema);
+}
+
 // Add extension options to the config table
 $config = array(
 	'o_pun_cool_avatars_file_dir'	=> 'img/avatars/tmp',
@@ -40,9 +67,11 @@ foreach ($config as $conf_name => $conf_value)
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
 }
-//Temporary directory creating
+
 	]]></install>	
 	<uninstall><![CDATA[
+$forum_db->drop_table('pun_cool_avatars_files');
+
 $query = array(
 	'DELETE'	=> 'config',
 	'WHERE'		=> 'conf_name in (\'o_pun_cool_avatars_file_dir\', \'o_pun_cool_avatars_max_height\', \'o_pun_cool_avatars_max_width\', \'o_pun_cool_avatars_max_size\')',
@@ -51,6 +80,8 @@ $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
 	unlink(FORUM_CACHE_DIR.'cache_pho_to_templates.php');
+
+unlink(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir']);
 	]]></uninstall>
 
 	<hooks>
@@ -233,6 +264,7 @@ if ($section == 'edit_avatar')
 	{
 		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_cool_avatars_file_dir']).'/'.$id.'.'.get_file_type($id);
 		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
+		$forum_page['image_size'] = get_file_info($id);
 	}
 	if (in_array('result_link', $view_blocks))
 	{
