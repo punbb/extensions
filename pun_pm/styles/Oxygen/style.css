@@ -2,25 +2,28 @@
 
 /* Message list styles */
 
-table.pun_pm_list {
+.brd .main-content table.pun_pm_list {
 	width: 100%;
 	border-collapse: collapse;
 	margin-bottom: 1em;
 }
 
-table.pun_pm_list tr td, table.pun_pm_list tr th {
+.brd .main-content table.pun_pm_list tr td,
+.brd .main-content table.pun_pm_list tr th {
 	height: auto;
 	width: auto;
 	margin: 0;
-	padding: 0.3em !important;
+	padding: 0.3em 1em;
+}
+.brd .main-content table.pun_pm_list tr td {
 	border-width: 1px;
 	border-style: solid;
-	border-color: #e2e2e4;
 }
-table.pun_pm_list tr.pm_new td, table.pun_pm_list tr.pm_new td span {
+.brd .main-content table.pun_pm_list tr.pm_new td {
 	font-weight: bold;
 }
-table.pun_pm_list tr .td1, table.pun_pm_list tr .td2 {
+.brd .main-content table.pun_pm_list tr .td1,
+.brd .main-content table.pun_pm_list tr .td2 {
 	width: 2.3em;
 	text-align: center;
 	padding-left: 0;
@@ -28,17 +31,18 @@ table.pun_pm_list tr .td1, table.pun_pm_list tr .td2 {
 	vertical-align: middle;
 }
 
-table.pun_pm_list tr .td5, table.pun_pm_list tr .td3 {
+.brd .main-content table.pun_pm_list tr .td5,
+.brd .main-content table.pun_pm_list tr .td3 {
 	width: 20%;
 }
 
-table.pun_pm_list tr .td4 span {
+.brd .main-content table.pun_pm_list tr .td4 span {
 	overflow: hidden;
 	display: block;
 	height: 1.3em;
 }
 
-table.pun_pm_list tr .td4 a.mess {
+.brd .main-content table.pun_pm_list tr .td4 a.mess {
 	text-decoration: none;
 	color: #999;
 }
@@ -59,11 +63,6 @@ div.pun_pm_msg .td1 {
 	vertical-align: top;
 }
 
-/*
-* html div.pun_pm_msg .td1 {
-	width: 15em !important;
-}
-*/
 div.pun_pm_msg .post-entry  {
 	margin: 0;
 	padding: 0;
