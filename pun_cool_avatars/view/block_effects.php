@@ -34,8 +34,8 @@ if (!$pho_to_templates['AET']['error']):
 
 								?>
 								<optgroup label="<?php echo forum_htmlencode($group); ?>">
-								<?php foreach ($template_list as $template) { ?>
-									<option value="<?php echo $template ?>"><?php echo $template ?></option>
+								<?php foreach ($template_list as $template_index => $template_info) { ?>
+									<option value="<?php echo $template_info['name'] ?>"><?php echo $template_info['title'] ?></option>
 								<?php } ?>
 								</optgroup>
 								<?php
@@ -81,8 +81,8 @@ if (!$pho_to_templates['FET']['error']):
 
 								?>
 								<optgroup label="<?php echo forum_htmlencode($group); ?>">
-								<?php foreach ($template_list as $template) { ?>
-									<option value="<?php echo $template ?>"><?php echo $template ?></option>
+								<?php foreach ($template_list as $template_index => $template_info) { ?>
+									<option value="<?php echo $template_info['name'] ?>"><?php echo $template_info['title'] ?></option>
 								<?php } ?>
 								</optgroup>
 								<?php
