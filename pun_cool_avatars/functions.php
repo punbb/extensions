@@ -161,6 +161,8 @@ function visit_pho_to_page($user_id, $request_id)
 		switch ($get_result_response['image_process_response']['status'])
 		{
 			case 'InProgress':
+				usleep(170000);
+				header('Location: '.str_replace('&amp;', '&', forum_link($forum_url['edit_avatar_request'], array($user_id, $request_id, generate_form_token('request_id'.$forum_user['id'])))));
 				$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error task in progress'], forum_link($forum_url['edit_avatar_request'], array($user_id, $request_id, generate_form_token('request_id'.$forum_user['id']))));
 				break;
 			case 'Error':

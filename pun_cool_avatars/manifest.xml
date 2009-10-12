@@ -102,13 +102,14 @@ if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $
 		<hook id="re_rewrite_rules"><![CDATA[
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1';
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]remove_file[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&remove_file&csrf_token=$2';
-$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&amp;rewrite_avatar&csrf_token=$2';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-zA-Z\-:\/_\.]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&amp;id=$1&amp;rewrite_avatar&amp;result_url=$2&amp;csrf_token=$3';
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]request_id[\/_-]([0-9a-zA-Z\-]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&request_id=$2&csrf_token=$3';
 
 		]]></hook>
 		<hook id="pf_start"><![CDATA[
 define('FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
 define('IMAGE_LIMIT', 'watermark');
+define('ATTEMPTS_COUNT', 3);
 include $ext_info['path'].'/functions.php';
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -272,7 +273,7 @@ if ($section == 'edit_avatar')
 	if (in_array('result_link', $view_blocks))
 	{
 		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
-		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar_rewrite_avatar'], array($id, generate_form_token('rewrite_avatar'.$forum_user['id'])));
+		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar_rewrite_avatar'], array($id, $forum_page['result_image_link'], generate_form_token('rewrite_avatar'.$forum_user['id'])));
 		$forum_page['rewrite_avatar_notice'] = get_avatar_type($id) ? $lang_pun_cool_avatars['Replace avatar'] : $lang_pun_cool_avatars['Create avatar'];
 	}
 	if (in_array('upload_form', $view_blocks))
