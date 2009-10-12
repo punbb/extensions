@@ -85,6 +85,9 @@ unlink(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir']);
 	]]></uninstall>
 
 	<hooks>
+		<hook id="hd_head"><![CDATA[
+$forum_head['avatars_js'] = '<script type="text/javascript" src="'.$ext_info['url'].'/common.js"></script>';
+		]]></hook>
 		<hook id="hd_main_elements"><![CDATA[
 if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $forum_config['o_avatars'])
 {
@@ -278,6 +281,14 @@ if ($section == 'edit_avatar')
 		$forum_page['upload_help'][] = $lang_pun_cool_avatars['Cool avatars upload info type'];
 		$forum_page['upload_help'][] = sprintf($lang_pun_cool_avatars['Cool avatars upload info size'], $forum_config['o_pun_cool_avatars_max_width'], $forum_config['o_pun_cool_avatars_max_height'], forum_number_format($forum_config['o_pun_cool_avatars_max_size']), forum_number_format(ceil($forum_config['o_pun_cool_avatars_max_size'] / 1024)));
 	}
+	if (in_array('effects', $view_blocks))
+	{
+		$tmp_preview_images = array();
+		foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
+			foreach ($template_list as $template_index => $template_info)
+				$tmp_preview_images[] = '"'.$template_info['thumb'].'"';
+		$forum_page['preview_templates_str'] = implode(',', $tmp_preview_images);
+	}
 	// Setup breadcrumbs
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
@@ -317,6 +328,10 @@ if ($section == 'edit_avatar')
 
 	require FORUM_ROOT.'footer.php';
 }
+		]]></hook>
+		<hook id="ft_about_output_start"><![CDATA[
+if (FORUM_PAGE == 'profile-edit-avatar' && in_array('effects', $view_blocks))
+	include $ext_info['path'].'/view/block_js.php';
 		]]></hook>
 		<hook id="aop_features_pre_header_load"><![CDATA[
 

@@ -41,7 +41,7 @@ function generate_templates_cache()
 				preg_match($group_reg_exp_pattern, $template['tags'], $group);
 				if (empty($pho_to_templates['AET']['templates'][$group[1]]))
 					$pho_to_templates['AET']['templates'][$group[1]] = array();
-				$pho_to_templates['AET']['templates'][$group[1]][] = array('name' => $template['name'], 'title' => $template['title']);
+				$pho_to_templates['AET']['templates'][$group[1]][] = array('name' => $template['name'], 'title' => $template['title'], 'thumb' => $template['thumb']);
 			}
 			$pho_to_templates['AET']['error'] = FALSE;
 		}
@@ -63,7 +63,7 @@ function generate_templates_cache()
 				preg_match($group_reg_exp_pattern, $template['tags'], $group);
 				if (empty($pho_to_templates['FET']['templates'][$group[1]]))
 					$pho_to_templates['FET']['templates'][$group[1]] = array();
-				$pho_to_templates['FET']['templates'][$group[1]][] = array('name' => $template['name'], 'title' => $template['title']);
+				$pho_to_templates['FET']['templates'][$group[1]][] = array('name' => $template['name'], 'title' => $template['title'], 'thumb' => $template['thumb']);
 			}
 			$pho_to_templates['FET']['error'] = FALSE;
 		}
