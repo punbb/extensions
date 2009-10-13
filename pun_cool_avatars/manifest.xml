@@ -284,11 +284,26 @@ if ($section == 'edit_avatar')
 	}
 	if (in_array('effects', $view_blocks))
 	{
-		$tmp_preview_images = array();
-		foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
-			foreach ($template_list as $template_index => $template_info)
-				$tmp_preview_images[] = '"'.$template_info['thumb'].'"';
-		$forum_page['preview_templates_str'] = implode(',', $tmp_preview_images);
+		if (!$pho_to_templates['AET']['error'] || !$pho_to_templates['FET']['error'])
+		{
+			$tmp_preview_images = array();
+			if (!$pho_to_templates['AET']['error'])
+			{
+				foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
+					foreach ($template_list as $template_index => $template_info)
+						$tmp_preview_images[] = '"'.$template_info['thumb'].'"';
+				$forum_page['preview_aet_templates_str'] = implode(',', $tmp_preview_images);
+			}
+			$tmp_preview_images = array();
+			if (!$pho_to_templates['FET']['error'])
+			{
+				foreach ($pho_to_templates['FET']['templates'] as $group => $template_list)
+					foreach ($template_list as $template_index => $template_info)
+						$tmp_preview_images[] = '"'.$template_info['thumb'].'"';
+				$forum_page['preview_fet_templates_str'] = implode(',', $tmp_preview_images);
+			}
+			unset($tmp_preview_images);
+		}	
 	}
 	// Setup breadcrumbs
 	$forum_page['crumbs'] = array(

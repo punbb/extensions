@@ -63,7 +63,11 @@ if (!$pho_to_templates['FET']['error']):
 		<div class="hidden">
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
 		</div>
-		<fieldset class="frm-group <?php echo $pho_to_templates['AET']['error'] ? 'frm-hdgroup' : '' ?> group2">
+		<fieldset class="frm-group <?php echo $pho_to_templates['AET']['error'] ? 'frm-hdgroup' : '' ?> group1">
+				<div class="ct-set">
+					<div class="ct-box" id="div_fet">
+					</div>
+				</div>
 				<div class="sf-set set1">
 					<div class="sf-box checkbox">
 						<span class="fld-input"><input type="checkbox" value="1" name="auto_crop" id="fld1"/></span>

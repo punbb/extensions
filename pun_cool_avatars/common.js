@@ -6,14 +6,6 @@
  * @package pun_cool_avatars
  */
 
-Forum.addPreviewTemplatesBlock = function()
-{
-	var imgElem = document.createElement('img');
-	imgElem.id = 'template_image';
-
-	document.getElementById('div_aet').appendChild(imgElem);
-	updateImg();
-}
 Forum.addEvent = function(elm, evType, fn, useCapture)
 {
 	if (elm.addEventListener) {
