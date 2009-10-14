@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_admin_broadcast_email</id>
 	<title>Broadcast e-mail.</title>
-	<version>0.1</version>
+	<version>0.2</version>
 	<description>Add posibility to send e-mail messages to groups of users.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
