@@ -47,6 +47,7 @@ ob_start();
 			<input type="hidden" name="<?php echo $field_name; ?>" value="<?php echo $field_value; ?>" />
 			<?php } ?>
 		</div>
+		<fieldset class="frm-group group1">
 		<div class="ct-group">
 			<table cellspacing="0" summary="<?php echo $lang_pun_admin_broadcast_email['Table summary'] ?>">
 				<thead>
@@ -68,6 +69,18 @@ ob_start();
 					<?php } ?>
 				</tbody>
 			</table>
+		</div>
+		<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+			<div class="sf-box text">
+				<label for="fld<?php echo $forum_page['fld_count'] ?>">
+					<span><?php echo $lang_pun_admin_broadcast_email['Emails per cycle'] ?></span>
+					<small><?php echo $lang_pun_admin_broadcast_email['Per cycle info'] ?></small>
+				</label>
+				<br/>
+				<span class="fld-input">
+					<input id="fld<?php echo ++$forum_page['fld_count'] ?>" type="text" maxlength="7" size="7" name="per_page" value="<?php echo isset($forum_page['per_page']) ? $forum_page['per_page'] : '100'; ?>"/>
+				</span>
+			</div>
 		</div>
 		<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 			<div class="sf-box checkbox">
@@ -109,6 +122,7 @@ ob_start();
 				</div>
 			</div>
 		</div>
+		</fieldset>
 		<div class="frm-buttons">
 			<span class="submit"><input type="submit" name="submit" value="<?php echo $lang_pun_admin_broadcast_email['Submit'] ?>" /></span>
 			<span class="submit"><input type="submit" name="preview" value="<?php echo $lang_pun_admin_broadcast_email['Preview'] ?>" /></span>

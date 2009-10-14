@@ -11,12 +11,13 @@
 if (!defined('FORUM'))
 	exit;
 
+define('PUN_ADMIN_BROADCAST_EMAIL_COOKIE_NAME', 'pun_admin_broadcast_email_data');
+
 function pun_admin_broadcast_email_parse_string($subject, $user_info)
 {	
 	$tpl_vars = pun_admin_broadcast_email_gen_tpl_vars($user_info);
 	foreach ($tpl_vars as $tpl_var => $tpl_value)
 		$subject = str_ireplace($tpl_var, $tpl_value, $subject);
-
 	return $subject;
 }
 
@@ -45,6 +46,42 @@ function pun_admin_broadcast_email_send_mail($subject, $message, $user_data, $pa
 	$tmp_message = $parse_message ? pun_admin_broadcast_email_parse_string($message, $user_data) : $message;
 
 	forum_mail($user_data['email'], $tmp_subject, $tmp_message);
+}
+
+function pun_admin_broadcast_email_get_cookie_data()
+{
+	global $forum_db, $db_type, $forum_config, $forum_user;
+
+	$now = time();
+
+	// If a cookie is set, we get information about e-mails
+	if (!empty($_COOKIE[PUN_ADMIN_BROADCAST_EMAIL_COOKIE_NAME]))
+	{
+		$cookie_data = explode('|', base64_decode($_COOKIE[PUN_ADMIN_BROADCAST_EMAIL_COOKIE_NAME]));
+
+		if (!empty($cookie_data) && count($cookie_data) == 6)
+			list($cookie['group_ids'], $cookie['use_vars'], $cookie['subject'], $cookie['message'], $cookie['expiration_time'], $cookie['expire_hash']) = $cookie_data;
+		else
+			return FALSE;
+
+		if (intval($cookie['expiration_time']) <= $now)
+			return FALSE;
+
+		if ($cookie['expire_hash'] !== sha1($forum_user['salt'].$forum_user['password'].forum_hash(intval($cookie['expiration_time']), $forum_user['salt'])))
+			return FALSE;
+
+		return array('groups' => $cookie['group_ids'], 'parse_mail' => $cookie['use_vars'], 'req_subject' => $cookie['subject'], 'req_message' => $cookie['message']);
+	}
+	else
+		return FALSE;
+}
+
+function pun_admin_broadcast_email_set_cookie_data($selected_groups, $use_tpl_vars, $email_subject, $email_message)
+{
+	global $forum_user, $forum_config;
+
+	$expire = time() + $forum_config['o_timeout_online'];
+	forum_setcookie(PUN_ADMIN_BROADCAST_EMAIL_COOKIE_NAME, base64_encode(implode(',', $selected_groups).'|use_vars:'.($use_tpl_vars ? '1' : '0').'|'.$email_subject.'|'.$email_message.'|'.$expire.'|'.sha1($forum_user['salt'].$forum_user['password'].forum_hash($expire, $forum_user['salt']))), $expire);
 }
 
 ?>

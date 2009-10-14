@@ -32,6 +32,7 @@
 					include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 				else
 					include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+				include $ext_info['path'].'/functions.php';
 
 				$forum_page = array();
 				$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
@@ -40,10 +41,35 @@
 				$forum_page['email_subject'] = '';
 				$forum_page['email_message'] = '';
 				$forum_page['errors'] = array();
-				if (isset($_POST['form_sent']))
+				if (isset($_POST['form_sent']) || isset($_GET['start_at']))
 				{
-					//Data validation
-					$forum_page['selected_groups']= isset($_POST['groups']) && is_array($_POST['groups']) ? $_POST['groups'] : array();
+					if (isset($_POST['form_sent']))
+					{
+						$forum_page['selected_groups']= isset($_POST['groups']) && is_array($_POST['groups']) ? $_POST['groups'] : array();
+						$forum_page['parse_mail'] = isset($_POST['parse_mail']) && $_POST['parse_mail'] == '1' ? true : false;
+						$forum_page['email_subject'] = forum_trim($_POST['req_subject']);
+						$forum_page['email_message'] = forum_linebreaks(forum_trim($_POST['req_message']));
+						$forum_page['per_page'] = isset($_POST['per_page']) && intval($_POST['per_page']) > 0 ? intval($_POST['per_page']) : false;
+					}
+					//Start at determined, fetch info from cookie
+					if (isset($_GET['start_at']))
+					{
+						$forum_page['start_at'] = intval($_GET['start_at']) > 0 ? intval($_GET['start_at']) : false;
+						if (!$forum_page['start_at'])
+							message($lang_common['Bad request']);
+						$cookie_data = pun_admin_broadcast_email_get_cookie_data();
+						if (!$cookie_data)
+							message($lang_pun_admin_broadcast_email['Cookie fail']);
+						$forum_page['selected_groups'] = explode(',', $cookie_data['groups']);
+						$parse_mail = forum_trim($cookie_data['parse_mail']);
+						$use_tpl_vars = substr($parse_mail, strrpos($parse_mail, ':') + 1);
+						if ($use_tpl_vars != '0' && $use_tpl_vars != '1')
+							message($lang_common['Bad request']);
+						$forum_page['parse_mail'] = $use_tpl_vars;
+						$forum_page['email_subject'] = forum_trim($cookie_data['req_subject']);
+						$forum_page['email_message'] = forum_linebreaks(forum_trim($cookie_data['req_message']));
+						$forum_page['per_page'] = isset($_GET['per_page']) && intval($_GET['per_page']) > 0 ? intval($_GET['per_page']) : false;
+					}
 					$forum_page['selected_groups'] = array_map('intval', $forum_page['selected_groups']);
 
 					if (empty($forum_page['selected_groups']))
@@ -51,34 +77,46 @@
 					if (in_array(FORUM_GUEST, $forum_page['selected_groups']))
 						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err guest group'];
 
-					$forum_page['email_subject'] = forum_trim($_POST['req_subject']);
-					if ($forum_page['email_subject'] == '')
+					if (!$forum_page['per_page'])
+						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err per page'];
+
+					if (empty($forum_page['email_subject']))
 						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err no subject'];
 					else if (utf8_strlen($forum_page['email_subject']) > 70)
 						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err long subject'];
 
 					// Clean up message from POST
-					$forum_page['email_message'] = forum_linebreaks(forum_trim($_POST['req_message']));
-					if ($forum_page['email_message'] == '')
+					if (empty($forum_page['email_message']))
 						$forum_page['errors'][] = $lang_pun_admin_broadcast_email['Err no message'];
 					if (strlen($forum_page['email_message']) > FORUM_MAX_POSTSIZE_BYTES)
 						$forum_page['errors'][] = sprintf($lang_pun_admin_broadcast_email['Err long message'], forum_number_format(strlen($forum_page['email_message'])), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
 
-					include $ext_info['path'].'/functions.php';
-					if (!defined('FORUM_EMAIL_FUNCTIONS_LOADED'))
-						include FORUM_ROOT.'/include/email.php';
-
-					$forum_page['parse_mail'] = isset($_POST['parse_mail']) && $_POST['parse_mail'] == '1' ? true : false;
 					if (empty($forum_page['errors']) && !isset($_POST['preview']))
 					{
 						//Sending e-mails
+						if (!defined('FORUM_EMAIL_FUNCTIONS_LOADED'))
+							include FORUM_ROOT.'/include/email.php';
+
 						@set_time_limit(0);
 						$pun_broadcast_query = array(
 							'SELECT'	=>	'*',
 							'FROM'		=>	'users',
 							'WHERE'		=>	'group_id IN ('.implode(',', $forum_page['selected_groups']).')'
 						);
+						if (isset($forum_page['start_at']))
+						{
+							$pun_broadcast_query['LIMIT'] = $forum_page['start_at'].', '.$forum_page['per_page'];
+							$forum_page['start_at'] = $forum_page['start_at'] + $forum_page['per_page'];
+						}
+						else
+						{
+							$pun_broadcast_query['LIMIT'] = $forum_page['per_page'];
+							$forum_page['start_at'] = $forum_page['per_page'];
+						}
 						$pun_broadcast_result = $forum_db->query_build($pun_broadcast_query) or error(__FILE__, __LINE__);
+
+						if (!$forum_db->num_rows($pun_broadcast_result))
+							redirect(forum_link($forum_url['pun_broadcast_email']), $lang_pun_admin_broadcast_email['Task finished'].$lang_common['Redirecting'].'…');
 
 						$forum_page['email_num'] = 0;
 						while ($cur_user = $forum_db->fetch_assoc($pun_broadcast_result))
@@ -86,8 +124,13 @@
 							pun_admin_broadcast_email_send_mail($forum_page['email_subject'], $forum_page['email_message'], $cur_user, $forum_page['parse_mail']);
 							$forum_page['email_num']++;
 						}
-
-						redirect(forum_link($forum_url['pun_broadcast_email']), ($forum_page['email_num'] > 1 ? $lang_pun_admin_broadcast_email['Emails sent'] : $lang_pun_admin_broadcast_email['Email sent']).' '.$lang_common['Redirecting'].'…');
+						if ($forum_page['per_page'] == $forum_page['email_num'])
+						{
+							pun_admin_broadcast_email_set_cookie_data($forum_page['selected_groups'], 'use_vars:'.(int) $forum_page['parse_mail'], $forum_page['email_subject'], $forum_page['email_message']);
+							$query_str = '&start_at='.$forum_page['start_at'].'&per_page='.$forum_page['per_page'];
+							exit('<script type="text/javascript">window.location="'.forum_link($forum_url['pun_broadcast_email']).$query_str .'"</script><br />'.$lang_pun_admin_broadcast_email['Javascript redirect'].' <a href="'.forum_link($forum_url['pun_broadcast_email']).$query_str.'">'.$lang_pun_admin_broadcast_email['Click to continue'].'</a>.');
+						}
+						redirect(forum_link($forum_url['pun_broadcast_email']), $lang_pun_admin_broadcast_email['Task finished'].$lang_common['Redirecting'].'…');
 					}
 				}
 
