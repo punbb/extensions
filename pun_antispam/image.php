@@ -28,5 +28,3 @@ usleep(300000);
 
 $img = new securimage();
 $img->show();
-
-?>

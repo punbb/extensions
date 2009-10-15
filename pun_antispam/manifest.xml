@@ -14,13 +14,11 @@
 	<extension engine="1.0">
 	<id>pun_antispam</id>
 	<title>Antispam System</title>
-	<version>1.3.1</version>
-	<description>Adds CAPTCHA to the register, login and guest post form. Allow setting restrictions for adding user signatures, web link.</description>
+	<version>1.3.2</version>
+	<description>Adds CAPTCHA to registration, login and guest posting forms. Puts restrictions on adding user signatures and website links.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
-
-	<note type="install" timing="pre">WARNING! If pun_antispam 1.3 is already installed on your forum, web links and signatures of the users whose number of posts is fewer than the "Minimal posts" parameter will be cleared.</note>
 
 	<install><![CDATA[
 
@@ -50,15 +48,6 @@ foreach ($pun_antispam_config as $conf_name => $conf_value)
 		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
 }
-if ($forum_config['p_sig_min_posts'] > 0)
-{
-	$pun_antispam_query = array(
-		'UPDATE'	=> 'users',
-		'SET'		=> 'signature = \'\', url = \'\'',
-		'WHERE'		=> 'num_posts < '.$forum_config['p_sig_min_posts']
-	);
-	$forum_db->query_build($pun_antispam_query) or error(__FILE__, __LINE__);
-}
 	]]></install>
 
 	<uninstall><![CDATA[
@@ -81,7 +70,8 @@ else
 		<hook id="rg_register_form_submitted"><![CDATA[
 if ($forum_config['o_pun_antispam_captcha_register'] == '1')
 {
-	session_start();
+	if (session_id() == "")
+		session_start();
 
 	if (empty($_SESSION['pun_antispam_confirmed_user']))
 	{
@@ -116,7 +106,8 @@ if ($forum_config['o_pun_antispam_captcha_register'] == '1' && empty($_SESSION['
 		]]></hook>
 
 		<hook id="li_login_form_submitted"><![CDATA[
-session_start();
+if (session_id() == "")
+	session_start();
 
 if ($forum_config['o_pun_antispam_captcha_login'] == '1' && (isset($_SESSION['pun_antispam_logins']) && $_SESSION['pun_antispam_logins'] > 5) && (empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 	$errors[] = $lang_pun_antispam['Invalid Text'];
@@ -132,7 +123,7 @@ if ($authorized && empty($errors))
 		<hook id="li_login_pre_remember_me_checkbox"><![CDATA[
 if ($forum_config['o_pun_antispam_captcha_login'] == '1')
 {
-	if (empty($errors))
+	if (empty($errors) && session_id() == "")
 		session_start();
 
 	// Output CAPTCHA if first attempts failed
@@ -160,7 +151,8 @@ if ($forum_config['o_pun_antispam_captcha_login'] == '1')
 		<hook id="li_forgot_pass_selected"><![CDATA[
 if (isset($_POST['form_sent']))
 {
-	session_start();
+	if (session_id() == "")
+		session_start();
 
 	if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1' && (empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 		$errors[] = $lang_pun_antispam['Invalid Text'];
@@ -188,7 +180,8 @@ if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1')
 		<hook id="po_end_validation"><![CDATA[
 if ($forum_user['is_guest'] && $forum_config['o_pun_antispam_captcha_guestpost'] == '1')
 {
-	session_start();
+	if (session_id() == "")
+		session_start();
 
 	if (empty($_SESSION['pun_antispam_confirmed_user']))
 	{
@@ -219,7 +212,7 @@ if ($forum_config['o_pun_antispam_captcha_guestpost'] == '1' && empty($_SESSION[
 						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_antispam_input" value="" size="20" maxlength="10" /></span>
 					</div>
 					<img id="pun_antispam_image" src="<?php echo $ext_info['url'].'/image.php?'.md5(time()) ?>" style="vertical-align: middle; margin: 0 1em;" alt="<?php echo $lang_pun_antispam['img alt'] ?>" /><br />
-					<script>document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
+					<script type="text/javascript">document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
 				</div>
 <?php
 }
@@ -227,14 +220,14 @@ if ($forum_config['o_pun_antispam_captcha_guestpost'] == '1' && empty($_SESSION[
 
 		<hook id="aop_features_pre_sig_content_fieldset"><![CDATA[
 
-		?>
+?>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_antispam['Min posts for sig'] ?></span><small><?php echo $lang_pun_antispam['Min posts for sig info'] ?></small></label><br />
 						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="form[sig_min_posts]" size="5" maxlength="5" value="<?php echo $forum_config['p_sig_min_posts'] ?>" /></span>
 					</div>
 				</div>
-		<?php
+<?php
 
 		]]></hook>
 
@@ -285,142 +278,54 @@ if (!isset($form['pun_antispam_captcha_register']) || $form['pun_antispam_captch
 if (!isset($form['pun_antispam_captcha_login']) || $form['pun_antispam_captcha_login'] != '1') $form['pun_antispam_captcha_login'] = '0';
 if (!isset($form['pun_antispam_captcha_guestpost']) || $form['pun_antispam_captcha_guestpost'] != '1') $form['pun_antispam_captcha_guestpost'] = '0';
 if (!isset($form['pun_antispam_captcha_restorepass']) || $form['pun_antispam_captcha_restorepass'] != '1') $form['pun_antispam_captcha_restorepass'] = '0';
-if (!isset($form['sig_min_posts']))
-	$form['sig_min_posts'] = '0';
-else
-	$form['sig_min_posts'] = intval($form['sig_min_posts']);
+$form['sig_min_posts'] = isset($form['sig_min_posts']) ? intval($form['sig_min_posts']) : '0';
 		]]></hook>
 
-		<hook id="pf_change_details_signature_validation"><![CDATA[
-if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
+		<hook id="pf_change_details_signature_pre_fieldset"><![CDATA[
+if (isset($forum_page['sig_demo']) && $forum_page['sig_demo'] != '' && !$forum_user['is_admmod'] && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
 {
-	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	else
-		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-	message(sprintf($lang_pun_antispam['Signature info'], $forum_config['p_sig_min_posts']));
-}
-		]]></hook>
-
-		<hook id="pf_change_details_identity_validation"><![CDATA[
-if (isset($form['url']) && $forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
-	message(sprintf($lang_pun_antispam['Website info'], $forum_config['p_sig_min_posts']));
-		]]></hook>
-
-		<hook id="pf_change_details_identity_pre_header_load"><![CDATA[
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-		]]></hook>
-		<hook id="pf_change_details_identity_pre_personal_fieldset"><![CDATA[
-if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
-{
-
-	?>
-	<div class="ct-box info-box"><?php printf($lang_pun_antispam['Website info'], $forum_config['p_sig_min_posts']); ?></div>
-	<?php
-
-}
-		]]></hook>
-
-		<hook id="pf_change_details_identity_pre_url"><![CDATA[
-if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
-{
+	if (!isset($lang_pun_antispam))
+	{
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	}
 
 ?>
-<?php ($hook = get_hook('pf_change_details_identity_pre_jabber')) ? eval($hook) : null; ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box text">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['Jabber'] ?></span></label><br />
-						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[jabber]" value="<?php echo(isset($form['jabber']) ? forum_htmlencode($form['jabber']) : forum_htmlencode($user['jabber'])) ?>" size="40" maxlength="80" /></span>
-					</div>
-				</div>
-<?php ($hook = get_hook('pf_change_details_identity_pre_icq')) ? eval($hook) : null; ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box text">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['ICQ'] ?></span></label><br />
-						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[icq]" value="<?php echo(isset($form['icq']) ? forum_htmlencode($form['icq']) : $user['icq']) ?>" size="12" maxlength="12" /></span>
-					</div>
-				</div>
-<?php ($hook = get_hook('pf_change_details_identity_pre_msn')) ? eval($hook) : null; ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box text">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['MSN'] ?></span></label><br />
-						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[msn]" value="<?php echo(isset($form['msn']) ? forum_htmlencode($form['msn']) : forum_htmlencode($user['msn'])) ?>" size="40" maxlength="80" /></span>
-					</div>
-				</div>
-<?php ($hook = get_hook('pf_change_details_identity_pre_aim')) ? eval($hook) : null; ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box text">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['AOL IM'] ?></span></label><br />
-						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[aim]" value="<?php echo(isset($form['aim']) ? forum_htmlencode($form['aim']) : forum_htmlencode($user['aim'])) ?>" size="20" maxlength="30" /></span>
-					</div>
-				</div>
-<?php ($hook = get_hook('pf_change_details_identity_pre_yahoo')) ? eval($hook) : null; ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box text">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_profile['Yahoo'] ?></span></label><br />
-						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[yahoo]" value="<?php echo(isset($form['yahoo']) ? forum_htmlencode($form['yahoo']) : forum_htmlencode($user['yahoo'])) ?>" size="20" maxlength="30" /></span>
-					</div>
-				</div>
-<?php ($hook = get_hook('pf_change_details_identity_pre_contact_fieldset_end')) ? eval($hook) : null; ?>
-			</fieldset>
-<?php ($hook = get_hook('pf_change_details_identity_contact_fieldset_end')) ? eval($hook) : null; ?>
-			<div class="frm-buttons">
-				<span class="submit"><input type="submit" name="update" value="<?php echo $lang_profile['Update profile'] ?>" /> <?php echo $lang_profile['Instructions'] ?></span>
+			<div class="ct-box info-box">
+				<p class="warn"><?php echo $lang_pun_antispam['No signature yet']; ?></p>
 			</div>
-		</form>
-	</div>
 <?php
 
-		($hook = get_hook('pf_change_details_identity_end')) ? eval($hook) : null;
-
-		$tpl_temp = forum_trim(ob_get_contents());
-		$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
-		ob_end_clean();
-		// END SUBST - <!-- forum_main -->
-
-		require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
 
-		<hook id="pf_change_details_signature_output_start"><![CDATA[
-if ($forum_user['g_id'] != FORUM_ADMIN && $forum_user['g_moderator'] != '1' && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
+		<hook id="pf_change_details_identity_contact_fieldset_end"><![CDATA[
+if ((isset($form['url']) ? forum_htmlencode($form['url']) : forum_htmlencode($user['url'])) != '' && !$forum_user['is_admmod'] && $forum_user['num_posts'] < $forum_config['p_sig_min_posts'])
 {
-	// Load the captcha language file
-	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	else
-		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	if (!isset($lang_pun_antispam))
+	{
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	}
 
 ?>
-	<div class="main-subhead">
-		<h2 class="hn"><span><?php printf(($forum_page['own_profile']) ? $lang_profile['Sig welcome'] : $lang_profile['Sig welcome user'], forum_htmlencode($user['username'])) ?></span></h2>
-	</div>
-	<div class="main-content main-frm">
-		<div class="ct-box info-box"><?php printf($lang_pun_antispam['Signature info'], $forum_config['p_sig_min_posts']); ?></div>
-	</div>
+			<div class="ct-box info-box">
+				<p class="warn"><?php echo $lang_pun_antispam['No website yet']; ?></p>
+			</div>
 <?php
 
-		$tpl_temp = forum_trim(ob_get_contents());
-		$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
-		ob_end_clean();
-		// END SUBST - <!-- forum_main -->
-
-		require FORUM_ROOT.'footer.php';
 }
 		]]></hook>
 
-		<hook id="aop_pre_update_configuration"><![CDATA[
-if ($form['sig_min_posts'] > $forum_config['p_sig_min_posts'])
+		<hook id="vt_post_loop_start"><![CDATA[
+if ($cur_post['g_id'] != FORUM_ADMIN && $cur_post['num_posts'] < $forum_config['p_sig_min_posts'])
 {
-	$pun_antispam_query = array(
-		'UPDATE'	=>	'users',
-		'SET'		=>	'signature = \'\', url = \'\'',
-		'WHERE'		=>	'num_posts < '.$form['sig_min_posts']
-	);
-	$forum_db->query_build($pun_antispam_query) or error(__FILE__, __LINE__);
+	$cur_post['signature'] = '';
+	$cur_post['url'] = '';
 }
 		]]></hook>
 

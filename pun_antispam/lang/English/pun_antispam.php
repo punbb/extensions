@@ -19,10 +19,8 @@ $lang_pun_antispam = array(
 	'Captcha reset info'			=>	'Require a captcha to be entered when users try to reset their passwords.',
 	'Captcha guestpost info'		=>	'Require a captcha for guest posting (if enabled one).',
 
-	'Signature info'				=>	'You should have more than %s posts to add a signature.',
-	'Website info'					=>	'You should have more than %s posts to add a website link.',
 	'Min posts for sig'				=>	'Minimum posts',
-	'Min posts for sig info'		=>	'The minimum count of posts before a user can add a signature and website link to his posts (pun_antispam extension). If the new value of an option is more than the old value, the links and signatures of users who have fewer posts than the new value will be cleared.'
+	'Min posts for sig info'		=>	'The minimum number of posts a user is required to write to be able to add a signature or a website link to his posts (pun_antispam extension). If the new value of the option is more than the old one, links and signatures of users with fewer posts than the new value will be cleared.',
+	'No signature yet'				=>	'<strong>Note!</strong> Your signature is not displayed in your posts because you have not spent enough time at the forum. Please, wait for a while.',
+	'No website yet'				=>	'<strong>Note!</strong> Your website link is not displayed in your posts because you have not spent enough time at the forum. Please, wait for a while.',
 );
-
-?>
