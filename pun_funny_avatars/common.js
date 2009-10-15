@@ -1,9 +1,9 @@
 /**
- * pun_cool_avatars common javascript functions
+ * pun_funny_avatars common javascript functions
  *
  * @copyright (C) 2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_cool_avatars
+ * @package pun_funny_avatars
  */
 
 Forum.addEvent = function(elm, evType, fn, useCapture)

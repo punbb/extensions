@@ -1,10 +1,10 @@
 <?php
 /**
- * pun_cool_avatars functions
+ * pun_funny_avatars functions
  *
  * @copyright (C) 2008-2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_cool_avatars
+ * @package pun_funny_avatars
  */
  
 // Make sure no one attempts to run this script "directly"
@@ -87,7 +87,7 @@ function generate_templates_cache()
 
 function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 {
-	global $forum_url, $forum_config, $errors, $lang_pun_cool_avatars;
+	global $forum_url, $forum_config, $errors, $lang_pun_funny_avatars;
 
 	$photo_image = get_remote_file($pho_to_result_url, 10);
 	if (!empty($photo_image['content']))
@@ -99,12 +99,12 @@ function rewrite_avatar($pho_to_result_url, $user_id, $type = 'jpg')
 		fclose($avatar_handler);
 	}
 	else
-		$errors[] = $lang_pun_cool_avatars['Pho.to error result image'];
+		$errors[] = $lang_pun_funny_avatars['Pho.to error result image'];
 }
 
 function apply_aet_template($template, $user_id, $type = 'jpg')
 {
-	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars;
+	global $forum_url, $errors, $forum_config, $lang_pun_funny_avatars;
 
 	$queue_response = get_remote_file(gen_link($forum_url['pho.to_AET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), IMAGE_LIMIT, $template, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height']))), 10);
 	if (!empty($queue_response['content']))
@@ -116,15 +116,15 @@ function apply_aet_template($template, $user_id, $type = 'jpg')
 		if (strtolower($get_response['image_process_response']['status']) == 'ok' && !empty($get_response['image_process_response']['request_id']))
 			visit_pho_to_page($user_id, $get_response['image_process_response']['request_id']);
 		else
-			$errors[] = $lang_pun_cool_avatars['Pho.to error server'];
+			$errors[] = $lang_pun_funny_avatars['Pho.to error server'];
 	}
 	else
-		$errors[] = $lang_pun_cool_avatars['Pho.to server unavailable'];
+		$errors[] = $lang_pun_funny_avatars['Pho.to server unavailable'];
 }
 
 function apply_fet_template($template, $user_id, $type = 'jpg', $auto_crop = 'FALSE')
 {
-	global $forum_url, $errors, $forum_config, $lang_pun_cool_avatars, $forum_user;
+	global $forum_url, $errors, $forum_config, $lang_pun_funny_avatars, $forum_user;
 
 	$queue_response = get_remote_file(gen_link($forum_url['pho.to_FET_queue'], array(FREE_KEY, forum_link($forum_config['o_pun_cool_avatars_file_dir'].'/'.$user_id.'.'.$type), IMAGE_LIMIT, $template, $auto_crop, min($forum_config['o_avatars_width'], $forum_config['o_avatars_height']))), 10);
 	if (!empty($queue_response['content']))
@@ -136,15 +136,15 @@ function apply_fet_template($template, $user_id, $type = 'jpg', $auto_crop = 'FA
 		if (strtolower($get_response['image_process_response']['status']) == 'ok' && !empty($get_response['image_process_response']['request_id']))
 			visit_pho_to_page($user_id, $get_response['image_process_response']['request_id']);
 		else
-			$errors[] = $lang_pun_cool_avatars['Pho.to error server'];
+			$errors[] = $lang_pun_funny_avatars['Pho.to error server'];
 	}
 	else
-		$errors[] = $lang_pun_cool_avatars['Pho.to server unavailable'];
+		$errors[] = $lang_pun_funny_avatars['Pho.to server unavailable'];
 }
 
 function visit_pho_to_page($user_id, $request_id)
 {
-	global $forum_url, $errors, $lang_pun_cool_avatars, $forum_user;
+	global $forum_url, $errors, $lang_pun_funny_avatars, $forum_user;
 
 	$get_result_response = get_remote_file(gen_link($forum_url['pho.to_get-result'], array($request_id)), 10);
 	if (!empty($get_result_response['content']))
@@ -154,7 +154,7 @@ function visit_pho_to_page($user_id, $request_id)
 		$get_result_response = xml_to_array($get_result_response['content']);
 	}
 	else
-		$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error get response'], forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id);
+		$errors[] = sprintf($lang_pun_funny_avatars['Pho.to error get response'], forum_link($forum_url['edit_avatar'], array($user_id)).'&amp;request_id='.$request_id);
 
 	if (empty($errors) && !empty($get_result_response['image_process_response']['status']))
 	{
@@ -163,13 +163,13 @@ function visit_pho_to_page($user_id, $request_id)
 			case 'InProgress':
 				usleep(170000);
 				header('Location: '.str_replace('&amp;', '&', forum_link($forum_url['edit_avatar_request'], array($user_id, $request_id, generate_form_token('request_id'.$forum_user['id'])))));
-				$errors[] = sprintf($lang_pun_cool_avatars['Pho.to error task in progress'], forum_link($forum_url['edit_avatar_request'], array($user_id, $request_id, generate_form_token('request_id'.$forum_user['id']))));
+				$errors[] = sprintf($lang_pun_funny_avatars['Pho.to error task in progress'], forum_link($forum_url['edit_avatar_request'], array($user_id, $request_id, generate_form_token('request_id'.$forum_user['id']))));
 				break;
 			case 'Error':
-				$errors[] = $lang_pun_cool_avatars['Pho.to error other errors'].$get_result_response['image_process_response']['description'];
+				$errors[] = $lang_pun_funny_avatars['Pho.to error other errors'].$get_result_response['image_process_response']['description'];
 				break;
 			case 'WrongID':
-				$errors[] = $lang_pun_cool_avatars['Pho.to error wrongId'];
+				$errors[] = $lang_pun_funny_avatars['Pho.to error wrongId'];
 				break;
 		}
 		//Redirect to pho.to page
@@ -177,7 +177,7 @@ function visit_pho_to_page($user_id, $request_id)
 			header('Location: '.$get_result_response['image_process_response']['page_to_visit'].'&redirect_url='.urlencode(str_replace('&amp;', '&', forum_link($forum_url['edit_avatar'], array($user_id)))));
 	}
 	else
-		$errors[] = $lang_pun_cool_avatars['Pho.to error server'];
+		$errors[] = $lang_pun_funny_avatars['Pho.to error server'];
 }
 
 function get_avatar_type($user_id)
@@ -213,7 +213,7 @@ function get_file_type($user_id)
 }
 function upload_photo($id)
 {
-	global $errors, $forum_config, $lang_profile, $lang_pun_cool_avatars;
+	global $errors, $forum_config, $lang_profile, $lang_pun_funny_avatars;
 
 	if (!isset($_FILES['req_file']))
 		$errors[] = $lang_profile['No file'];

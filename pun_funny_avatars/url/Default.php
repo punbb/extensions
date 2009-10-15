@@ -4,7 +4,7 @@
  *
  * @copyright (C) 2008-2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_cool_avatars
+ * @package pun_funny_avatars
  */
 
 $forum_url['edit_avatar'] = 'profile.php?section=edit_avatar&amp;id=$1';

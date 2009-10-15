@@ -1,6 +1,14 @@
 <?php
 
-$lang_pun_cool_avatars = array(
+/**
+ * Lang file for pun_tags
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_funny_avatars
+ */
+
+$lang_pun_funny_avatars = array(
 	'File exist'	=>	'You have already uploaded the file.',
 	'No templates'	=>	'You need to select a template to apply.',
 	'Templates desc'	=>	'Available templates',
@@ -14,7 +22,6 @@ $lang_pun_cool_avatars = array(
 	'Uploaded image'	=>	'Uploaded image',
 	'Autocrop portrait label'	=>	'If enabled, the face area will be automatically cropped.',
 	'Autocrop portrait'	=>	'Autocrop portrait',
-	'Animated effects'	=>	'Animated effects',
 	'New avatar'		=>	'New avatar',
 	'Collages'			=>	'Collages',
 	'Remove'			=>	'Remove photo.',
