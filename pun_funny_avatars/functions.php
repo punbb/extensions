@@ -152,7 +152,7 @@ function pun_funny_avatars_get_file_type($user_id)
 
 	return FALSE;
 }
-function pun_animated_avatars_upload_photo($id)
+function pun_funny_avatars_upload_photo($id)
 {
 	global $errors, $forum_config, $lang_profile, $lang_pun_funny_avatars;
 
@@ -237,7 +237,7 @@ function pun_animated_avatars_upload_photo($id)
 
 				if (empty($errors))
 				{
-					pun_animated_avatars_add_file_info($id, array('width' => $width, 'height' => $height));
+					pun_funny_avatars_add_file_info($id, array('width' => $width, 'height' => $height));
 					// Put the new photo in its place
 					@rename($forum_config['o_pun_funny_avatars_file_dir'].'/'.$id.'.tmp', $forum_config['o_pun_funny_avatars_file_dir'].'/'.$id.$extension);
 					@chmod($forum_config['o_pun_funny_avatars_file_dir'].'/'.$id.$extension, 0644);
@@ -249,7 +249,7 @@ function pun_animated_avatars_upload_photo($id)
 		$errors[] = $lang_profile['Unknown failure'];
 }
 
-function pun_animated_avatars_remove_photo($user_id)
+function pun_funny_avatars_remove_photo($user_id)
 {
 	global $lang_common, $forum_config, $forum_db;
 
@@ -265,7 +265,7 @@ function pun_animated_avatars_remove_photo($user_id)
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
-function pun_animated_avatars_add_file_info($user_id, $file_info)
+function pun_funny_avatars_add_file_info($user_id, $file_info)
 {
 	global $forum_db;
 
@@ -277,7 +277,7 @@ function pun_animated_avatars_add_file_info($user_id, $file_info)
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
-function pun_animated_avatars_get_file_info($user_id)
+function pun_funny_avatars_get_file_info($user_id)
 {
 	global $forum_db;
 

@@ -145,7 +145,7 @@ if ($section == 'funny_avatar')
 	{
 		$file_type = pun_funny_avatars_get_file_type($id);
 		if (!$file_type)
-			pun_animated_avatars_photo($id);
+			pun_funny_avatars_upload_photo($id);
 		else
 			$errors[] = $lang_pun_funny_avatars['File exist'];
 
@@ -231,7 +231,7 @@ if ($section == 'funny_avatar')
 	{
 		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('remove_file'.$forum_user['id']))
 			csrf_confirm_form();
-		pun_animated_avatars_remove_photo($id);
+		pun_funny_avatars_remove_photo($id);
 		$view_blocks[] = 'upload_form';
 	}
 	else if (isset($_GET['request_id']))
@@ -277,7 +277,7 @@ if ($section == 'funny_avatar')
 	{
 		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_funny_avatars_file_dir']).'/'.$id.'.'.pun_funny_avatars_get_file_type($id);
 		$forum_page['uploaded_image_remove'] = forum_link($forum_url['funny_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
-		$forum_page['image_size'] = pun_animated_avatars_get_file_info($id);
+		$forum_page['image_size'] = pun_funny_avatars_get_file_info($id);
 	}
 	if (in_array('result_link', $view_blocks))
 	{
