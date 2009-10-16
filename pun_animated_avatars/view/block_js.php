@@ -8,7 +8,7 @@
  * @package pun_animated_avatars
  */
 
-if (!$pho_to_templates['AET']['error']): ?>
+if (!$animated_templates['AET']['error']): ?>
 <script type="text/javascript">
 	var head_notice = document.createElement('h3');
 	head_notice.className = 'hn ct-legend';

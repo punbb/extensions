@@ -8,7 +8,7 @@
  * @package pun_animated_avatars
  */
 
-if (!$pho_to_templates['AET']['error']): ?>
+if (!$animated_templates['AET']['error']): ?>
 
 	<div class="content-head">
 		<h2 class="hn"><span><?php echo $lang_pun_animated_avatars['Templates desc'] ?></span></h2>
@@ -29,7 +29,7 @@ if (!$pho_to_templates['AET']['error']): ?>
 							<select name="aet_template" id="aet_template">
 							<?php
 
-							foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
+							foreach ($animated_templates['AET']['templates'] as $group => $template_list)
 							{
 
 							?>
