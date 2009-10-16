@@ -15,14 +15,14 @@
 	<id>pun_funny_avatars</id>
 	<title>Funny avatars</title>
 	<version>0.1</version>
-	<description>The extension allow to use photo templates from service http://avatar.pho.to/.</description>
+	<description>The extension allow to use funny photo templates from service http://avatar.pho.to/.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
 	<install><![CDATA[
-if (!isset($forum_config['o_pun_cool_avatars_file_dir']) && !file_exists(FORUM_ROOT.'img/avatars/tmp'))
-	mkdir(FORUM_ROOT.'img/avatars/tmp');
-if (!$forum_db->table_exists('pun_cool_avatars_files'))
+if (!isset($forum_config['o_pun_funny_avatars_file_dir']) && !file_exists(FORUM_ROOT.'img/avatars/pun_funny_avatars'))
+	mkdir(FORUM_ROOT.'img/avatars/pun_funny_avatars');
+if (!$forum_db->table_exists('pun_funny_avatars_files'))
 {
 	$schema = array(
 		'FIELDS'			=> array(
@@ -44,15 +44,15 @@ if (!$forum_db->table_exists('pun_cool_avatars_files'))
 		'PRIMARY KEY'	=> array('user_id')
 	);
 
-	$forum_db->create_table('pun_cool_avatars_files', $schema);
+	$forum_db->create_table('pun_funny_avatars_files', $schema);
 }
 
 // Add extension options to the config table
 $config = array(
-	'o_pun_cool_avatars_file_dir'	=> 'img/avatars/tmp',
-	'o_pun_cool_avatars_max_height'	=> '1024',
-	'o_pun_cool_avatars_max_width'	=> '1024',
-	'o_pun_cool_avatars_max_size'	=> '1048576',
+	'o_pun_funny_avatars_file_dir'	=> 'img/avatars/tmp',
+	'o_pun_funny_avatars_max_height'	=> '1024',
+	'o_pun_funny_avatars_max_width'	=> '1024',
+	'o_pun_funny_avatars_max_size'	=> '1048576',
 );
 foreach ($config as $conf_name => $conf_value)
 {
@@ -70,46 +70,54 @@ foreach ($config as $conf_name => $conf_value)
 
 	]]></install>	
 	<uninstall><![CDATA[
-$forum_db->drop_table('pun_cool_avatars_files');
+$forum_db->drop_table('pun_funny_avatars_files');
 
 $query = array(
 	'DELETE'	=> 'config',
-	'WHERE'		=> 'conf_name in (\'o_pun_cool_avatars_file_dir\', \'o_pun_cool_avatars_max_height\', \'o_pun_cool_avatars_max_width\', \'o_pun_cool_avatars_max_size\')',
+	'WHERE'		=> 'conf_name in (\'o_pun_funny_avatars_file_dir\', \'o_pun_funny_avatars_max_height\', \'o_pun_funny_avatars_max_width\', \'o_pun_funny_avatars_max_size\')',
 );
 $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
-	unlink(FORUM_CACHE_DIR.'cache_pho_to_templates.php');
+if (file_exists(FORUM_CACHE_DIR.'cache_pun_funny_avatars.php'))
+	unlink(FORUM_CACHE_DIR.'cache_pun_funny_avatars.php');
 
-unlink(FORUM_ROOT.$forum_config['o_pun_cool_avatars_file_dir']);
+unlink(FORUM_ROOT.$forum_config['o_pun_funny_avatars_file_dir']);
 	]]></uninstall>
 
 	<hooks>
 		<hook id="hd_head"><![CDATA[
-$forum_head['avatars_js'] = '<script type="text/javascript" src="'.$ext_info['url'].'/common.js"></script>';
+if (FORUM_PAGE == 'profile-funny-avatar')
+	$forum_head['pun_funny_avatars_js'] = '<script type="text/javascript" src="'.$ext_info['url'].'/common.js"></script>';
 		]]></hook>
-		<hook id="hd_main_elements"><![CDATA[
-if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-edit-avatar') && $forum_config['o_avatars'])
+		<hook id="hd_visit_elements"><![CDATA[
+if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-funny-avatar') && $forum_config['o_avatars'])
 {
-	$main_elements['<!-- forum_main_menu -->'] .= '<div class="admin-submenu gen-content">
-		<ul>
-			<li class="'.(FORUM_PAGE == 'profile-avatar' ? 'active ' : '').'first-item"><a href="'.forum_link($forum_url['profile_avatar'], $id).'">'.$lang_pun_funny_avatars['Avatar'].'</a></li>
-			<li class="'.(FORUM_PAGE == 'profile-edit-avatar' ? 'active ' : '').'first-item"><a href="'.forum_link($forum_url['edit_avatar'], $id).'">'.$lang_pun_funny_avatars['Edit avatar'].'</a></li>
-		</ul>
-	</div>';
+	if (!isset($avatars_links))
+		$avatars_links = array();
+	$avatars_links['profile-avatar'] = '<li class="'.(FORUM_PAGE == 'profile-avatar' ? 'active ' : '').'first-item"><a href="'.forum_link($forum_url['profile_avatar'], $id).'">'.$lang_pun_funny_avatars['Avatar'].'</a></li>';
+	$avatars_links['profile-funny-avatar'] = '<li class="'.(FORUM_PAGE == 'profile-funny-avatar' ? 'active ' : '').'first-item"><a href="'.forum_link($forum_url['funny_avatar'], $id).'">'.$lang_pun_funny_avatars['Funny avatar'].'</a></li>';
+}
+		]]></hook>		
+		<hook id="hd_main_elements"><![CDATA[
+if (!empty($avatars_links))
+{
+	$main_elements['<!-- forum_main_menu -->'] .= '<div class="admin-submenu gen-content"><ul>';
+	$main_elements['<!-- forum_main_menu -->'] .= implode($avatars_links);
+	$main_elements['<!-- forum_main_menu -->'] .= '</ul></div>';
+	unset($avatars_links);
 }
 		]]></hook>
+
 		<hook id="re_rewrite_rules"><![CDATA[
-$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1';
-$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]remove_file[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&remove_file&csrf_token=$2';
-$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-zA-Z\-:\/_\.]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&amp;id=$1&amp;rewrite_avatar&amp;result_url=$2&amp;csrf_token=$3';
-$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]edit_avatar[\/_-]request_id[\/_-]([0-9a-zA-Z\-]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=edit_avatar&id=$1&request_id=$2&csrf_token=$3';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]funny_avatar(\.html?|\/)?$/i'] = 'profile.php?section=funny_avatar&id=$1';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]funny_avatar[\/_-]remove_file[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=funny_avatar&id=$1&remove_file&csrf_token=$2';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]funny_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-zA-Z\-:\/_\.]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=funny_avatar&amp;id=$1&amp;rewrite_avatar&amp;result_url=$2&amp;csrf_token=$3';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]funny_avatar[\/_-]request_id[\/_-]([0-9a-zA-Z\-]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=funny_avatar&id=$1&request_id=$2&csrf_token=$3';
 
 		]]></hook>
 		<hook id="pf_start"><![CDATA[
-define('FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
-define('IMAGE_LIMIT', 'watermark');
-define('ATTEMPTS_COUNT', 3);
+define('PUN_FUNNY_AVATARS_FREE_KEY', '3CCREZBSFGLPUYAXT7RJL6KEF6EB');
+define('PUN_FUNNY_AVATARS_IMAGE_LIMIT', 'watermark');
 include $ext_info['path'].'/functions.php';
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -122,14 +130,12 @@ if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
 else
 	require $ext_info['path'].'/url/Default.php';
 
-$forum_url['pho.to_AET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=animated_effect:template_name=$4&result_size=$5';
 $forum_url['pho.to_FET_queue'] = 'http://ope-api.pho.to/queued.php?key=$1&image_url=$2&image_limit=$3&methods_list=collage:template_name=$4:crop_portrait=$5&result_size=$6';
 $forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_id=$1&remove_limit=visit_page';
-$forum_url['pho.to_AET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=AET';
 $forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
 		]]></hook>
 		<hook id="pf_new_action"><![CDATA[
-if ($section == 'edit_avatar')
+if ($section == 'funny_avatar')
 {
 	//View blocks
 	$view_blocks = array();
@@ -137,9 +143,9 @@ if ($section == 'edit_avatar')
 	//Add csrf where needed
 	if (isset($_POST['photo_upload']))
 	{
-		$file_type = get_file_type($id);
+		$file_type = pun_funny_avatars_get_file_type($id);
 		if (!$file_type)
-			upload_photo($id);
+			pun_animated_avatars_photo($id);
 		else
 			$errors[] = $lang_pun_funny_avatars['File exist'];
 
@@ -152,15 +158,11 @@ if ($section == 'edit_avatar')
 		}			
 	}
 	//Sending request to pho.to service
-	else if (isset($_POST['aet_template_submit']) || isset($_POST['fet_template_submit']))
+	else if (isset($_POST['fet_template_submit']))
 	{
-		if (isset($_POST['aet_template_submit']))
-			$pho_to_template = isset($_POST['aet_template']) ? forum_trim($_POST['aet_template']) : FALSE;
-		else
-		{
-			$pho_to_template = isset($_POST['fet_template']) ? forum_trim($_POST['fet_template']) : FALSE;
-			$auto_crop = isset($_POST['auto_crop']) && intval($_POST['auto_crop']) == 1 ? 'true' : 'false';
-		}
+		$pho_to_template = isset($_POST['fet_template']) ? forum_trim($_POST['fet_template']) : FALSE;
+		$auto_crop = isset($_POST['auto_crop']) && intval($_POST['auto_crop']) == 1 ? 'true' : 'false';
+
 		if (!is_scalar($pho_to_template))
 			message($lang_common['Bad request']);
 		if (!$pho_to_template)
@@ -172,14 +174,11 @@ if ($section == 'edit_avatar')
 
 		if (empty($errors))
 		{
-			$file_type = get_file_type($id);
+			$file_type = pun_funny_avatars_get_file_type($id);
 			if (!$file_type)
 				message($lang_common['Bad request']);
 
-			if (!isset($auto_crop))
-				apply_aet_template($pho_to_template, $id, $file_type);
-			else
-				apply_fet_template($pho_to_template, $id, $file_type, $auto_crop);
+			pun_funny_avatars_template($pho_to_template, $id, $file_type, $auto_crop);
 		}
 		if (!empty($errors))
 		{
@@ -196,13 +195,23 @@ if ($section == 'edit_avatar')
 		{
 			if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
 				message($lang_common['Bad request']);
-			$file_type = get_file_type($id);
+			$file_type = pun_funny_avatars_get_file_type($id);
 			if (!$file_type)
 				message($lang_common['Bad request']);
 	
 			$result_url = forum_trim($_GET['result_url']);
-			rewrite_avatar($result_url, $id, $file_type);
 
+			$photo_image = get_remote_file($result_url, 10);
+			if (!empty($photo_image['content']))
+			{
+				if (file_exists(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.$file_type))
+					unlink(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.$file_type);
+				$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.substr($result_url, strrpos($result_url, '.') + 1), 'w');
+				fwrite($avatar_handler, $photo_image['content']);
+				fclose($avatar_handler);
+			}
+			else
+				$errors[] = $lang_pun_funny_avatars['Pho.to error result image'];
 			redirect(forum_link($forum_url['profile_avatar'], $id), $lang_profile['Profile redirect']);
 		}
 		else
@@ -222,7 +231,7 @@ if ($section == 'edit_avatar')
 	{
 		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('remove_file'.$forum_user['id']))
 			csrf_confirm_form();
-		remove_photo($id);
+		pun_animated_avatars_remove_photo($id);
 		$view_blocks[] = 'upload_form';
 	}
 	else if (isset($_GET['request_id']))
@@ -231,7 +240,7 @@ if ($section == 'edit_avatar')
 			message($lang_common['Bad request']);
 		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('request_id'.$forum_user['id']))
 			csrf_confirm_form();
-		visit_pho_to_page($id, forum_trim($_GET['request_id']));
+		pun_funny_avatars_visit_pho_to_page($id, forum_trim($_GET['request_id']));
 		if (!empty($errors))
 		{
 			$view_blocks[] = 'image_url';
@@ -241,7 +250,7 @@ if ($section == 'edit_avatar')
 	//Default display
 	if (empty($view_blocks))
 	{
-		if (!get_file_type($id))
+		if (!pun_funny_avatars_get_file_type($id))
 			$view_blocks[] = 'upload_form';
 		else
 		{
@@ -249,55 +258,47 @@ if ($section == 'edit_avatar')
 			$view_blocks[] = 'effects';
 		}
 	}
-	if (file_exists(FORUM_CACHE_DIR.'cache_pho_to_templates.php'))
-		include FORUM_CACHE_DIR.'cache_pho_to_templates.php';
-	if (!defined('PHO.TO_TEMPLATES_LOADED') || $pho_to_templates['cached'] < (time() - 43200))
+	if (file_exists(FORUM_CACHE_DIR.'cache_pun_funny_avatars.php'))
+		include FORUM_CACHE_DIR.'cache_pun_funny_avatars.php';
+	if (!defined('FUNNY_TEMPLATES_LOADED') || $funny_templates['cached'] < (time() - 43200))
 	{
-		generate_templates_cache();
-		require FORUM_CACHE_DIR.'cache_pho_to_templates.php';
+		pun_funny_avatars_generate_templates_cache();
+		require FORUM_CACHE_DIR.'cache_pun_funny_avatars.php';
 	}
 }
 		]]></hook>
 		<hook id="pf_change_details_new_section"><![CDATA[
-if ($section == 'edit_avatar')
+if ($section == 'funny_avatar')
 {
 	//View
 	if (in_array('effects', $view_blocks) || in_array('upload_form', $view_blocks))
-		$forum_page['form_action'] = forum_link($forum_url['edit_avatar'], $id);
+		$forum_page['form_action'] = forum_link($forum_url['funny_avatar'], $id);
 	if (in_array('image_link', $view_blocks))
 	{
-		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_cool_avatars_file_dir']).'/'.$id.'.'.get_file_type($id);
-		$forum_page['uploaded_image_remove'] = forum_link($forum_url['edit_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
-		$forum_page['image_size'] = get_file_info($id);
+		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_funny_avatars_file_dir']).'/'.$id.'.'.pun_funny_avatars_get_file_type($id);
+		$forum_page['uploaded_image_remove'] = forum_link($forum_url['funny_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
+		$forum_page['image_size'] = pun_animated_avatars_get_file_info($id);
 	}
 	if (in_array('result_link', $view_blocks))
 	{
 		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
-		$forum_page['rewrite_avatar'] = forum_link($forum_url['edit_avatar_rewrite_avatar'], array($id, $forum_page['result_image_link'], generate_form_token('rewrite_avatar'.$forum_user['id'])));
-		$forum_page['rewrite_avatar_notice'] = get_avatar_type($id) ? $lang_pun_funny_avatars['Replace avatar'] : $lang_pun_funny_avatars['Create avatar'];
+		$forum_page['rewrite_avatar'] = forum_link($forum_url['funny_avatar_rewrite_avatar'], array($id, $forum_page['result_image_link'], generate_form_token('rewrite_avatar'.$forum_user['id'])));
+		$forum_page['rewrite_avatar_notice'] = pun_funny_avatars_get_avatar_type($id) ? $lang_pun_funny_avatars['Replace avatar'] : $lang_pun_funny_avatars['Create avatar'];
 	}
 	if (in_array('upload_form', $view_blocks))
 	{
-		$forum_page['upload_help'][] = $lang_pun_funny_avatars['Cool avatars upload info none'];
-		$forum_page['upload_help'][] = $lang_pun_funny_avatars['Cool avatars upload info type'];
-		$forum_page['upload_help'][] = sprintf($lang_pun_funny_avatars['Cool avatars upload info size'], $forum_config['o_pun_cool_avatars_max_width'], $forum_config['o_pun_cool_avatars_max_height'], forum_number_format($forum_config['o_pun_cool_avatars_max_size']), forum_number_format(ceil($forum_config['o_pun_cool_avatars_max_size'] / 1024)));
+		$forum_page['upload_help'][] = $lang_pun_funny_avatars['Funny avatars upload info none'];
+		$forum_page['upload_help'][] = $lang_pun_funny_avatars['Funny avatars upload info type'];
+		$forum_page['upload_help'][] = sprintf($lang_pun_funny_avatars['Funny avatars upload info size'], $forum_config['o_pun_funny_avatars_max_width'], $forum_config['o_pun_funny_avatars_max_height'], forum_number_format($forum_config['o_pun_funny_avatars_max_size']), forum_number_format(ceil($forum_config['o_pun_funny_avatars_max_size'] / 1024)));
 	}
 	if (in_array('effects', $view_blocks))
 	{
-		if (!$pho_to_templates['AET']['error'] || !$pho_to_templates['FET']['error'])
+		if (!$funny_templates['FET']['error'])
 		{
 			$tmp_preview_images = array();
-			if (!$pho_to_templates['AET']['error'])
+			if (!$funny_templates['FET']['error'])
 			{
-				foreach ($pho_to_templates['AET']['templates'] as $group => $template_list)
-					foreach ($template_list as $template_index => $template_info)
-						$tmp_preview_images[] = '"'.$template_info['thumb'].'"';
-				$forum_page['preview_aet_templates_str'] = implode(',', $tmp_preview_images);
-			}
-			$tmp_preview_images = array();
-			if (!$pho_to_templates['FET']['error'])
-			{
-				foreach ($pho_to_templates['FET']['templates'] as $group => $template_list)
+				foreach ($funny_templates['FET']['templates'] as $group => $template_list)
 					foreach ($template_list as $template_index => $template_info)
 						$tmp_preview_images[] = '"'.$template_info['thumb'].'"';
 				$forum_page['preview_fet_templates_str'] = implode(',', $tmp_preview_images);
@@ -309,13 +310,13 @@ if ($section == 'edit_avatar')
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array(sprintf($lang_profile['Users profile'], $user['username']), forum_link($forum_url['user'], $id)),
-		array($lang_profile['Section avatar'],forum_link($forum_url['edit_avatar'], $id))
+		array($lang_profile['Section avatar'],forum_link($forum_url['funny_avatar'], $id))
 	);
 
 	// Setup the form
 	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
 
-	define('FORUM_PAGE', 'profile-edit-avatar');
+	define('FORUM_PAGE', 'profile-funny-avatar');
 	require FORUM_ROOT.'header.php';
 
 	// START SUBST - <!-- forum_main -->
@@ -346,7 +347,7 @@ if ($section == 'edit_avatar')
 }
 		]]></hook>
 		<hook id="ft_about_output_start"><![CDATA[
-if (FORUM_PAGE == 'profile-edit-avatar' && in_array('effects', $view_blocks))
+if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
 	include $ext_info['path'].'/view/block_js.php';
 		]]></hook>
 		<hook id="aop_features_pre_header_load"><![CDATA[
@@ -372,54 +373,54 @@ if (FORUM_PAGE == 'profile-edit-avatar' && in_array('effects', $view_blocks))
 
 			?>
 					<div class="content-head">
-						<h2 class="hn"><span><?php echo $lang_pun_funny_avatars['Cool avatars head'] ?></span></h2>
+						<h2 class="hn"><span><?php echo $lang_pun_funny_avatars['Funny avatars head'] ?></span></h2>
 					</div>
 					<fieldset class="frm-group group1">
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_funny_avatars['Cool avatars directory label'] ?></span>
-									<small><?php echo $lang_pun_funny_avatars['Cool avatars directory help'] ?></small>
+									<span><?php echo $lang_pun_funny_avatars['Funny avatars directory label'] ?></span>
+									<small><?php echo $lang_pun_funny_avatars['Funny avatars directory help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_file_dir]" size="35" maxlength="50" value="<?php echo $forum_config['o_pun_cool_avatars_file_dir'] ?>"/>
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_file_dir]" size="35" maxlength="50" value="<?php echo $forum_config['o_pun_funny_avatars_file_dir'] ?>"/>
 								</span>
 							</div>
 						</div>
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_funny_avatars['Cool avatars max width label'] ?></span>
-									<small><?php echo $lang_pun_funny_avatars['Cool avatars max width help'] ?></small>
+									<span><?php echo $lang_pun_funny_avatars['Funny avatars max width label'] ?></span>
+									<small><?php echo $lang_pun_funny_avatars['Funny avatars max width help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_width]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_cool_avatars_max_width'] ?>"/>
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_width]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_funny_avatars_max_width'] ?>"/>
 								</span>
 							</div>
 						</div>
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_funny_avatars['Cool avatars max height label'] ?></span>
-									<small><?php echo $lang_pun_funny_avatars['Cool avatars max height help'] ?></small>
+									<span><?php echo $lang_pun_funny_avatars['Funny avatars max height label'] ?></span>
+									<small><?php echo $lang_pun_funny_avatars['Funny avatars max height help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_height]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_cool_avatars_max_height'] ?>" />
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_height]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_funny_avatars_max_height'] ?>" />
 								</span>
 							</div>
 						</div>
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_funny_avatars['Cool avatars max size label'] ?></span>
-									<small><?php echo $lang_pun_funny_avatars['Cool avatars max size help'] ?></small>
+									<span><?php echo $lang_pun_funny_avatars['Funny avatars max size label'] ?></span>
+									<small><?php echo $lang_pun_funny_avatars['Funny avatars max size help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_size]" size="12" maxlength="12" value="<?php echo $forum_config['o_pun_cool_avatars_max_size'] ?>"/>
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_size]" size="12" maxlength="12" value="<?php echo $forum_config['o_pun_funny_avatars_max_size'] ?>"/>
 								</span>
 							</div>
 						</div>

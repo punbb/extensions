@@ -7,9 +7,9 @@
  * @package pun_funny_avatars
  */
 
-$forum_url['edit_avatar'] = 'user/$1/edit_avatar';
-$forum_url['edit_avatar_remove_file'] = 'user/$1/edit_avatar/remove_file/$2';
-$forum_url['edit_avatar_rewrite_avatar'] = 'user/$1/edit_avatar/rewrite_avatar/$2/$3';
-$forum_url['edit_avatar_request'] = 'user/$1/edit_avatar/request_id/$2/$3';
+$forum_url['funny_avatar'] = 'user/$1/funny_avatar';
+$forum_url['funny_avatar_remove_file'] = 'user/$1/funny_avatar/remove_file/$2';
+$forum_url['funny_avatar_rewrite_avatar'] = 'user/$1/funny_avatar/rewrite_avatar/$2/$3';
+$forum_url['funny_avatar_request'] = 'user/$1/funny_avatar/request_id/$2/$3';
 
 ?>

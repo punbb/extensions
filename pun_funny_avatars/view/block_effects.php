@@ -8,7 +8,7 @@
  * @package pun_funny_avatars
  */
 
-if (!$pho_to_templates['FET']['error']): ?>
+if (!$funny_templates['FET']['error']): ?>
 
 	<div class="content-head">
 		<h2 class="hn"><span><?php echo $lang_pun_funny_avatars['Templates desc'] ?></span></h2>
@@ -36,7 +36,7 @@ if (!$pho_to_templates['FET']['error']): ?>
 								<select name="fet_template" id="fet_template">
 								<?php
 
-								foreach ($pho_to_templates['FET']['templates'] as $group => $template_list)
+								foreach ($funny_templates['FET']['templates'] as $group => $template_list)
 								{
 
 								?>

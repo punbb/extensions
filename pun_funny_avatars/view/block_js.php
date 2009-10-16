@@ -8,7 +8,7 @@
  * @package pun_funny_avatars
  */
 
-if (!$pho_to_templates['FET']['error']): ?>
+if (!$funny_templates['FET']['error']): ?>
 <script type="text/javascript">
 	var head_notice = document.createElement('h3');
 	head_notice.className = 'hn ct-legend';

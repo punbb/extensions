@@ -29,7 +29,7 @@
 			</ul>
 		</div>
 		<div class="hidden">
-			<input type="hidden" value="<?php echo $forum_config['o_pun_cool_avatars_max_size']; ?>" name="MAX_FILE_SIZE"/>
+			<input type="hidden" value="<?php echo $forum_config['o_pun_funny_avatars_max_size']; ?>" name="MAX_FILE_SIZE"/>
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
 		</div>
 		<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
