@@ -104,6 +104,7 @@ if (!empty($avatars_links))
 	$main_elements['<!-- forum_main_menu -->'] .= '<div class="admin-submenu gen-content"><ul>';
 	$main_elements['<!-- forum_main_menu -->'] .= implode($avatars_links);
 	$main_elements['<!-- forum_main_menu -->'] .= '</ul></div>';
+	unset($avatars_links);
 }
 		]]></hook>
 		<hook id="re_rewrite_rules"><![CDATA[
