@@ -285,9 +285,9 @@ if ($section == 'animated_avatar')
 	}
 	if (in_array('upload_form', $view_blocks))
 	{
-		$forum_page['upload_help'][] = $lang_pun_animated_avatars['Cool avatars upload info none'];
-		$forum_page['upload_help'][] = $lang_pun_animated_avatars['Cool avatars upload info type'];
-		$forum_page['upload_help'][] = sprintf($lang_pun_animated_avatars['Cool avatars upload info size'], $forum_config['o_pun_animated_avatars_max_width'], $forum_config['o_pun_animated_avatars_max_height'], forum_number_format($forum_config['o_pun_animated_avatars_max_size']), forum_number_format(ceil($forum_config['o_pun_animated_avatars_max_size'] / 1024)));
+		$forum_page['upload_help'][] = $lang_pun_animated_avatars['Animated avatars upload info none'];
+		$forum_page['upload_help'][] = $lang_pun_animated_avatars['Animated avatars upload info type'];
+		$forum_page['upload_help'][] = sprintf($lang_pun_animated_avatars['Animated avatars upload info size'], $forum_config['o_pun_animated_avatars_max_width'], $forum_config['o_pun_animated_avatars_max_height'], forum_number_format($forum_config['o_pun_animated_avatars_max_size']), forum_number_format(ceil($forum_config['o_pun_animated_avatars_max_size'] / 1024)));
 	}
 	if (in_array('effects', $view_blocks))
 	{
@@ -368,14 +368,14 @@ if (FORUM_PAGE == 'profile-animated-avatar' && in_array('effects', $view_blocks)
 
 			?>
 					<div class="content-head">
-						<h2 class="hn"><span><?php echo $lang_pun_animated_avatars['Cool avatars head'] ?></span></h2>
+						<h2 class="hn"><span><?php echo $lang_pun_animated_avatars['Animated avatars head'] ?></span></h2>
 					</div>
 					<fieldset class="frm-group group1">
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_animated_avatars['Cool avatars directory label'] ?></span>
-									<small><?php echo $lang_pun_animated_avatars['Cool avatars directory help'] ?></small>
+									<span><?php echo $lang_pun_animated_avatars['Animated avatars directory label'] ?></span>
+									<small><?php echo $lang_pun_animated_avatars['Animated avatars directory help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
@@ -386,8 +386,8 @@ if (FORUM_PAGE == 'profile-animated-avatar' && in_array('effects', $view_blocks)
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_animated_avatars['Cool avatars max width label'] ?></span>
-									<small><?php echo $lang_pun_animated_avatars['Cool avatars max width help'] ?></small>
+									<span><?php echo $lang_pun_animated_avatars['Animated avatars max width label'] ?></span>
+									<small><?php echo $lang_pun_animated_avatars['Animated avatars max width help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
@@ -398,8 +398,8 @@ if (FORUM_PAGE == 'profile-animated-avatar' && in_array('effects', $view_blocks)
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_animated_avatars['Cool avatars max height label'] ?></span>
-									<small><?php echo $lang_pun_animated_avatars['Cool avatars max height help'] ?></small>
+									<span><?php echo $lang_pun_animated_avatars['Animated avatars max height label'] ?></span>
+									<small><?php echo $lang_pun_animated_avatars['Animated avatars max height help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
@@ -410,8 +410,8 @@ if (FORUM_PAGE == 'profile-animated-avatar' && in_array('effects', $view_blocks)
 						<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 							<div class="sf-box text">
 								<label for="fld<?php echo ++$forum_page['fld_count'] ?>">
-									<span><?php echo $lang_pun_animated_avatars['Cool avatars max size label'] ?></span>
-									<small><?php echo $lang_pun_animated_avatars['Cool avatars max size help'] ?></small>
+									<span><?php echo $lang_pun_animated_avatars['Animated avatars max size label'] ?></span>
+									<small><?php echo $lang_pun_animated_avatars['Animated avatars max size help'] ?></small>
 								</label>
 								</br>
 								<span class="fld-input">
