@@ -843,6 +843,8 @@ function pun_pm_delete_from_inbox ($ids)
 
 	pun_pm_deliver_messages();
 	pun_pm_clear_cache($forum_user['id']);
+
+	($hook = get_hook('pun_pm_fn_delete_from_inbox_end')) ? eval($hook) : null;
 }
 
 function pun_pm_delete_from_outbox ($ids)
@@ -871,6 +873,8 @@ function pun_pm_delete_from_outbox ($ids)
 	($hook = get_hook('pun_pm_fn_delete_from_outbox_mark_deleted_query')) ? eval($hook) : null;
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	($hook = get_hook('pun_pm_fn_delete_from_outbox_end')) ? eval($hook) : null;
 }
 
 function pun_pm_delete_message($ids)

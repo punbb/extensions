@@ -435,6 +435,23 @@ if (!isset($form['pun_pm_show_global_link']) || $form['pun_pm_show_global_link']
 
 		]]></hook>
 
+		<hook id="fn_delete_user_end"><![CDATA[
+
+$query = array(
+	'DELETE'	=> 'pun_pm_messages',
+	'WHERE'		=> 'receiver_id = '.$user_id.' AND deleted_by_sender = 1'
+);
+$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+$query = array(
+	'UPDATE'	=> 'pun_pm_messages',
+	'SET'		=> 'deleted_by_receiver = 1',
+	'WHERE'		=> 'receiver_id = '.$user_id
+);
+$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+		]]></hook>
+
 		<hook id="hd_visit_elements"><![CDATA[
 
 // 'New messages (N)' link
