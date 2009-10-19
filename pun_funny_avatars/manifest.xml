@@ -49,7 +49,7 @@ if (!$forum_db->table_exists('pun_funny_avatars_files'))
 
 // Add extension options to the config table
 $config = array(
-	'o_pun_funny_avatars_file_dir'	=> 'img/avatars/tmp',
+	'o_pun_funny_avatars_file_dir'	=> 'img/avatars/pun_funny_avatars',
 	'o_pun_funny_avatars_max_height'	=> '1024',
 	'o_pun_funny_avatars_max_width'	=> '1024',
 	'o_pun_funny_avatars_max_size'	=> '1048576',
