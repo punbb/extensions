@@ -86,11 +86,11 @@ unlink(FORUM_ROOT.$forum_config['o_pun_funny_avatars_file_dir']);
 
 	<hooks>
 		<hook id="hd_head"><![CDATA[
-if (FORUM_PAGE == 'profile-funny-avatar')
+if (FORUM_PAGE == 'profile-funny-avatar' && $forum_config['o_avatars'])
 	$forum_head['pun_funny_avatars_js'] = '<script type="text/javascript" src="'.$ext_info['url'].'/common.js"></script>';
 		]]></hook>
 		<hook id="hd_visit_elements"><![CDATA[
-if ((FORUM_PAGE == 'profile-avatar' || FORUM_PAGE == 'profile-funny-avatar') && $forum_config['o_avatars'])
+if (preg_match('~profile[A-Za-z_\-]*-avatar~', FORUM_PAGE) && $forum_config['o_avatars'])
 {
 	if (!isset($avatars_links))
 		$avatars_links = array();
@@ -135,7 +135,7 @@ $forum_url['pho.to_get-result'] = 'http://ope-api.pho.to/get-result.php?request_
 $forum_url['pho.to_FET_templates'] = 'http://ope-api.pho.to/service.php?method=get_templates&type=FET';
 		]]></hook>
 		<hook id="pf_new_action"><![CDATA[
-if ($section == 'funny_avatar')
+if ($section == 'funny_avatar' && $forum_config['o_avatars'])
 {
 	//View blocks
 	$view_blocks = array();
@@ -268,7 +268,7 @@ if ($section == 'funny_avatar')
 }
 		]]></hook>
 		<hook id="pf_change_details_new_section"><![CDATA[
-if ($section == 'funny_avatar')
+if ($section == 'funny_avatar' && $forum_config['o_avatars'])
 {
 	//View
 	if (in_array('effects', $view_blocks) || in_array('upload_form', $view_blocks))
@@ -347,7 +347,7 @@ if ($section == 'funny_avatar')
 }
 		]]></hook>
 		<hook id="ft_about_output_start"><![CDATA[
-if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
+if (FORUM_PAGE == 'profile-funny-avatar' && $forum_config['o_avatars'] && in_array('effects', $view_blocks))
 	include $ext_info['path'].'/view/block_js.php';
 		]]></hook>
 		<hook id="aop_features_pre_header_load"><![CDATA[
