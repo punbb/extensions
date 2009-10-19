@@ -361,12 +361,12 @@ if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
 
 		<hook id="aop_features_validation"><![CDATA[
 
-			if (substr($form['pun_cool_avatars_file_dir' ], -1) == '/')
-				$form['pun_cool_avatars_file_dir'] = substr($form['pun_cool_avatars_file_dir'], 0, -1);
+			if (substr($form['pun_funny_avatars_file_dir' ], -1) == '/')
+				$form['pun_funny_avatars_file_dir'] = substr($form['pun_funny_avatars_file_dir'], 0, -1);
  
-			$form['pun_cool_avatars_max_width'] = intval($form['pun_cool_avatars_max_width']);
-			$form['pun_cool_avatars_max_height'] = intval($form['pun_cool_avatars_max_height']);
-			$form['pun_cool_avatars_max_size'] = intval($form['pun_cool_avatars_max_size']);
+			$form['pun_funny_avatars_max_width'] = intval($form['pun_funny_avatars_max_width']);
+			$form['pun_funny_avatars_max_height'] = intval($form['pun_funny_avatars_max_height']);
+			$form['pun_funny_avatars_max_size'] = intval($form['pun_funny_avatars_max_size']);
 
 		]]></hook>
 		<hook id="aop_features_avatars_fieldset_end"><![CDATA[
@@ -384,7 +384,7 @@ if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_file_dir]" size="35" maxlength="50" value="<?php echo $forum_config['o_pun_funny_avatars_file_dir'] ?>"/>
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_funny_avatars_file_dir]" size="35" maxlength="50" value="<?php echo $forum_config['o_pun_funny_avatars_file_dir'] ?>"/>
 								</span>
 							</div>
 						</div>
@@ -396,7 +396,7 @@ if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_width]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_funny_avatars_max_width'] ?>"/>
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_funny_avatars_max_width]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_funny_avatars_max_width'] ?>"/>
 								</span>
 							</div>
 						</div>
@@ -408,7 +408,7 @@ if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_height]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_funny_avatars_max_height'] ?>" />
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_funny_avatars_max_height]" size="6" maxlength="6" value="<?php echo $forum_config['o_pun_funny_avatars_max_height'] ?>" />
 								</span>
 							</div>
 						</div>
@@ -420,7 +420,7 @@ if (FORUM_PAGE == 'profile-funny-avatar' && in_array('effects', $view_blocks))
 								</label>
 								</br>
 								<span class="fld-input">
-									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_cool_avatars_max_size]" size="12" maxlength="12" value="<?php echo $forum_config['o_pun_funny_avatars_max_size'] ?>"/>
+									<input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="form[pun_funny_avatars_max_size]" size="12" maxlength="12" value="<?php echo $forum_config['o_pun_funny_avatars_max_size'] ?>"/>
 								</span>
 							</div>
 						</div>
