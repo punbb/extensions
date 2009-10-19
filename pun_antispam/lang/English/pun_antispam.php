@@ -7,6 +7,7 @@ $lang_pun_antispam = array(
 	'Captcha Info'					=>	'Please enter the letters in the image.',
 	'img alt'						=>	'Captcha image. Turn pictures on to see it.',
 	'Invalid Text'					=>	'The captcha text you entered appears to be wrong.',
+	'No cookies'					=>	'The captcha text cannot be verified. Seems like a cookie has not been set. Please check your settings and if applicable, enable cookies for this website.',
 
 	'reload image'					=>	'(reload image)',
 

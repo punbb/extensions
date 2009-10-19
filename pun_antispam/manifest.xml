@@ -99,7 +99,7 @@ if ($forum_config['o_pun_antispam_captcha_register'] == '1' && empty($_SESSION['
 						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_antispam_input" value="" size="20" maxlength="10" /></span>
 					</div>
 					<img id="pun_antispam_image" src="<?php echo $ext_info['url'].'/image.php?'.md5(time()) ?>" style="vertical-align: middle; margin: 0 1em;" alt="<?php echo $lang_pun_antispam['img alt'] ?>" /><br />
-					<script>document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
+					<script type="text/javascript">document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
 				</div>
 <?php
 }
@@ -126,12 +126,12 @@ if ($forum_config['o_pun_antispam_captcha_login'] == '1')
 	if (empty($errors) && session_id() == "")
 		session_start();
 
-	// Output CAPTCHA if first attempts failed
 	if (!isset($_SESSION['pun_antispam_logins']))
 		$_SESSION['pun_antispam_logins'] = 1;
 	else
 		$_SESSION['pun_antispam_logins']++;
 
+	// Output CAPTCHA if first attempts failed
 	if ($_SESSION['pun_antispam_logins'] > 5)
 	{
 ?>
@@ -141,7 +141,7 @@ if ($forum_config['o_pun_antispam_captcha_login'] == '1')
 						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_antispam_input" value="" size="20" maxlength="10" /></span>
 					</div>
 					<img id="pun_antispam_image" src="<?php echo $ext_info['url'].'/image.php?'.md5(time()) ?>" style="vertical-align: middle; margin: 0 1em;" alt="<?php echo $lang_pun_antispam['img alt'] ?>" /><br />
-					<script>document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
+					<script type="text/javascript">document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
 				</div>
 <?php
 	}
@@ -171,7 +171,7 @@ if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1')
 						<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_antispam_input" value="" size="20" maxlength="10" /></span>
 					</div>
 					<img id="pun_antispam_image" src="<?php echo $ext_info['url'].'/image.php?'.md5(time()) ?>" style="vertical-align: middle; margin: 0 1em;" alt="<?php echo $lang_pun_antispam['img alt'] ?>" /><br />
-					<script>document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
+					<script type="text/javascript">document.write("<small><a href=\"#\" onclick=\"document.getElementById('pun_antispam_image').src = '<?php echo $ext_info['url'].'/image.php?' ?>' + Math.random(); return false\"><?php echo $lang_pun_antispam['reload image'] ?></a></small>");</script>
 				</div>
 <?php
 }
@@ -185,7 +185,12 @@ if ($forum_user['is_guest'] && $forum_config['o_pun_antispam_captcha_guestpost']
 
 	if (empty($_SESSION['pun_antispam_confirmed_user']))
 	{
-		if ((empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+		if (!isset($_SESSION['pun_antispam_text']))
+		{
+			if (!isset($_POST['preview']))
+				$errors[] = $lang_pun_antispam['No cookies'];
+		}
+		else if ((empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 		{
 			if (!isset($_POST['preview']))
 				$errors[] = $lang_pun_antispam['Invalid Text'];
