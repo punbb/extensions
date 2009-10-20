@@ -33,7 +33,7 @@ $pun_antispam_config = array(
 	'o_pun_antispam_captcha_guestpost'		=> '1',
 	'o_pun_antispam_captcha_login'			=> '1',
 	'o_pun_antispam_captcha_restorepass'	=> '1',
-	'p_sig_min_posts'						=> '0'
+	'p_sig_min_posts'						=> '10'
 );
 
 foreach ($pun_antispam_config as $conf_name => $conf_value)
