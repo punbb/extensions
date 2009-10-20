@@ -3,9 +3,10 @@
 
 <!--
 /**
- * Adds CAPTCHA to the register, login and guest post form
+ * Adds CAPTCHA to registration, login and guest posting forms.
+ * Puts restrictions on adding user signatures and website links.
  *
- * @copyright Copyright (C) 2008 PunBB, partially based on code by Jamie Furness
+ * @copyright (C) 2008-2009 PunBB, partially based on code by Jamie Furness
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_antispam
  */
@@ -331,6 +332,14 @@ if ($cur_post['g_id'] != FORUM_ADMIN && $cur_post['num_posts'] < $forum_config['
 {
 	$cur_post['signature'] = '';
 	$cur_post['url'] = '';
+}
+		]]></hook>
+
+		<hook id="pf_view_details_selected"><![CDATA[
+if ($forum_user['is_guest'] && $user['num_posts'] < $forum_config['p_sig_min_posts'])
+{
+	unset($parsed_signature);
+	$user['url'] = '';
 }
 		]]></hook>
 
