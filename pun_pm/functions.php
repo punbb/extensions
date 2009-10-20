@@ -271,12 +271,13 @@ function pun_pm_get_last_senders()
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
+	$links = array();
 	while ($row = $forum_db->fetch_assoc($result))
 		$links[$row['username']] = '<a href="#" onclick="document.forms.pun_pm_sendform.pm_receiver.value = \''.forum_htmlencode(addslashes($row['username'])).'\'; return false;">'.forum_htmlencode($row['username']).'</a>';
 
 	($hook = get_hook('pun_pm_fn_get_last_senders_end')) ? eval($hook) : null;
 
-	return ' '.implode(', ', $links);
+	return empty($links) ? '' : ' '.implode(', ', $links);
 }
 
 $pun_pm_my_inbox_count = false;
