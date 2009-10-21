@@ -18,10 +18,6 @@ if (!$animated_templates['AET']['error']): ?>
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
 		</div>
 		<fieldset class="frm-group frm-hdgroup group1">
-				<div class="ct-set set1">
-					<div class="ct-box" id="div_aet">
-					</div>
-				</div>
 				<fieldset class="mf-set set1 mf-head">
 					<legend><span><?php echo $lang_pun_animated_avatars['Animated effects']; ?></span></legend>
 					<div class="mf-field mf-field1 text">
@@ -50,6 +46,10 @@ if (!$animated_templates['AET']['error']): ?>
 						<span class="submit"><input type="submit" value="<?php echo $lang_pun_animated_avatars['Apply effect'] ?>" name="aet_template_submit"/></span>
 					</div>
 				</fieldset>
+				<div class="ct-set set1">
+					<div class="ct-box" id="div_aet">
+					</div>
+				</div>
 			</fieldset>
 	</form>
 <?php endif; ?>
