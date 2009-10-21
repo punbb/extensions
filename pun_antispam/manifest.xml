@@ -76,7 +76,7 @@ if ($forum_config['o_pun_antispam_captcha_register'] == '1')
 
 	if (empty($_SESSION['pun_antispam_confirmed_user']))
 	{
-		if ((empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+		if ((empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 			$errors[] = $lang_pun_antispam['Invalid Text'];
 		else
 			$_SESSION['pun_antispam_confirmed_user'] = 1;
@@ -110,7 +110,7 @@ if ($forum_config['o_pun_antispam_captcha_register'] == '1' && empty($_SESSION['
 if (session_id() == "")
 	session_start();
 
-if ($forum_config['o_pun_antispam_captcha_login'] == '1' && (isset($_SESSION['pun_antispam_logins']) && $_SESSION['pun_antispam_logins'] > 5) && (empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+if ($forum_config['o_pun_antispam_captcha_login'] == '1' && (isset($_SESSION['pun_antispam_logins']) && $_SESSION['pun_antispam_logins'] > 5) && (empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 	$errors[] = $lang_pun_antispam['Invalid Text'];
 
 $_SESSION['pun_antispam_text'] = '';
@@ -155,7 +155,7 @@ if (isset($_POST['form_sent']))
 	if (session_id() == "")
 		session_start();
 
-	if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1' && (empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+	if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1' && (empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 		$errors[] = $lang_pun_antispam['Invalid Text'];
 
 	$_SESSION['pun_antispam_text'] = '';
@@ -191,7 +191,7 @@ if ($forum_user['is_guest'] && $forum_config['o_pun_antispam_captcha_guestpost']
 			if (!isset($_POST['preview']))
 				$errors[] = $lang_pun_antispam['No cookies'];
 		}
-		else if ((empty($_SESSION['pun_antispam_text']) || strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+		else if ((empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
 		{
 			if (!isset($_POST['preview']))
 				$errors[] = $lang_pun_antispam['Invalid Text'];
