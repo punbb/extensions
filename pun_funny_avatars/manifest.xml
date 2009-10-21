@@ -107,7 +107,9 @@ if (!empty($avatars_links))
 	unset($avatars_links);
 }
 		]]></hook>
-
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		]]></hook>
 		<hook id="re_rewrite_rules"><![CDATA[
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]funny_avatar(\.html?|\/)?$/i'] = 'profile.php?section=funny_avatar&id=$1';
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]funny_avatar[\/_-]remove_file[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=funny_avatar&id=$1&remove_file&csrf_token=$2';
