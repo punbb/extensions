@@ -47,6 +47,25 @@ if (!$forum_db->table_exists('pun_animated_avatars_files'))
 	$forum_db->create_table('pun_animated_avatars_files', $schema);
 }
 
+if (!$forum_db->table_exists('pun_animated_avatars_result_info'))
+{
+	$schema = array(
+		'FIELDS'			=> array(
+			'user_id'			=> array(
+				'datatype'	=> 'SERIAL',
+				'allow_null'	=> false
+			),
+			'result_url'=> array(
+				'datatype'		=> 'VARCHAR(400)',
+				'allow_null'	=> false,
+			),
+		),
+		'PRIMARY KEY'	=> array('user_id')
+	);
+
+	$forum_db->create_table('pun_animated_avatars_result_info', $schema);
+}
+
 // Add extension options to the config table
 $config = array(
 	'o_pun_animated_avatars_file_dir'	=> 'img/avatars/pun_animated_avatars',
@@ -70,7 +89,14 @@ foreach ($config as $conf_name => $conf_value)
 
 	]]></install>	
 	<uninstall><![CDATA[
+$avatars_files = scandir(FORUM_ROOT.$forum_config['o_pun_animated_avatars_file_dir'].DIRECTORY_SEPARATOR);
+foreach ($avatars_files as $file)
+	if ($file != '.' && $file != '..')
+		unlink(FORUM_ROOT.$forum_config['o_pun_animated_avatars_file_dir'].DIRECTORY_SEPARATOR.$file);
+rmdir(FORUM_ROOT.$forum_config['o_pun_animated_avatars_file_dir']);
+
 $forum_db->drop_table('pun_animated_avatars_files');
+$forum_db->drop_table('pun_animated_avatars_result_info');
 
 $query = array(
 	'DELETE'	=> 'config',
@@ -81,7 +107,6 @@ $forum_db->query_build($query) or error(__FILE__, __LINE__);
 if (file_exists(FORUM_CACHE_DIR.'cache_pun_animated_avatars.php'))
 	unlink(FORUM_CACHE_DIR.'cache_pun_animated_avatars.php');
 
-unlink(FORUM_ROOT.$forum_config['o_pun_animated_avatars_file_dir']);
 	]]></uninstall>
 
 	<hooks>
@@ -114,7 +139,7 @@ $pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions
 
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]animated_avatar(\.html?|\/)?$/i'] = 'profile.php?section=animated_avatar&id=$1';
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]animated_avatar[\/_-]remove_file[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=animated_avatar&id=$1&remove_file&csrf_token=$2';
-$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]animated_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-zA-Z\-:\/_\.]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?animated_avatar&amp;id=$1&amp;rewrite_avatar&amp;result_url=$2&amp;csrf_token=$3';
+$forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]animated_avatar[\/_-]rewrite_avatar[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=animated_avatar&amp;id=$1&amp;rewrite_avatar&amp;csrf_token=$2';
 $forum_rewrite_rules['/^user[\/_-]?([0-9]+)[\/_-]animated_avatar[\/_-]request_id[\/_-]([0-9a-zA-Z\-]+)[\/_-]([0-9a-z]+)(\.html?|\/)?$/i'] = 'profile.php?section=animated_avatar&id=$1&request_id=$2&csrf_token=$3';
 
 		]]></hook>
@@ -193,27 +218,24 @@ if ($section == 'animated_avatar' && $forum_config['o_avatars'])
 	{
 		if (!isset($_GET['csrf_token']) || $_GET['csrf_token'] !== generate_form_token('rewrite_avatar'.$forum_user['id']))
 			csrf_confirm_form();
-		if (isset($_GET['result_url']))
-		{
-			if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
-				message($lang_common['Bad request']);
-			$file_type = pun_animated_avatars_get_file_type($id);
-			if (!$file_type)
-				message($lang_common['Bad request']);
 
-			$result_url = forum_trim($_GET['result_url']);
-			$photo_image = get_remote_file($result_url, 10);
+		$file_type = pun_animated_avatars_get_file_type($id);
+		$tmp_result_image_link = pun_animated_avatars_get_result_info($id);
+		if ($tmp_result_image_link !== FALSE)
+		{
+			$photo_image = get_remote_file($tmp_result_image_link, 10);
 			if (!empty($photo_image['content']))
 			{
 				if (file_exists(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.$file_type))
 					unlink(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.$file_type);
-				$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.substr($result_url, strrpos($result_url, '.') + 1), 'w');
+				$avatar_handler = fopen(FORUM_ROOT.$forum_config['o_avatars_dir'].'/'.$id.'.'.substr($tmp_result_image_link, strrpos($tmp_result_image_link, '.') + 1), 'w');
 				fwrite($avatar_handler, $photo_image['content']);
 				fclose($avatar_handler);
 			}
 			else
 				$errors[] = $lang_pun_animated_avatars['Pho.to error result image'];
 
+			pun_animated_avatars_remove_result_info($id);
 			redirect(forum_link($forum_url['profile_avatar'], $id), $lang_profile['Profile redirect']);
 		}
 		else
@@ -223,6 +245,9 @@ if ($section == 'animated_avatar' && $forum_config['o_avatars'])
 	{
 		if (!is_scalar($_GET['result_url']) || !preg_match('~\.pho\.to~', $_GET['result_url']))
 			message($lang_common['Bad request']);
+
+		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
+		pun_animated_avatars_add_result_info($id, $forum_page['result_image_link']);
 
 		$view_blocks[] = 'image_link';
 		$view_blocks[] = 'result_link';
@@ -260,6 +285,12 @@ if ($section == 'animated_avatar' && $forum_config['o_avatars'])
 			$view_blocks[] = 'effects';
 		}
 	}
+	if (!in_array('result_link', $view_blocks))
+	{
+		$forum_page['result_image_link'] = pun_animated_avatars_get_result_info($id);
+		if ($forum_page['result_image_link'] !== FALSE)
+			$view_blocks[] = 'result_link';
+	}
 	if (file_exists(FORUM_CACHE_DIR.'cache_pun_animated_avatars.php'))
 		include FORUM_CACHE_DIR.'cache_pun_animated_avatars.php';
 	if (!defined('ANIMATED_TEMPLATES_LOADED') || $animated_templates['cached'] < (time() - 43200))
@@ -280,11 +311,14 @@ if ($section == 'animated_avatar' && $forum_config['o_avatars'])
 		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_animated_avatars_file_dir']).'/'.$id.'.'.pun_animated_avatars_get_file_type($id);
 		$forum_page['uploaded_image_remove'] = forum_link($forum_url['animated_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
 		$forum_page['image_size'] = pun_animated_avatars_get_file_info($id);
+		$img_proportion = $forum_page['image_size']['width'] / $forum_page['image_size']['height'];
+		if ($forum_page['image_size']['height'] > 600)
+			$forum_page['image_size']['height'] = 600;
+		$forum_page['image_size']['width'] = $img_proportion * $forum_page['image_size']['width'];
 	}
 	if (in_array('result_link', $view_blocks))
 	{
-		$forum_page['result_image_link'] = forum_trim($_GET['result_url']);
-		$forum_page['rewrite_avatar'] = forum_link($forum_url['animated_avatar_rewrite_avatar'], array($id, $forum_page['result_image_link'], generate_form_token('rewrite_avatar'.$forum_user['id'])));
+		$forum_page['rewrite_avatar'] = forum_link($forum_url['animated_avatar_rewrite_avatar'], array($id, generate_form_token('rewrite_avatar'.$forum_user['id'])));
 		$forum_page['rewrite_avatar_notice'] = pun_animated_avatars_get_avatar_type($id) ? $lang_pun_animated_avatars['Replace avatar'] : $lang_pun_animated_avatars['Create avatar'];
 	}
 	if (in_array('upload_form', $view_blocks))
