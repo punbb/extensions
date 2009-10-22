@@ -24,6 +24,6 @@ if (!empty($errors)):
 		<h2 class="hn"><span><?php echo $lang_pun_funny_avatars['Uploaded image'] ?></span></h2>
 	</div>
 	<fieldset class="frm-group group1">
-		<img alt="<?php echo $forum_page['uploaded_image_link'] ?>" width="<?php echo ($forum_page['image_size']['width'] > 660) ? '100%' : $forum_page['image_size']['width'].'px'; ?>" src="<?php echo $forum_page['uploaded_image_link'] ?>"/>
+		<img alt="<?php echo $forum_page['uploaded_image_link'] ?>" height="<?php echo $forum_page['image_size']['height'] ?>" width="<?php echo ($forum_page['image_size']['width'] > 660) ? '100%' : $forum_page['image_size']['width'].'px'; ?>" src="<?php echo $forum_page['uploaded_image_link'] ?>"/>
 		<p><a href="<?php echo $forum_page['uploaded_image_remove'] ?>"><?php echo $lang_pun_funny_avatars['Remove']; ?></a></p>
 	</fieldset>

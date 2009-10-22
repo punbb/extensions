@@ -45,6 +45,7 @@ $lang_pun_funny_avatars = array(
 	'Pho.to error server'			=>	'Something has gone wrong!',
 	'Pho.to server unavailable'		=>	'The service is currently unavailable.',
 	'Pho.to error result image'		=>	'No image',
+	'Pho.to error task in progress' =>  'The task is in progress. Wait for a while and visit <a href="%s">this</a> link'
 	
 );
 

@@ -291,4 +291,55 @@ function pun_funny_avatars_get_file_info($user_id)
 
 	return array('width' => $width, 'height' => $height);
 }
+
+function pun_funny_avatars_get_result_info($user_id) 
+{ 
+    global $forum_db;
+
+	$query = array(
+		'SELECT'    =>  'result_url',
+		'FROM'      =>  'pun_funny_avatars_result_info',
+		'WHERE'     =>  'user_id = '.$user_id
+	);
+	$res_file_info = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	if ($forum_db->num_rows($res_file_info) > 0)
+		list($result_url) = $forum_db->fetch_row($res_file_info);
+	else
+		$result_url = FALSE;
+
+	return $result_url;
+}
+
+function pun_funny_avatars_remove_result_info($user_id) 
+{ 
+	global $forum_db;
+
+	$query = array(
+		'DELETE'    =>  'pun_funny_avatars_result_info',
+		'WHERE'     =>  'user_id = '.$user_id
+	);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__); 
+} 
+
+function pun_funny_avatars_add_result_info($user_id, $result_url)
+{
+	global $forum_db;
+
+	if (pun_funny_avatars_get_result_info($user_id) === FALSE)
+		$query = array(
+			'INSERT'    =>  'user_id, result_url',
+			'INTO'      =>  'pun_funny_avatars_result_info',
+			'VALUES'    =>  $user_id.', \''.$forum_db->escape($result_url).'\''
+		);
+	else
+		$query = array(
+			'UPDATE'    =>  'pun_funny_avatars_result_info',
+			'SET'       =>  'result_url = \''.$forum_db->escape($result_url).'\'',
+			'WHERE'     =>  'user_id = '.$user_id
+		);
+
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+}
+
 ?>

@@ -18,10 +18,6 @@ if (!$funny_templates['FET']['error']): ?>
 			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
 		</div>
 		<fieldset class="frm-group frm-hdgroup group1">
-				<div class="ct-set set1">
-					<div class="ct-box" id="div_fet">
-					</div>
-				</div>
 				<div class="sf-set set1">
 					<div class="sf-box checkbox">
 						<span class="fld-input"><input type="checkbox" value="1" name="auto_crop" id="fld1"/></span>
@@ -58,6 +54,10 @@ if (!$funny_templates['FET']['error']): ?>
 						</div>
 					</div>
 				</fieldset>
+				<div class="ct-set set1">
+					<div class="ct-box" id="div_fet">
+					</div>
+				</div>
 			</fieldset>
 	</form>
 <?php endif; ?>
