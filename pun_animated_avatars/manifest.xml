@@ -15,7 +15,7 @@
 	<id>pun_animated_avatars</id>
 	<title>Animated avatars</title>
 	<version>0.1</version>
-	<description>The extension allow to use photo templates from service http://avatar.pho.to/.</description>
+	<description>The extension allows applying animated photo templates from the service http://pho.to/ to user avatars.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
