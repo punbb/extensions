@@ -15,7 +15,7 @@
 	<id>pun_funny_avatars</id>
 	<title>Funny avatars</title>
 	<version>0.1</version>
-	<description>The extension allow to use funny photo templates from service http://avatar.pho.to/.</description>
+	<description>The extension allows applying funny photo templates from the service http://pho.to/ to user avatars.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
