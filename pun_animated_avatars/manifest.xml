@@ -311,10 +311,11 @@ if ($section == 'animated_avatar' && $forum_config['o_avatars'])
 		$forum_page['uploaded_image_link'] = forum_link($forum_config['o_pun_animated_avatars_file_dir']).'/'.$id.'.'.pun_animated_avatars_get_file_type($id);
 		$forum_page['uploaded_image_remove'] = forum_link($forum_url['animated_avatar_remove_file'], array($id, generate_form_token('remove_file'.$forum_user['id'])));
 		$forum_page['image_size'] = pun_animated_avatars_get_file_info($id);
-		$img_proportion = $forum_page['image_size']['width'] / $forum_page['image_size']['height'];
 		if ($forum_page['image_size']['height'] > 600)
+		{
+			$forum_page['image_size']['width'] = $forum_page['image_size']['width'] / $forum_page['image_size']['height'] * $forum_page['image_size']['width'];
 			$forum_page['image_size']['height'] = 600;
-		$forum_page['image_size']['width'] = $img_proportion * $forum_page['image_size']['width'];
+		}
 	}
 	if (in_array('result_link', $view_blocks))
 	{
