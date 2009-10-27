@@ -56,9 +56,13 @@ $lang_pun_poll = array(
 	'Empty question'				=>	'You should enter a question of poll.',
 	'Merge error'					=>	'You can\'t merge these topics, because 2 or more topics include voting. Remove the voting before merging.',
 	'Edit voting'					=>	'If you want to edit question or answers of voting send e-mail to administrator of Forum <a href="mailto:%s">%s</a>.',
+	'Empty option count'			=>	'You should enter count of poll options.',
 
 	'Question len limit'			=>	'A question\'s length can\'t be less than 5 symbols.',
 
 	'Maximum votes note'			=>	'Maximum count of votes in poll',
-	'Days voting note'				=>	'Count of days for voting'
+	'Days voting note'				=>	'Count of days for voting',
+
+	'Poll redirect'					=>	'Poll added. Redirect...',
+	'Days, votes count'				=>	'Count of days and count of votes can\'t ...'
 );

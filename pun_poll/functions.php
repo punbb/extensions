@@ -1,8 +1,8 @@
 <?php
 
-function form_of_poll($question, $poll_answers, $options_count, $days_poll, $votes_poll)
+function form_of_poll($question, $poll_answers, $options_count, $days_poll, $votes_poll, $read_unvote_users, $revote)
 {
-	global $forum_user, $lang_pun_poll, $forum_config, $forum_page, $read_unvote_users, $revote;
+	global $forum_user, $lang_pun_poll, $forum_config, $forum_page;
 
 ?>
 	<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
@@ -16,7 +16,7 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 				</label>
 				<br/>
 				<span class="fld-input">
-					<input type="text" id="quest" name="question_of_poll" size="80" maxlength="150"  value="<?php echo $question; ?>">
+					<input type="text" id="quest" name="question_of_poll" size="80" maxlength="150"  value="<?php echo forum_htmlencode($question); ?>">
 				</span>
 			</div>
 		</div>
@@ -134,4 +134,160 @@ function form_of_poll($question, $poll_answers, $options_count, $days_poll, $vot
 	</fieldset>
 <?php
 
+}
+
+function add_poll($topic_id, $question, $poll_answers, $days_poll, $votes_poll, $read_unvote_users, $revote)
+{
+	global $forum_db;
+
+	$query = array(
+		'INSERT'	=>	'topic_id, question, read_unvote_users, revote, created, days_count, votes_count',
+		'INTO'		=>	'questions',
+		'VALUES'	=>	$topic_id.', \''.$forum_db->escape($question).'\', '.$read_unvote_users.', '.$revote.', '.time().', '.$days_poll.', '.$votes_poll
+	);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	foreach ($poll_answers as $answer)
+	{
+		$query = array(
+			'INSERT'	=>	'topic_id, answer',
+			'INTO'		=>	'answers',
+			'VALUES'	=>	$topic_id.', \''.$forum_db->escape($answer).'\''			
+		);
+
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	}
+}
+
+function update_poll($topic_id, $question, $poll_answers, $days_poll, $votes_poll, $read_unvote_users, $revote, $old_question, $old_poll_answers, $old_days_poll, $old_votes_poll, $old_read_unvote_users, $old_revote)
+{
+	global $forum_db;
+
+	$question_update_set = array();
+	if ($question != $old_question)
+		$question_update_set[] = 'question = \''.$forum_db->escape($question).'\'';
+	if ($days_poll != $old_days_poll)
+		$question_update_set[] = 'days_count = '.$days_poll;
+	if ($votes_poll != $old_votes_poll)
+		$question_update_set[] = 'votes_count = '.$votes_poll;
+	if ($read_unvote_users != $old_read_unvote_users)
+		$question_update_set[] = 'read_unvote_users = '.$read_unvote_users;
+	if ($revote != $old_revote)
+		$question_update_set[] = 'revote = '.$revote;
+
+	if (!empty($question_update_set))
+	{
+		$poll_query = array(
+			'UPDATE'	=>	'questions',
+			'SET'		=>	implode(',', $question_update_set),
+			'WHERE'		=>	'topic_id = '.$topic_id
+		);
+
+		$forum_db->query_build($poll_query) or error(__FILE__, __LINE__);
+	}
+
+	$poll_query = array(
+		'SELECT'	=>	'id',
+		'FROM'		=>	'answers',
+		'WHERE'		=>	'topic_id = '.$topic_id,
+		'ORDER BY'	=>	'id ASC'
+	);
+	$pun_poll_results = $forum_db->query_build($poll_query);
+	$ans_ids = array();
+	while ($answer = $forum_db->fetch_assoc($pun_poll_results))
+		$ans_ids[] = $answer['id'];
+
+	for ($ans_num = 0; $ans_num < count($poll_answers); $ans_num++)
+	{
+		if (isset($ans_ids[$ans_num]))
+		{
+			$query_pun_poll = array(
+				'UPDATE'	=>	'answers',
+				'SET'		=>	'answer = \''.$forum_db->escape($poll_answers[$ans_num]).'\'',
+				'WHERE'		=>	'id = '.$ans_ids[$ans_num]
+			);
+
+			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+		}
+		else
+		{
+			//New answer
+			$query_pun_poll = array(
+				'INSERT'	=>	'topic_id, answer',
+				'INTO'		=>	'answers',
+				'VALUES'	=>	$topic_id.', \''.$forum_db->escape($poll_answers[$ans_num]).'\''
+			);
+
+			$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+		}
+	}
+	if (count($ans_ids) > count($poll_answers))
+	{
+		$ids = implode(',', array_slice($ans_ids, count($poll_answers)));
+		$query_pun_poll = array(
+			'DELETE'	=>	'answers',
+			'WHERE'		=>	'id IN ('.$ids .')'
+		);
+		$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+
+		$query_pun_poll = array(
+			'DELETE'	=>	'voting',
+			'WHERE'		=>	'answer_id IN ('.$ids.')'
+		);
+		$forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
+	}
+
+}
+
+function data_validation($question, &$poll_answers, &$poll_days, &$poll_votes, $read_unvote_users, $revote)
+{
+	global $lang_pun_poll, $lang_common, $forum_config, $errors;
+
+	$errors = array();	
+	if (empty($question))
+		$errors[] = $lang_pun_poll['Empty question'];
+
+	if (empty($poll_answers) || !is_array($poll_answers))
+		$errors[] = $lang_pun_poll['Empty question'];
+
+	$answers = array();
+	foreach ($poll_answers as $answer)
+	{
+		$ans = forum_trim($answer);
+		if (!empty($ans))
+			$answers[] = $ans;
+	}
+	if (!empty($answers))
+		$answers = array_unique($answers);
+	$poll_answers = $answers;
+
+	if (count($answers) < 2)
+		$errors[] = $lang_pun_poll['Min cnt options'];
+	if (count($answers) > $forum_config['p_pun_poll_max_answers'])
+		$errors[] = sprintf($lang_pun_poll['Max cnt options'], $forum_config['p_pun_poll_max_answers']);
+	if ($poll_days !== FALSE && $poll_votes !== FALSE)
+		$errors[] = $lang_pun_poll['Days, votes count'];
+	else if ($poll_days !== FALSE)
+	{
+		$poll_days = intval($poll_days) > 0 ? intval($poll_days) : FALSE;
+		if (!$poll_days || $poll_days > 90)
+			$errors[] = $lang_pun_poll['Days limit'];
+	}
+	else if ($poll_votes !== FALSE)
+	{
+		$poll_votes = intval($poll_votes) > 0 ? intval($poll_votes) : FALSE;
+		if (!$poll_votes || $poll_votes > 500)
+			$errors[] = $lang_pun_poll['Votes count'];	
+	}
+
+	if ($read_unvote_users !== FALSE)
+	{
+		if (!$forum_config['p_pun_poll_enable_read'] || ($read_unvote_users != 0 && $read_unvote_users != 1))
+			message($lang_common['Bad request']);
+	}
+	if ($revote !== FALSE)
+	{
+		if (!$forum_config['p_pun_poll_enable_revote'] || ($revote != 0 && $revote != 1))
+			message($lang_common['Bad request']);
+	}	
 }
