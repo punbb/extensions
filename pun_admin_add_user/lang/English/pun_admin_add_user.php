@@ -16,7 +16,10 @@ $lang_admin_add_user = array(
 	'Enter a current and valid e-mail address'	=>	'Enter a current and valid e-mail address.',
 	'Edit User Identity after adding User'		=>	'Edit User Identity after adding User.',
 	'Add user'									=>	'Add user',
-	'There are some errors'						=>	'There are some errors'
+	'There are some errors'						=>	'<strong>Warning!</strong> There are some errors:',
+	'Username'									=>	'Username',
+	'E-mail'									=>	'E-mail',
+	'Edit user identity'						=>	'Edit User Identity'
 )
 
 ?>
