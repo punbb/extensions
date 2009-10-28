@@ -261,9 +261,9 @@ function data_validation($question, &$poll_answers, &$poll_days, &$poll_votes, $
 		$answers = array_unique($answers);
 	$poll_answers = $answers;
 
-	if (count($answers) < 2)
+	if (count($poll_answers) < 2)
 		$errors[] = $lang_pun_poll['Min cnt options'];
-	if (count($answers) > $forum_config['p_pun_poll_max_answers'])
+	if (count($poll_answers) > $forum_config['p_pun_poll_max_answers'])
 		$errors[] = sprintf($lang_pun_poll['Max cnt options'], $forum_config['p_pun_poll_max_answers']);
 	if ($poll_days !== FALSE && $poll_votes !== FALSE)
 		$errors[] = $lang_pun_poll['Days, votes count'];

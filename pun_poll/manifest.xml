@@ -393,30 +393,29 @@ if ($fid && ($forum_user['is_admmod'] || $forum_user['g_poll_add']))
 	}
 }
 		]]></hook>
-		<hook id="po_pre_redirect"><![CDATA[
-if ($fid)
+		<hook id="po_end_validation"><![CDATA[
+if ($fid && isset($_POST['update_poll']) && empty($errors))
 {
-	if ($poll_question !== FALSE && isset($_POST['submit']) && empty($errors))
-		add_poll($new_tid, $poll_question, $poll_answers, $poll_days !== FALSE ? $poll_days : 'NULL', $poll_votes !== FALSE ? $poll_votes : 'NULL', $poll_read_unvote_users === FALSE  ? '0' : $poll_read_unvote_users, $poll_revote === FALSE ? '0' : $poll_revote);
-	else if (isset($_POST['update_poll']) && empty($errors))
+	$new_poll_ans_count = isset($_POST['poll_ans_count']) && intval($_POST['poll_ans_count']) > 0 ? intval($_POST['poll_ans_count']) : FALSE;
+
+	if (!$new_poll_ans_count)
+		$errors[] = $lang_pun_poll['Empty option count'];
+	if ($new_poll_ans_count < 2)
 	{
-		$new_poll_ans_count = isset($_POST['poll_ans_count']) && intval($_POST['poll_ans_count']) > 0 ? intval($_POST['poll_ans_count']) : FALSE;
-	
-		if (!$new_poll_ans_count)
-			$errors[] = $lang_pun_poll['Empty option count'];
-		if ($new_poll_ans_count < 2)
-		{
-			$errors[] = $lang_pun_poll['Min cnt options'];
-			$new_poll_ans_count = 2;
-		}
-		if ($new_poll_ans_count > $forum_config['p_pun_poll_max_answers'])
-		{
-			$errors[] = sprintf($lang_pun_poll['Max cnt options'], $forum_config['p_pun_poll_max_answers']);
-			$new_poll_ans_count = $forum_config['p_pun_poll_max_answers'];
-		}
-		$_POST['preview'] = 1;
-	}	
+		$errors[] = $lang_pun_poll['Min cnt options'];
+		$new_poll_ans_count = 2;
+	}
+	if ($new_poll_ans_count > $forum_config['p_pun_poll_max_answers'])
+	{
+		$errors[] = sprintf($lang_pun_poll['Max cnt options'], $forum_config['p_pun_poll_max_answers']);
+		$new_poll_ans_count = $forum_config['p_pun_poll_max_answers'];
+	}
+	$_POST['preview'] = 1;
 }
+		]]></hook>
+		<hook id="po_pre_redirect"><![CDATA[
+if ($fid && $poll_question !== FALSE && isset($_POST['submit']) && empty($errors))
+	add_poll($new_tid, $poll_question, $poll_answers, $poll_days !== FALSE ? $poll_days : 'NULL', $poll_votes !== FALSE ? $poll_votes : 'NULL', $poll_read_unvote_users === FALSE  ? '0' : $poll_read_unvote_users, $poll_revote === FALSE ? '0' : $poll_revote);
 		]]></hook>
 		<hook id="po_preview_pre_display"><![CDATA[
 if ($fid && empty($errors))
@@ -425,9 +424,9 @@ if ($fid && empty($errors))
 	<div class="main-subhead">
 		<h2 class="hn"><span><?php echo $lang_pun_poll['Preview poll']; ?></span></h2>
 	</div>
-    <div id="post-preview" class="main-content main-frm">
-        <fieldset class="mf-set set1" style="padding:0 0 0 2em">
-            <legend>
+	<div id="post-preview" class="main-content main-frm">
+		<fieldset class="mf-set set1" style="padding:0 0 0 2em">
+			<legend>
 				<?php echo "\t\t\t\t\t\t\t\t\t\t\t\t".$poll_question; ?>
 			</legend>
 			<div class="mf-box">
