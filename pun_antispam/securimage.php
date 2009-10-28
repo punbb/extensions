@@ -754,7 +754,7 @@ class Securimage {
    */
   function saveData()
   {
-    $_SESSION['pun_antispam_text'] = utf8_strtolower($this->code);
+    $_SESSION['pun_antispam_text'] = $this->code;
   }
 
 } /* class Securimage */
