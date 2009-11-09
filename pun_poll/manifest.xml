@@ -187,7 +187,8 @@ include $ext_info['path'].'/functions.php';
 
 		]]></hook>
 		<hook id="ed_post_selected"><![CDATA[
-if ($can_edit_subject && ($forum_user['is_admmod'] || $forum_user['g_poll_add']))
+$topic_poll = FALSE;
+if ($can_edit_subject && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']))
 {
 	$pun_poll_query = array(
 		'SELECT'	=>	'question, read_unvote_users, revote, created, days_count, votes_count',
@@ -224,7 +225,7 @@ if ($can_edit_subject && ($forum_user['is_admmod'] || $forum_user['g_poll_add'])
 }
 		]]></hook>
 		<hook id="ed_form_submitted"><![CDATA[
-if ($can_edit_subject && ($forum_user['is_admmod'] || $forum_user['g_poll_add']))
+if ($can_edit_subject && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']))
 {
 	$reset_poll = (isset($_POST['reset_poll']) && $_POST['reset_poll'] == '1') ? true : false;
 	$remove_poll = (isset($_POST['remove_poll']) && $_POST['remove_poll'] == '1') ? true : false;
@@ -261,7 +262,7 @@ if ($can_edit_subject && ($forum_user['is_admmod'] || $forum_user['g_poll_add'])
 }
 		]]></hook>
 		<hook id="ed_end_validation"><![CDATA[
-if (($forum_user['is_admmod'] && $can_edit_subject) || ($can_edit_subject && !$topic_poll))
+if (($forum_user['group_id'] == FORUM_ADMIN && $can_edit_subject) || ($can_edit_subject && !$topic_poll))
 {
 	//Get information about new poll.
 	$new_poll_question = isset($_POST['question_of_poll']) && !empty($_POST['question_of_poll']) ? $_POST['question_of_poll'] : FALSE;
@@ -305,7 +306,7 @@ if (($forum_user['is_admmod'] && $can_edit_subject) || ($can_edit_subject && !$t
 }
 		]]></hook>		
 		<hook id="ed_preview_pre_display"><![CDATA[
-if ((($forum_user['is_admmod'] && $can_edit_subject) || ($can_edit_subject && !$topic_poll)) && empty($errors))
+if ((($forum_user['group_id'] == FORUM_ADMIN && $can_edit_subject) || ($can_edit_subject && !$topic_poll)) && empty($errors))
 {
 	if (!empty($new_poll_question) && !empty($new_poll_answers))
 	{
@@ -374,11 +375,11 @@ if ($can_edit_subject && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user[
 				form_of_poll(isset($new_poll_question) ? $new_poll_question : $poll_question, isset($new_poll_answers) ? $new_poll_answers : $poll_answers, isset($new_poll_ans_count) ? $new_poll_ans_count : (isset($new_poll_answers) ? count($new_poll_answers) : count($poll_answers)), isset($new_poll_days) ? $new_poll_days : $poll_days_count, isset($new_poll_votes) ? $new_poll_votes : $poll_votes_count, isset($new_read_unvote_users) ? $new_read_unvote_users : $poll_read_unvote_users, isset($new_revote) ? $new_revote : $poll_revote);
 	}
 	else
-		form_of_poll(isset($new_poll_question) ? $new_poll_question : '', isset($new_poll_answers) ? $new_poll_answers : '', isset($new_poll_ans_count) ? $new_poll_ans_count : (isset($new_poll_answers) ? count($new_poll_answers) : 2), isset($new_poll_days) ? $new_poll_days : FALSE, isset($new_poll_votes) ? $new_poll_votes : FALSE, $forum_config['p_pun_poll_enable_read'] ? (isset($new_read_unvote_users) ? $new_read_unvote_users : '0') : FALSE, $forum_config['p_pun_poll_enable_revote'] ? (isset($new_revote) ? $new_revote : '0') : FALSE);
+		form_of_poll(isset($new_poll_question) ? $new_poll_question : '', isset($new_poll_answers) ? $new_poll_answers : '', isset($new_poll_ans_count) ? $new_poll_ans_count : (isset($new_poll_answers) ? (count($new_poll_answers) > 2 ? count($new_poll_answers) : 2) : 2), isset($new_poll_days) ? $new_poll_days : FALSE, isset($new_poll_votes) ? $new_poll_votes : FALSE, $forum_config['p_pun_poll_enable_read'] ? (isset($new_read_unvote_users) ? $new_read_unvote_users : '0') : FALSE, $forum_config['p_pun_poll_enable_revote'] ? (isset($new_revote) ? $new_revote : '0') : FALSE);
 }
 		]]></hook>
 		<hook id="po_form_submitted"><![CDATA[
-if ($fid && ($forum_user['is_admmod'] || $forum_user['g_poll_add']))
+if ($fid && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']))
 {
 	$poll_question = isset($_POST['question_of_poll']) && !empty($_POST['question_of_poll']) ? $_POST['question_of_poll'] : FALSE;
 	if (!empty($poll_question))
@@ -414,11 +415,11 @@ if ($fid && isset($_POST['update_poll']) && empty($errors))
 }
 		]]></hook>
 		<hook id="po_pre_redirect"><![CDATA[
-if ($fid && $poll_question !== FALSE && isset($_POST['submit']) && empty($errors))
+if ($fid && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']) && $poll_question !== FALSE && isset($_POST['submit']) && empty($errors))
 	add_poll($new_tid, $poll_question, $poll_answers, $poll_days !== FALSE ? $poll_days : 'NULL', $poll_votes !== FALSE ? $poll_votes : 'NULL', $poll_read_unvote_users === FALSE  ? '0' : $poll_read_unvote_users, $poll_revote === FALSE ? '0' : $poll_revote);
 		]]></hook>
 		<hook id="po_preview_pre_display"><![CDATA[
-if ($fid && empty($errors))
+if ($fid && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']) && $poll_question !== FALSE && empty($errors))
 {
 	?>
 	<div class="main-subhead">
@@ -448,7 +449,7 @@ if ($fid && empty($errors))
 }
 		]]></hook>
 		<hook id="po_req_info_fieldset_end"><![CDATA[
-if ($fid && ($forum_user['is_admmod'] || $forum_user['g_poll_add']))
+if ($fid && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']))
 	form_of_poll( isset($poll_question) ? $poll_question : '', isset($poll_answers) ? $poll_answers : array(), isset($new_poll_ans_count) ? $new_poll_ans_count : (isset($poll_answers) ? count($poll_answers) : 2), !empty($poll_days) ? $poll_days : '', !empty($poll_votes) ? $poll_votes : '', isset($poll_read_unvote_users) ? $poll_read_unvote_users : '0', isset($poll_revote) ? $poll_revote : '0');
 		]]></hook>
 		<hook id="ca_fn_prune_qr_prune_topics, mr_confirm_delete_topics_qr_delete_topics"><![CDATA[
