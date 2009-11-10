@@ -1228,7 +1228,7 @@ function pun_pm_message($message, $type)
 <?php
 
 	if (isset($message['id']) && $type == 'inbox')
-		echo pun_pm_send_form($message['sender'], pun_pm_next_reply($message['subject']), '[quote='.$message['sender'].']'.$message['body'].'[/quote]' , false, true);
+		echo pun_pm_send_form($message['sender'], pun_pm_next_reply($message['subject']), $forum_config['p_message_bbcode'] == '1' ? '[quote='.$message['sender'].']'.$message['body'].'[/quote]' : '' , false, true);
 
 	$result = ob_get_contents();
 	ob_end_clean();
