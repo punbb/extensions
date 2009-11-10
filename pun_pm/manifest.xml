@@ -163,10 +163,13 @@ else
 		<hook id="pf_change_details_settings_email_fieldset_end"><![CDATA[
 
 // Per-user option 'quote beginning of message'
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+if (!isset($lang_pun_pm))
+{
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+}
 
 $forum_page['item_count'] = 0;
 
@@ -218,12 +221,16 @@ if (defined('FORUM_PAGE') && 'pun_pm' == substr(FORUM_PAGE, 0, 6))
 
 if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 {
-	include_once $ext_info['path'].'/functions.php';
+	if(!defined('PUN_PM_FUNCTIONS_LOADED'))
+		require $ext_info['path'].'/functions.php';
 
-	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	else
-		include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	if (!isset($lang_pun_pm))
+	{
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	}
 
 	$pun_pm_body = isset($_POST['req_message']) ? $_POST['req_message'] : '';
 	$pun_pm_subject = isset($_POST['pm_subject']) ? $_POST['pm_subject'] : '';
@@ -319,12 +326,16 @@ $section = isset($_GET['section']) ? $_GET['section'] : null;
 
 if ($section == 'pun_pm' && !$forum_user['is_guest'])
 {
-	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	else
-		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	if (!isset($lang_pun_pm))
+	{
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	}
 
-	require $ext_info['path'].'/functions.php';
+	if(!defined('PUN_PM_FUNCTIONS_LOADED'))
+		require $ext_info['path'].'/functions.php';
 
 	$pun_pm_page = isset($_GET['pmpage']) ? $_GET['pmpage'] : '';
 
@@ -378,9 +389,9 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 if (!isset($lang_pun_pm))
 {
 	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	else
-		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 }
 
 $forum_page['group_count'] = $forum_page['item_count'] = 0;
@@ -462,13 +473,13 @@ if (!$forum_user['is_guest'] && $forum_config['o_pun_pm_show_new_count'])
 	if (!isset($lang_pun_pm))
 	{
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 		else
-			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 	}
 
 	// TODO: Do not include all functions, divide them into 2 files
-	if (!function_exists('pun_pm_unread_messages'))
+	if(!defined('PUN_PM_FUNCTIONS_LOADED'))
 		require $ext_info['path'].'/functions.php';
 
 	($hook = get_hook('pun_pm_hd_visit_elements_pre_change')) ? eval($hook) : null;
@@ -486,9 +497,9 @@ global $lang_pun_pm;
 if (!isset($lang_pun_pm))
 {
 	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 	else
-		require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 }
 
 ($hook = get_hook('pun_pm_pre_post_contacts_add')) ? eval($hook) : null;
@@ -511,9 +522,9 @@ if (isset($links['profile']) && $forum_config['o_pun_pm_show_global_link'])
 	if (!isset($lang_pun_pm))
 	{
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-			include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 		else
-			include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 	}
 
 	if ('pun_pm' == substr(FORUM_PAGE, 0, 6))
@@ -536,9 +547,9 @@ if (!$forum_user['is_guest'] && $forum_user['id'] != $user['id'])
 	if (!isset($lang_pun_pm))
 	{
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-			include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 		else
-			include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 	}
 
 	($hook = get_hook('pun_pm_pre_profile_user_contact_add')) ? eval($hook) : null;

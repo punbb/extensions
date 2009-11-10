@@ -1402,4 +1402,4 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 	return $result;
 }
 
-?>
+define('PUN_PM_FUNCTIONS_LOADED', 1);
