@@ -44,6 +44,20 @@ if (!$forum_db->table_exists('pun_stop_bots_questions'))
 	);
 
 	$forum_db->create_table('pun_stop_bots_questions', $schema);
+
+	$insert_query = array(
+		'INSERT'	=>	'question, answers',
+		'INTO'		=>	'pun_stop_bots_questions',
+		'VALUES'	=>	'\''.$forum_db->escape('Say "Hello"').'\', \''.$forum_db->escape('hello,hi').'\''
+	);
+	$forum_db->query_build($insert_query) or error(__FILE__, __LINE__);
+
+	$insert_query = array(
+		'INSERT'	=>	'question, answers',
+		'INTO'		=>	'pun_stop_bots_questions',
+		'VALUES'	=>	'\''.$forum_db->escape('What is the name of our planet?').'\', \''.$forum_db->escape('earth').'\''
+	);
+	$forum_db->query_build($insert_query) or error(__FILE__, __LINE__);		
 }
 //The column for storing the id of a given question.
 $forum_db->add_field('online', 'pun_stop_bots_question_id', 'INT(10) UNSIGNED', true);
