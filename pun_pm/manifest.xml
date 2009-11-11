@@ -163,15 +163,17 @@ else
 		<hook id="pf_change_details_settings_email_fieldset_end"><![CDATA[
 
 // Per-user option 'quote beginning of message'
-if (!isset($lang_pun_pm))
+if ($forum_config['p_message_bbcode'] == '1')
 {
-	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	else
-		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-}
+	if (!isset($lang_pun_pm))
+	{
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	}
 
-$forum_page['item_count'] = 0;
+	$forum_page['item_count'] = 0;
 
 ?>
 			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
@@ -188,6 +190,10 @@ $forum_page['item_count'] = 0;
 <?php ($hook = get_hook('pun_pm_pf_change_details_settings_pre_pm_settings_fieldset_end')) ? eval($hook) : null; ?>
 			</fieldset>
 <?php
+}
+else
+	echo "\t\t\t".'<input type="hidden" name="form[pun_pm_long_subject]" value="'.$user['pun_pm_long_subject'].'" />'."\n";
+
 		]]></hook>
 
 		<hook id="co_common"><![CDATA[
