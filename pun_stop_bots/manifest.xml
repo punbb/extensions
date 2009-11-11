@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+/**
+ * PunBB Repository extension main file
+ *
+ * @copyright Copyright (C) 2008 PunBB, partially based on code copyright (C) 2008 FluxBB.org
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_repository
+ */
+-->
+
+<extension engine="1.0">
+	<id>pun_stop_bots</id>
+	<title>pun_stop_bots</title>
+	<version>0.1</version>
+	<description>The extension will ask some questions to prevent bot registration and posting.</description>
+	<author>PunBB Development Team</author>
+
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
+
+	<install><![CDATA[
+//Table with questions.
+if (!$forum_db->table_exists('pun_stop_bots_questions'))
+{
+	$schema = array(
+		'FIELDS'	=> array(
+			'id' => array(
+				'datatype'		=> 'SERIAL',
+				'allow_null'	=> false
+			),
+			'question' => array(
+				'datatype'		=> 'TEXT',
+				'allow_null'	=> false
+			),
+			'answers' => array(
+				'datatype'		=> 'TEXT',
+				'allow_null'	=> false
+			)
+		),
+		'PRIMARY KEY'	=> array('id'),
+	);
+
+	$forum_db->create_table('pun_stop_bots_questions', $schema);
+}
+//The column for storing the id of a given question.
+$forum_db->add_field('online', 'pun_stop_bots_question_id', 'INT(10) UNSIGNED', true);
+	]]></install>
+	<uninstall><![CDATA[
+$forum_db->drop_field('online', 'pun_stop_bots_question_id');
+$forum_db->drop_table('pun_stop_bots_questions');
+	]]></uninstall>
+
+	<hooks>
+	</hooks>
+
+</extension>
