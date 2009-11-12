@@ -24,12 +24,8 @@ function pun_stop_bots_generate_cache()
 	$output = array();
 	if ($forum_db->num_rows($result) > 0)
 	{
-		while ($cur_item = $forum_db->fetch_row($result))
-		{
-			$output['id'] = $cur_item['id'];
-			$output['question'] = $cur_item['question'];
-			$output['answers'] = $cur_item['answers'];
-		}
+		while ($cur_item = $forum_db->fetch_assoc($result))
+			$output[] = array('id' => $cur_item['id'], 'question' => $cur_item['question'], 'answers' => $cur_item['answers']);
 	}
 
 	// Output config as PHP code
