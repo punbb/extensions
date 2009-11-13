@@ -63,18 +63,19 @@ if (!$forum_db->table_exists('pun_stop_bots_questions'))
 $forum_db->add_field('online', 'pun_stop_bots_question_id', 'INT(10) UNSIGNED', true);
 	]]></install>
 	<uninstall><![CDATA[
+if (file_exists(FORUM_CACHE_DIR.'cache_pun_stop_bots.php'))
+	unlink(FORUM_CACHE_DIR.'cache_pun_stop_bots.php');
 $forum_db->drop_field('online', 'pun_stop_bots_question_id');
 $forum_db->drop_table('pun_stop_bots_questions');
 	]]></uninstall>
 
 	<hooks>
 		<hook id="po_start,rg_start,aop_start"><![CDATA[
+include $ext_info['path'].'/functions.php';
 if (file_exists(FORUM_CACHE_DIR.'cache_pun_stop_bots.php'))
 	include FORUM_CACHE_DIR.'cache_pun_stop_bots.php';
 if (!defined('PUN_STOP_BOTS_CACHE_LOADED') || $pun_stop_bots_questions['cached'] < (time() - 43200))
 {
-	include $ext_info['path'].'/functions.php';
-
 	pun_stop_bots_generate_cache();
 	require FORUM_CACHE_DIR.'cache_pun_stop_bots.php';
 }
@@ -89,6 +90,67 @@ if ($section == 'pun_stop_bots_questions')
 	include $ext_info['path'].'/url/Default.php';
 
 	$forum_page = array();
+	$forum_page['errors'] = array();
+
+	if (isset($_POST['add_question']) && !empty($pun_stop_bots_questions))
+	{
+		$question = forum_trim($_POST['question']);
+		$answers = forum_trim($_POST['answers']);
+
+		if ($question == '' || $answers == '')
+			$forum_page['errors'][] = $lang_pun_stop_bots['Management err empty fields'];
+
+		if (empty($forum_page['errors']))
+		{
+			$stop_bots_error = pun_stop_bots_add_question($question, $answers);
+			if ($stop_bots_error !== TRUE)
+				$forum_page['errors'][] = $stop_bots_error;
+			else
+			{
+				pun_stop_bots_generate_cache();
+				redirect(forum_link($forum_url['pun_stop_bots_section']), $lang_pun_stop_bots['Management question add'].' '.$lang_admin_common['Redirect']);
+			}
+		}
+	}
+	else if (isset($_POST['update']) && !empty($pun_stop_bots_questions))
+	{
+		$question_id = intval(key($_POST['update']));
+		if ($question_id < 1)
+			message($lang_common['Bad request']);
+
+		$question = forum_trim($_POST['question'][$question_id]);
+		$answers = forum_trim($_POST['answers'][$question_id]);
+
+		if ($question == '' || $answers == '')
+			$forum_page['errors'][] = $lang_pun_stop_bots['Management err empty fields'];
+
+		if (empty($forum_page['errors']))
+		{
+			$stop_bots_error = pun_stop_bots_update_question($question_id, $question, $answers);
+			if ($stop_bots_error !== TRUE)
+				$forum_page['errors'][] = $stop_bots_error;
+			else
+			{
+				pun_stop_bots_generate_cache();
+				redirect(forum_link($forum_url['pun_stop_bots_section']), $lang_pun_stop_bots['Management question add'].' '.$lang_admin_common['Redirect']);
+			}
+		}
+	}
+	else if (isset($_POST['remove']) && !empty($pun_stop_bots_questions))
+	{
+		$question_id = intval(key($_POST['remove']));
+		if ($question_id < 1)
+			message($lang_common['Bad request']);
+
+		$stop_bots_error = pun_stop_bots_delete_question($question_id);
+		if ($stop_bots_error !== TRUE)
+			$forum_page['errors'][] = $stop_bots_error;
+		else
+		{
+			pun_stop_bots_generate_cache();
+			redirect(forum_link($forum_url['pun_stop_bots_section']), $lang_pun_stop_bots['Management question remove'].' '.$lang_admin_common['Redirect']);
+		}
+	}
 
 	$forum_page['crumbs'] = array(
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
@@ -103,6 +165,7 @@ if ($section == 'pun_stop_bots_questions')
 	define('FORUM_PAGE_SECTION', 'settings');
 	define('FORUM_PAGE', 'admin-pun_stop_bots_questions');
 	require FORUM_ROOT.'header.php';
+
 	// START SUBST - <!-- forum_main -->
 	ob_start();
 

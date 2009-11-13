@@ -13,6 +13,7 @@ if (!defined('FORUM')) die();
 $lang_pun_stop_bots = array(
 	'Management err no question'			=>	'There is no question with such id.',
 	'Management err dupe question'			=>	'The entered question already exists.',
+	'Management err empty fields'			=>	'You must enter both text to question and text to answers.',
 	'Management question'					=>	'Question',
 	'Management answers'					=>	'Answers',
 	'Management add question'				=>	'Add new question',
@@ -21,11 +22,13 @@ $lang_pun_stop_bots = array(
 	'Management notice'						=>	'Enter the question you want to add and the corresponding answers. The answers should be separated with commas. Answer comparison is case-insensitive.',
 	'Management existing question'			=>	'Existing question',
 	'Management existing question legend'	=>	'Edit or remove existing questions.',
-	'Management btn update'		=>	'Update',
-	'Management btn remove'		=>	'Remove',
-	'Management tab'			=>	'Stop bots questions'
-
-	
+	'Management btn update'					=>	'Update',
+	'Management btn remove'					=>	'Remove',
+	'Management tab'						=>	'Stop bots questions',
+	'Management question add'				=>	'New question was added.',
+	'Management question update'			=>	'The question and answers was updated.',
+	'Management question remove'			=>	'The question was removed.',
+	'Mangement error notice'				=>	'<strong>Warning!</strong> The following errors must be corrected before questions can be updated:'
 );
 
 ?>
