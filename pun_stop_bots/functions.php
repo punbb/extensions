@@ -44,7 +44,7 @@ function pun_stop_bots_add_question($question, $answers)
 	global $forum_db, $pun_stop_bots_questions, $lang_pun_stop_bots;
 
 	if (!empty($pun_stop_bots_questions['questions']) && array_search($question, array_map(create_function('$data', 'return $data[\'question\'];'), $pun_stop_bots_questions['questions'])) !== FALSE)
-		return $lang_pun_stop_bots['Management err no question'];
+		return $lang_pun_stop_bots['Management err dupe question'];
 
 	$query = array(
 		'INSERT'	=>	'question, answers',
