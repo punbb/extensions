@@ -68,6 +68,72 @@ $forum_db->drop_table('pun_stop_bots_questions');
 	]]></uninstall>
 
 	<hooks>
+		<hook id="po_start,rg_start,aop_start"><![CDATA[
+if (file_exists(FORUM_CACHE_DIR.'cache_pun_stop_bots.php'))
+	include FORUM_CACHE_DIR.'cache_pun_stop_bots.php';
+if (!defined('PUN_STOP_BOTS_CACHE_LOADED') || $pun_stop_bots_questions['cached'] < (time() - 43200))
+{
+	include $ext_info['path'].'/functions.php';
+
+	pun_stop_bots_generate_cache();
+	require FORUM_CACHE_DIR.'cache_pun_stop_bots.php';
+}
+		]]></hook>
+		<hook id="aop_new_section"><![CDATA[
+if ($section == 'pun_stop_bots_questions')
+{
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	include $ext_info['path'].'/url/Default.php';
+
+	$forum_page = array();
+
+	$forum_page['crumbs'] = array(
+		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+		array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
+		array($lang_admin_common['Settings'], forum_link($forum_url['admin_settings_setup'])),
+		array($lang_pun_stop_bots['Management tab'], forum_link($forum_url['pun_stop_bots_section']))
+	);
+	$forum_page['form_action'] = forum_link($forum_url['pun_stop_bots_section']);
+	$forum_page['csrf_token'] = generate_form_token($forum_page['form_action']);
+	$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
+
+	define('FORUM_PAGE_SECTION', 'settings');
+	define('FORUM_PAGE', 'admin-pun_stop_bots_questions');
+	require FORUM_ROOT.'header.php';
+	// START SUBST - <!-- forum_main -->
+	ob_start();
+
+	include $ext_info['path'].'/views/management.php';
+
+	$tpl_temp = forum_trim(ob_get_contents());
+	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+	ob_end_clean();
+	// END SUBST - <!-- forum_main -->
+
+	require FORUM_ROOT.'footer.php';
+}
+		]]></hook>
+		<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
+if ($forum_user['g_id'] == FORUM_ADMIN && FORUM_PAGE_SECTION == 'settings')
+{
+	global $lang_pun_stop_bots;
+
+	if (!isset($forum_url['pun_stop_bots_section']))
+		include $ext_info['path'].'/url/Default.php';
+	if (!isset($lang_pun_stop_bots))
+	{
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	}
+
+	$forum_page['admin_submenu']['pun_stop_bots_questions'] = '<li class="'.((FORUM_PAGE == 'admin-pun_stop_bots_questions') ? 'active' : 'normal').((empty($forum_page['admin_submenu'])) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['pun_stop_bots_section']).'">'.$lang_pun_stop_bots['Management tab'].'</a></li>';
+}
+		]]></hook>
 	</hooks>
 
 </extension>

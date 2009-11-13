@@ -25,8 +25,9 @@ function pun_stop_bots_generate_cache()
 	if ($forum_db->num_rows($result) > 0)
 	{
 		while ($cur_item = $forum_db->fetch_assoc($result))
-			$output[] = array('id' => $cur_item['id'], 'question' => $cur_item['question'], 'answers' => $cur_item['answers']);
+			$output['question'][] = array('id' => $cur_item['id'], 'question' => $cur_item['question'], 'answers' => $cur_item['answers']);
 	}
+	$output['cached'] = time();
 
 	// Output config as PHP code
 	$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_stop_bots.php', 'wb');
