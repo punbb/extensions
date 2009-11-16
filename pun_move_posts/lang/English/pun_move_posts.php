@@ -15,4 +15,5 @@ $lang_pun_move_posts = array(
 	'Move selected'			=> 'Move selected posts',
 	'Move posts'			=> 'Move posts'
 );
+
 ?>

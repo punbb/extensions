@@ -79,6 +79,7 @@ if (isset($_POST['move_posts']))
 
 // START SUBST - <!-- forum_main -->
 	ob_start();
+
 ?>
 	<div class="main-head">
 		<h2 class="hn"><span><?php echo end($forum_page['crumbs']) ?></span></h2>
@@ -129,7 +130,7 @@ $forum_id = $fid;
 	$tpl_temp = forum_trim(ob_get_contents());
 	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
 	ob_end_clean();
-// END SUBST - <!-- forum_main -->
+	// END SUBST - <!-- forum_main -->
 
 	require FORUM_ROOT.'footer.php';
 }
@@ -160,4 +161,5 @@ if (isset($_POST['move_posts_to']))
 	sync_forum($fid);
 	redirect(forum_link($forum_url['topic'], array($tid, sef_friendly($cur_topic['subject']))), 'Move posts');
 }
+
 ?>

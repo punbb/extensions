@@ -15,13 +15,11 @@
 	<id>pun_move_posts</id>
 	<title>Pun Move Posts</title>
 	<version>1.0.0</version>
-	<description>No Description</description>
+	<description>This extension allows moderators to move posts to other topics.</description>
 	<author>PunBB Development Team</author>
 
-	<minversion>1.3dev</minversion>
-	<maxtestedon>1.3</maxtestedon>
-
-	<note type="install" timing="pre">Warning: web server should have write access to your extensions directory.</note>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
 
 	<hooks>
 		<hook id="mr_post_actions_pre_mod_options"><![CDATA[
