@@ -3,15 +3,19 @@
 
 <!--
 /**
-
+ * Pun Move Posts extension main file
+ *
+ * @copyright Copyright (C) 2009 PunBB, partially based on code copyright (C) 2009 FluxBB.org
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_move_posts
  */
 -->
 
 <extension engine="1.0">
-	<id>pun_move_posts_extension</id>
-	<title>Pun move posts extension</title>
-	<version>1.2.2</version>
-	<description>description</description>
+	<id>pun_move_posts</id>
+	<title>Pun Move Posts</title>
+	<version>1.0.0</version>
+	<description>No Description</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.3dev</minversion>
@@ -19,28 +23,21 @@
 
 	<note type="install" timing="pre">Warning: web server should have write access to your extensions directory.</note>
 
-	<install></install>
-
 	<hooks>
 		<hook id="mr_post_actions_pre_mod_options"><![CDATA[
-                    $forum_page['mod_options'] = array_merge(array('<span class="submit first-item"><input type="submit" name="move_posts" value="'.$lang_pun_move_posts_extension['Move selected'].'" /></span>'), $forum_page['mod_options']);
-                ]]></hook>
+$forum_page['mod_options'] = array_merge(array('<span class="submit first-item"><input type="submit" name="move_posts" value="'.$lang_pun_move_posts['Move selected'].'" /></span>'), $forum_page['mod_options']);
+		]]></hook>
 
-                <hook id="mr_post_actions_selected"><![CDATA[
-                    if (file_exists($ext_info['path'].'/move_posts.php'))
-                        require $ext_info['path'].'/move_posts.php';
-                ]]></hook>
-                
-                <hook id="mr_start"><![CDATA[
-                    if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-                        require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-                    else
-			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-                ]]></hook>
+		<hook id="mr_post_actions_selected"><![CDATA[
+			if (file_exists($ext_info['path'].'/move_posts.php'))
+				require $ext_info['path'].'/move_posts.php';
+		]]></hook>
 
-               
-
-
+		<hook id="mr_start"><![CDATA[
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		]]></hook>
 	</hooks>
-
 </extension>
