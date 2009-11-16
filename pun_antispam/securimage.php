@@ -77,11 +77,11 @@ class Securimage {
 
   /**
    * The image format for output.<br />
-   * Valid options: SI_IMAGE_PNG, SI_IMAGE_JPG, SI_IMAGE_GIF
+   * Valid options: SI_IMAGE_PNG, SI_IMAGE_JPEG, SI_IMAGE_GIF
    *
    * @var int
    */
-  var $image_type = SI_IMAGE_JPG;
+  var $image_type = SI_IMAGE_JPEG;
 
   /**
    * The length of the code to generate.
