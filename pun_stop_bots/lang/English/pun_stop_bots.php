@@ -28,7 +28,12 @@ $lang_pun_stop_bots = array(
 	'Management question add'				=>	'New question was added.',
 	'Management question update'			=>	'The question and answers was updated.',
 	'Management question remove'			=>	'The question was removed.',
-	'Mangement error notice'				=>	'<strong>Warning!</strong> The following errors must be corrected before questions can be updated:'
+	'Mangement error notice'				=>	'<strong>Warning!</strong> The following errors must be corrected before questions can be updated:',
+	'Err no record'							=>	'The question id was not found in the "online" table. Perhaps, this happened because the online timeout was reached. Please, try again.',
+	'Stop bots question'					=>	'Pun stop bots question',
+	'Your answer'							=>	'Your answer',
+	'Answer'								=>	'Answer',
+	'Stop bots question legend'				=>	'Pun stop bots question'
 );
 
 ?>
