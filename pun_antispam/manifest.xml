@@ -15,7 +15,7 @@
 	<extension engine="1.0">
 	<id>pun_antispam</id>
 	<title>Antispam System</title>
-	<version>1.3.3</version>
+	<version>1.3.4</version>
 	<description>Adds CAPTCHA to registration, login and guest posting forms. Puts restrictions on adding user signatures and website links.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
@@ -76,7 +76,7 @@ if ($forum_config['o_pun_antispam_captcha_register'] == '1')
 
 	if (empty($_SESSION['pun_antispam_confirmed_user']))
 	{
-		if ((empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+		if ((empty($_SESSION['pun_antispam_text']) || strcmp(utf8_strtolower(trim($_POST['pun_antispam_input'])), utf8_strtolower($_SESSION['pun_antispam_text'])) !== 0))
 			$errors[] = $lang_pun_antispam['Invalid Text'];
 		else
 			$_SESSION['pun_antispam_confirmed_user'] = 1;
@@ -110,7 +110,7 @@ if ($forum_config['o_pun_antispam_captcha_register'] == '1' && empty($_SESSION['
 if (session_id() == "")
 	session_start();
 
-if ($forum_config['o_pun_antispam_captcha_login'] == '1' && (isset($_SESSION['pun_antispam_logins']) && $_SESSION['pun_antispam_logins'] > 5) && (empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+if ($forum_config['o_pun_antispam_captcha_login'] == '1' && (isset($_SESSION['pun_antispam_logins']) && $_SESSION['pun_antispam_logins'] > 5) && (empty($_SESSION['pun_antispam_text']) || strcmp(utf8_strtolower(trim($_POST['pun_antispam_input'])), utf8_strtolower($_SESSION['pun_antispam_text'])) !== 0))
 	$errors[] = $lang_pun_antispam['Invalid Text'];
 
 $_SESSION['pun_antispam_text'] = '';
@@ -155,7 +155,7 @@ if (isset($_POST['form_sent']))
 	if (session_id() == "")
 		session_start();
 
-	if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1' && (empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+	if ($forum_config['o_pun_antispam_captcha_restorepass'] == '1' && (empty($_SESSION['pun_antispam_text']) || strcmp(utf8_strtolower(trim($_POST['pun_antispam_input'])), utf8_strtolower($_SESSION['pun_antispam_text'])) !== 0))
 		$errors[] = $lang_pun_antispam['Invalid Text'];
 
 	$_SESSION['pun_antispam_text'] = '';
@@ -191,7 +191,7 @@ if ($forum_user['is_guest'] && $forum_config['o_pun_antispam_captcha_guestpost']
 			if (!isset($_POST['preview']))
 				$errors[] = $lang_pun_antispam['No cookies'];
 		}
-		else if ((empty($_SESSION['pun_antispam_text']) || utf8_strcasecmp(trim($_POST['pun_antispam_input']), $_SESSION['pun_antispam_text']) !== 0))
+		else if ((empty($_SESSION['pun_antispam_text']) || strcmp(utf8_strtolower(trim($_POST['pun_antispam_input'])), utf8_strtolower($_SESSION['pun_antispam_text'])) !== 0))
 		{
 			if (!isset($_POST['preview']))
 				$errors[] = $lang_pun_antispam['Invalid Text'];
