@@ -60,7 +60,6 @@ function pun_stop_bots_add_question($question, $answers)
 
 function pun_stop_bots_update_question($question_id, $question, $answers)
 {
-	print_r(func_get_args());
 	global $forum_db, $pun_stop_bots_questions, $lang_pun_stop_bots;
 
 	$query = array(
@@ -147,7 +146,7 @@ function pun_stop_bots_check_cookie()
 	if ($forum_db->num_rows($result) > 0)
 	{
 		list($question_id) = $forum_db->fetch_row($result);
-		$pun_stop_bots_cookie = explode(',', base64_decode($_COOKIE[PUN_STOP_BOTS_COOKIE_NAME]));
+		$pun_stop_bots_cookie = explode('|', base64_decode($_COOKIE[PUN_STOP_BOTS_COOKIE_NAME]));
 		if (count($pun_stop_bots_cookie) != 4)
 			return FALSE;
 		else
@@ -174,6 +173,23 @@ function generate_guest_question_id()
 		'UPDATE'	=>	'online',
 		'SET'		=>	'pun_stop_bots_question_id = '.$new_question_id,
 		'WHERE'		=>	'ident = \''.$forum_user['ident'].'\''
+	);
+	$forum_db->query_build($pun_stop_bots_query) or error(__FILE__, __LINE__);
+
+	return $new_question_id;
+}
+
+function generate_user_question_id()
+{
+	global $forum_db, $forum_user, $pun_stop_bots_questions;
+
+	$question_ids = array_keys($pun_stop_bots_questions['questions']);
+	$new_question_id = $question_ids[array_rand($question_ids)];
+	unset($question_ids);
+	$pun_stop_bots_query = array(
+		'UPDATE'	=>	'users',
+		'SET'		=>	'pun_stop_bots_question_id = '.$new_question_id,
+		'WHERE'		=>	'id = '.$forum_user['id']
 	);
 	$forum_db->query_build($pun_stop_bots_query) or error(__FILE__, __LINE__);
 
