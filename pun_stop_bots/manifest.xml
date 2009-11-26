@@ -13,7 +13,7 @@
 
 <extension engine="1.0">
 	<id>pun_stop_bots</id>
-	<title>pun_stop_bots</title>
+	<title>Stop spam from bots</title>
 	<version>0.1</version>
 	<description>The extension will ask some questions to prevent bot registration and posting.</description>
 	<author>PunBB Development Team</author>
@@ -112,7 +112,7 @@ if (empty($errors))
 		else
 			$pun_stop_bots_true_answer = FALSE;
 		if (!$pun_stop_bots_true_answer)
-			$new_question_id = generate_guest_question_id();
+			$new_question_id = pun_stop_bots_generate_guest_question_id();
 		else
 		{
 			$query = array(
@@ -126,7 +126,7 @@ if (empty($errors))
 	if (!$pun_stop_bots_true_answer)
 	{
 		if (!isset($new_question_id))
-			$new_question_id = generate_guest_question_id();
+			$new_question_id = pun_stop_bots_generate_guest_question_id();
 
 		$forum_page['crumbs'] = array(
 			array($forum_config['o_board_title'], forum_link($forum_url['index'])),
@@ -153,8 +153,8 @@ if (empty($errors))
 	}
 }
 		]]></hook>
-		<hook id="po_end_validation" priority="10"><![CDATA[
-if (!$forum_page['is_admmod'] && empty($errors) && !isset($_POST['preview']))
+		<hook id="po_form_submitted"><![CDATA[
+if (!$forum_page['is_admmod'] && !isset($_POST['preview']))
 {
 	include $ext_info['path'].'/functions.php';
 	if (file_exists(FORUM_CACHE_DIR.'cache_pun_stop_bots.php'))
@@ -195,12 +195,12 @@ if (!$forum_page['is_admmod'] && empty($errors) && !isset($_POST['preview']))
 			$pun_stop_bots_true_answer = FALSE;
 		//Generate new question in case of incorrect answer.
 		if (!$pun_stop_bots_true_answer)
-			$new_question_id = $forum_user['is_guest'] ? generate_guest_question_id() : generate_user_question_id();
+			$new_question_id = $forum_user['is_guest'] ? pun_stop_bots_generate_guest_question_id() : pun_stop_bots_generate_user_question_id();
 	}
 	//If it is a user and answer is correct set new cookie.
 	if (!$forum_user['is_guest'] && !isset($_COOKIE[PUN_STOP_BOTS_COOKIE_NAME]) && $pun_stop_bots_true_answer)
 	{
-		$new_question_id = $forum_user['is_guest'] ? generate_guest_question_id() : generate_user_question_id();
+		$new_question_id = $forum_user['is_guest'] ? pun_stop_bots_generate_guest_question_id() : pun_stop_bots_generate_user_question_id();
 		pun_stop_bots_set_cookie($new_question_id);
 	}
 	else if ($forum_user['is_guest'] && $pun_stop_bots_true_answer)
@@ -216,7 +216,7 @@ if (!$forum_page['is_admmod'] && empty($errors) && !isset($_POST['preview']))
 	{
 		//If it is first request of the page, we need to generate new question.
 		if (!isset($new_question_id))
-			$new_question_id =  $forum_user['is_guest'] ? generate_guest_question_id() : generate_user_question_id();
+			$new_question_id =  $forum_user['is_guest'] ? pun_stop_bots_generate_guest_question_id() : pun_stop_bots_generate_user_question_id();
 
 		$forum_page['crumbs'] = array(
 			array($forum_config['o_board_title'], forum_link($forum_url['index'])),
@@ -226,6 +226,7 @@ if (!$forum_page['is_admmod'] && empty($errors) && !isset($_POST['preview']))
 		$forum_page['form_handler'] = $_SERVER['REQUEST_URI'];
 		$forum_page['question'] = $pun_stop_bots_questions['questions'][$new_question_id]['question'];
 		$forum_page['hidden_fields'] = $_POST;
+
 		define('FORUM_PAGE', 'pun_stop_bots_page');
 		require FORUM_ROOT.'header.php';
 
@@ -268,7 +269,7 @@ if ($section == 'pun_stop_bots_questions')
 	if (isset($_POST['add_question']) && !empty($pun_stop_bots_questions))
 	{
 		$question = forum_trim($_POST['question']);
-		$answers = forum_trim(strtolower($_POST['answers']));
+		$answers = pun_stop_bots_prepare_answers(strtolower(forum_trim($_POST['answers'])));
 
 		if ($question == '' || $answers == '')
 			$forum_page['errors'][] = $lang_pun_stop_bots['Management err empty fields'];
@@ -292,7 +293,7 @@ if ($section == 'pun_stop_bots_questions')
 			message($lang_common['Bad request']);
 
 		$question = forum_trim($_POST['question'][$question_id]);
-		$answers = forum_trim($_POST['answers'][$question_id]);
+		$answers = pun_stop_bots_prepare_answers(strtolower(forum_trim($_POST['answers'][$question_id])));
 
 		if ($question == '' || $answers == '')
 			$forum_page['errors'][] = $lang_pun_stop_bots['Management err empty fields'];
@@ -368,6 +369,19 @@ if ($forum_user['g_id'] == FORUM_ADMIN && FORUM_PAGE_SECTION == 'settings')
 	}
 
 	$forum_page['admin_submenu']['pun_stop_bots_questions'] = '<li class="'.((FORUM_PAGE == 'admin-pun_stop_bots_questions') ? 'active' : 'normal').((empty($forum_page['admin_submenu'])) ? ' first-item' : '').'"><a href="'.forum_link($forum_url['pun_stop_bots_section']).'">'.$lang_pun_stop_bots['Management tab'].'</a></li>';
+}
+		]]></hook>
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		]]></hook>
+		<hook id="ft_about_end" priority="10"><![CDATA[
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+	if (count($pun_extensions_used) == 1)
+		echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+	else
+		echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
 }
 		]]></hook>
 	</hooks>

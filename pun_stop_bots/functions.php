@@ -162,7 +162,7 @@ function pun_stop_bots_check_cookie()
 		return FALSE;
 }
 
-function generate_guest_question_id()
+function pun_stop_bots_generate_guest_question_id()
 {
 	global $forum_db, $forum_user, $pun_stop_bots_questions;
 
@@ -179,7 +179,7 @@ function generate_guest_question_id()
 	return $new_question_id;
 }
 
-function generate_user_question_id()
+function pun_stop_bots_generate_user_question_id()
 {
 	global $forum_db, $forum_user, $pun_stop_bots_questions;
 
@@ -194,6 +194,11 @@ function generate_user_question_id()
 	$forum_db->query_build($pun_stop_bots_query) or error(__FILE__, __LINE__);
 
 	return $new_question_id;
+}
+
+function pun_stop_bots_prepare_answers($answers)
+{
+	return preg_replace('~,[\s]+~', ',', $answers);
 }
 
 ?>
