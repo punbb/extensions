@@ -51,7 +51,7 @@ function pun_stop_bots_add_question($question, $answers)
 	$query = array(
 		'INSERT'	=>	'question, answers',
 		'INTO'		=>	'pun_stop_bots_questions',
-		'VALUES'	=>	'\''.$forum_db->escape($question).'\', \''.$answers.'\''
+		'VALUES'	=>	'\''.$forum_db->escape($question).'\', \''.$forum_db->escape($answers).'\''
 	);	
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
