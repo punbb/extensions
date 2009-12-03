@@ -3,7 +3,7 @@
 /**
  * pun_stop_bots view of question page
  *
- * @copyright Copyright (C) 2008 PunBB, partially based on code copyright (C) 2008 FluxBB.org
+ * @copyright (C) 2008-2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_stop_bots
  */
