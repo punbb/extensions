@@ -51,7 +51,7 @@ $lang_app_post = array(
 	'Remove success'			=> 'Users removed is successfull.',
 	'Approve not success'		=> 'Approve users is not success.',
 	'Remove not success'		=> 'Users removed is not success.',
-	'Show section'				=> 'Show unapproved registrations',
+	'Show unappr regs'				=> 'Show unapproved registrations',
 //settings -> features
 	'users check name'			=> 'Allow registration approval',
 	'users check value'			=> 'Enable new registrations approval',
