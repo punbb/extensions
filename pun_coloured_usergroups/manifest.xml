@@ -97,7 +97,7 @@
                 ]]></hook>
           
                 <hook id="pf_change_details_about_output_start"><![CDATA[
-                            $forum_page['user_ident']['username'] = '<li class="username'.(($user['realname'] =='') ? ' fn nickname' :  ' nickname').'"><strong>'.forum_htmlencode($user['username']).'</strong></li>';
+                            $forum_page['user_ident']['username'] = '<li class="username'.(($user['realname'] =='') ? ' fn nickname' :  ' nickname').'"><strong><span class="group_color_'.$user['g_id'].'">'.forum_htmlencode($user['username']).'</span></strong></li>';
                 ]]></hook>
 
 

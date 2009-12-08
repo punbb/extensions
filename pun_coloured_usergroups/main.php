@@ -13,7 +13,7 @@ function cache_pun_coloured_usergroups()
 
         while ($all_groups = $forum_db->fetch_assoc($result))
 	{
-            $output[] =     '.group_color_'.$all_groups['g_id'].' a:link {color: '.$all_groups['link_color'].';}'."\n".'.group_color_'.$all_groups['g_id'].' a:visited {color: '.$all_groups['link_color'].';}'."\n".'.group_color_'.$all_groups['g_id'].' a:hover {color: '.$all_groups['hover_color'].';}'."\n\n";
+            $output[] =     '.group_color_'.$all_groups['g_id'].' a:link {color: '.$all_groups['link_color'].';}'."\n".'.group_color_'.$all_groups['g_id'].' a:visited {color: '.$all_groups['link_color'].';}'."\n".'.group_color_'.$all_groups['g_id'].' a:hover {color: '.$all_groups['hover_color'].';}' ."\n".'.brd .group_color_'.$all_groups['g_id'].' {color: '.$all_groups['hover_color'].';}' ."\n".'#brd-main .group_color_'.$all_groups['g_id'].' {font-size:12px; position:static; visibility:visible; color: '.$all_groups['hover_color'].';}'."\n\n";
 	}
 
 	$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php', 'wb');
