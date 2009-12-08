@@ -20,8 +20,19 @@
 
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
-        
-	<hooks>
+        <install><![CDATA[
+		if (!defined('EXT_CUR_VERSION'))
+		{
+			$forum_db->add_field('groups', 'link_color', 'VARCHAR(6)', true);
+			$forum_db->add_field('groups', 'hover_color', 'VARCHAR(6)', true);
+		}
+	]]>
+	</install>
+        <uninstall><![CDATA[
+		$forum_db->drop_field('groups', 'link_color');
+		$forum_db->drop_field('groups', 'hover_color');
+	]]></uninstall>
+        <hooks>
 		<hook id="in_users_online_qr_get_online_info"><![CDATA[
 
                     $query['SELECT'] .= ', u.group_id';
@@ -64,7 +75,10 @@
                             $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
                             while ($forum_user_online = $forum_db->fetch_assoc($result))
                             {
-                                $users[] = ($forum_user['g_view_users'] == '1') ? '<span class="group_color_'.$forum_user_online['group_id'].'"> <a href="'.forum_link($forum_url['user'], $forum_user_online['user_id']).'">'.forum_htmlencode($forum_user_online['ident']).'</a></span>' : forum_htmlencode($forum_user_online['ident']);
+                                if ($forum_user_online['user_id'] > 1)
+                                {
+                                    $users[] = ($forum_user['g_view_users'] == '1') ? '<span class="group_color_'.$forum_user_online['group_id'].'"> <a href="'.forum_link($forum_url['user'], $forum_user_online['user_id']).'">'.forum_htmlencode($forum_user_online['ident']).'</a></span>' : forum_htmlencode($forum_user_online['ident']);
+                                };
                             };
 		]]></hook>
 
