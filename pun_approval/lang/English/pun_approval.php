@@ -37,9 +37,10 @@ $lang_app_post = array(
 	'forum info'				=> 'This option will allow you to determine whether posts will be aproved or not.',
 	'name check'				=> 'Posts approval',
 //groups.php
-	'legend checks'				=> 'Posts approval',
-	'name check 1'				=> 'Allow post without approval',
-	'name check 2'				=> 'Allow post approval',
+	'legend post approval'				=> 'Posts approval',
+	'allow without approval'                        => 'Allow posting without approval',
+	'allow post approval'				=> 'Allow post approval',
+        'allow reg approval'                            =>'Allow registration approval',
 //users section
 	'No results'				=> 'There are no registered users since your last visit.',
 	'Check user'				=> '',
@@ -53,7 +54,7 @@ $lang_app_post = array(
 	'Show section'				=> 'Show unapproved registrations',
 //settings -> features
 	'users check name'			=> 'Allow registration approval',
-	'users check value'			=> 'Enable approve new registrations',
+	'users check value'			=> 'Enable new registrations approval',
 //other page
 	'name page'					=> 'Post approval',
 	'no posts'					=> "There are no topics with unaproved posts\nsince your last visit.",
