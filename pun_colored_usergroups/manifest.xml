@@ -13,9 +13,9 @@
 
 <extension engine="1.0">
 	<id>pun_colored_usergroups</id>
-	<title>pun_colored_usergroups</title>
+	<title>Colored usergroups</title>
 	<version>1.0.0</version>
-	<description>description</description>
+	<description>This extension allows setting specific colors for user groups'</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.3</minversion>
@@ -23,8 +23,8 @@
 	<install><![CDATA[
 		if (!$forum_db->field_exists('groups', 'link_color'))
 		{
-			$forum_db->add_field('groups', 'link_color', 'VARCHAR(6)', true);
-			$forum_db->add_field('groups', 'hover_color', 'VARCHAR(6)', true);
+			$forum_db->add_field('groups', 'link_color', 'VARCHAR(10)', true);
+			$forum_db->add_field('groups', 'hover_color', 'VARCHAR(10)', true);
 		}
 	]]>
 	</install>
@@ -43,17 +43,26 @@
 		]]></hook>
 
 		<hook id="agr_add_edit_group_pre_basic_details_fieldset_end"><![CDATA[
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/pun_colored_usergroups.php'))
+					include $ext_info['path'].'/lang/'.$forum_user['language'].'/pun_colored_usergroups.php';
+			else
+					include $ext_info['path'].'/lang/English/pun_repository.php';
+					
 			?>
+			
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span>Link Color</span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="link_color" size="8" maxlength="8" value="<?php echo forum_htmlencode($group['link_color']) ?>" /></span>
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_colored_usergroups['link'] ?></span></label><br />
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="link_color" size="10" maxlength="10" value="<?php echo forum_htmlencode($group['link_color']) ?>" /></span>
 					</div>
 					<div class="sf-box text required">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span>VLink Color</span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="hover_color" size="8" maxlength="8" value="<?php echo forum_htmlencode($group['hover_color']) ?>" /></span>
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_colored_usergroups['hover'] ?></span></label><br />
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="hover_color" size="10" maxlength="10" value="<?php echo forum_htmlencode($group['hover_color']) ?>" /></span>
 					</div>
-			</div><?php
+			</div>
+			
+			<?php
+			
 		]]></hook>
 
 		<hook id="agr_add_edit_end_validation"><![CDATA[
