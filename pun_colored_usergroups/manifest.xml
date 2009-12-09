@@ -15,7 +15,7 @@
 	<id>pun_colored_usergroups</id>
 	<title>Colored usergroups</title>
 	<version>1.0.0</version>
-	<description>This extension allows setting specific colors for user groups'</description>
+	<description>This extension allows setting specific colors for user groups'.</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.3</minversion>
@@ -31,6 +31,8 @@
 	<uninstall><![CDATA[
 		$forum_db->drop_field('groups', 'link_color');
 		$forum_db->drop_field('groups', 'hover_color');
+		if (file_exists(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php'))
+			unlink(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php');
 	]]></uninstall>
 	<hooks>
 		<hook id="in_users_online_qr_get_online_info"><![CDATA[
@@ -49,7 +51,7 @@
 					include $ext_info['path'].'/lang/English/pun_repository.php';
 					
 			?>
-			
+
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_colored_usergroups['link'] ?></span></label><br />
@@ -71,12 +73,27 @@
 		]]></hook>
 
 		<hook id="agr_add_end_qr_add_group"><![CDATA[
-							$query['INSERT'] .= ', link_color, hover_color';
-							$query['VALUES'] .= ',\''.$forum_db->escape($link_color).'\','.$forum_db->escape($hover_color).'\'';
+							if (!empty($link_color))
+							{
+								$query['INSERT'] .= ', link_color';
+								$query['VALUES'] .= ',\''.$forum_db->escape($link_color).'\'';
+							}
+							if (!empty($hover_color))
+							{
+								$query['INSERT'] .= ', hover_color';
+								$query['VALUES'] .= ',\''.$forum_db->escape($hover_color).'\'';
+							}
 		]]></hook>
 
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
-							$query['SET'] .= ', link_color = \''.$forum_db->escape($link_color).'\', hover_color = \''.$forum_db->escape($hover_color).'\'';
+							if (!empty($link_color))
+								$query['SET'] .= ', link_color = \''.$forum_db->escape($link_color).'\'';
+							else
+								$query['SET'] .= ', link_color = NULL';
+							if (!empty($hover_color))
+								$query['SET'] .= ', hover_color = \''.$forum_db->escape($hover_color).'\'';
+							else
+								$query['SET'] .= ', hover_color = NULL';
 		]]></hook>
 
 		<hook id="in_users_online_pre_online_info_output"><![CDATA[
@@ -94,10 +111,10 @@
 		<hook id="in_start, agr_start"><![CDATA[
 							require $ext_info['path'].'/main.php';
 							cache_pun_coloured_usergroups();
-
 		]]></hook>
 
 		<hook id="hd_head"><![CDATA[
+						if (file_exists(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php'))
 							$forum_head['style_pun_coloured_usergroups'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css.php" />';
 		]]></hook>
 
@@ -105,24 +122,20 @@
 							cache_pun_coloured_usergroups();
 		]]></hook>
 
-				<hook id="vt_row_pre_post_ident_merge"><![CDATA[
-							if ($cur_post['poster_id'] > 1)
-											$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['id'] == $cur_topic['first_post_id']) ? $lang_topic['Topic byline'] : $lang_topic['Reply byline']), (($forum_user['g_view_users'] == '1') ? '<span class="group_color_'.$cur_post['g_id'].'"><a title="'.sprintf($lang_topic['Go to profile'], forum_htmlencode($cur_post['username'])).'" href="'.forum_link($forum_url['user'], $cur_post['poster_id']).'">'.forum_htmlencode($cur_post['username']).'</a></span>' : '<strong>'.forum_htmlencode($cur_post['username']).'</strong>')).'</span>';
-							else
-											$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['id'] == $cur_topic['first_post_id']) ? $lang_topic['Topic byline'] : $lang_topic['Reply byline']), '<strong>'.forum_htmlencode($cur_post['username']).'</strong>').'</span>';
+		<hook id="vt_row_pre_post_ident_merge"><![CDATA[
+					if ($cur_post['poster_id'] > 1)
+									$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['id'] == $cur_topic['first_post_id']) ? $lang_topic['Topic byline'] : $lang_topic['Reply byline']), (($forum_user['g_view_users'] == '1') ? '<span class="group_color_'.$cur_post['g_id'].'"><a title="'.sprintf($lang_topic['Go to profile'], forum_htmlencode($cur_post['username'])).'" href="'.forum_link($forum_url['user'], $cur_post['poster_id']).'">'.forum_htmlencode($cur_post['username']).'</a></span>' : '<strong>'.forum_htmlencode($cur_post['username']).'</strong>')).'</span>';
+					else
+									$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['id'] == $cur_topic['first_post_id']) ? $lang_topic['Topic byline'] : $lang_topic['Reply byline']), '<strong>'.forum_htmlencode($cur_post['username']).'</strong>').'</span>';
+		]]></hook>
 
-				]]></hook>
+		<hook id="ul_results_row_pre_data_output"><![CDATA[
+					$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'"><span class="group_color_'.$user_data['g_id'].'"><a href="'.forum_link($forum_url['user'], $user_data['id']).'">'.forum_htmlencode($user_data['username']).'</span></a></td>';
+		]]></hook>
 
-				<hook id="ul_results_row_pre_data_output"><![CDATA[
-							$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'"><span class="group_color_'.$user_data['g_id'].'"><a href="'.forum_link($forum_url['user'], $user_data['id']).'">'.forum_htmlencode($user_data['username']).'</span></a></td>';
-				]]></hook>
-
-				<hook id="pf_change_details_about_output_start"><![CDATA[
-							$forum_page['user_ident']['username'] = '<li class="username'.(($user['realname'] =='') ? ' fn nickname' :  ' nickname').'"><strong><span class="group_color_'.$user['g_id'].'">'.forum_htmlencode($user['username']).'</span></strong></li>';
-				]]></hook>
-				<hook id="aus_find_user_pre_row_output"><![CDATA[
-							$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'"><span>'.$lang_admin_users['Username'].' <a class="group_color_'.$user_data['g_id'].'" href="'.forum_link($forum_url['user'], $user_data['id']).'">'.forum_htmlencode($user_data['username']).'</a></span><span class="usermail">'.$lang_admin_users['E-mail'].' <a href="mailto:'.forum_htmlencode($user_data['email']).'">'.forum_htmlencode($user_data['email']).'</a></span>'.(($user_data['admin_note'] != '') ? '<span class="usernote">'.$lang_admin_users['Admin note'].' '.forum_htmlencode($user_data['admin_note']).'</span>' : '').'</td>';
-				]]></hook>
+		<hook id="pf_change_details_about_output_start"><![CDATA[
+					$forum_page['user_ident']['username'] = '<li class="username'.(($user['realname'] =='') ? ' fn nickname' :  ' nickname').'"><strong><span class="group_color_'.$user['g_id'].'">'.forum_htmlencode($user['username']).'</span></strong></li>';
+		]]></hook>
 
 	</hooks>
 </extension>
