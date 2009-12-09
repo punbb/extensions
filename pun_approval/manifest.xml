@@ -383,15 +383,16 @@
                                    $visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].'</a></span>';
         
                         
-                        $visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
+                            $visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
                         }
 
 		]]></hook>
 
-
+    <!--Adds new styles to the forum header. Wee neeed these styles to display hyper links for approval under all the other links in header-->
     <hook id="hd_head"><![CDATA[
         $forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
     ]]></hook>
+
     <!--Adds a checkbox to Administration->Start->Forum->Edit page in order to allow user enable or disable post approval for the current forum-->
     <hook id="afo_edit_forum_pre_permissions_part"><![CDATA[
 
@@ -424,6 +425,7 @@
 
 			<?php
     ]]></hook>
+
     <!--Adds informatiion about post approval to the query which is made at the end of editing Administration->Start->Forum->Edit page when "Submit" button is pressed -->
     <hook id="afo_save_forum_qr_update_forum"><![CDATA[
 
@@ -431,6 +433,8 @@
 			$query['SET'] .= ', post_approval='.$allow_app_post;
 
 		]]></hook>
+
+    <!-- Adds checkboxes to administration/Groups in order to allow certain groups posting without approval, approving posts of others and so on-->
     <hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
 
 			?>
@@ -454,17 +458,18 @@
 			<?php
 
 		]]></hook>
+
+    <!--Adds values of the checkboxes on administration/groups page to the query, executed when the page is being submitted-->
     <hook id="agr_edit_end_qr_update_group"><![CDATA[
 
 			$without_approval = isset($_POST['without_approval']) ? intval($_POST['without_approval']) : '0';
-			//$query['SET'] .= ', g_without_approval='.$without_approval;
                         $post_approval=isset($_POST['post_approval'])? intval($_POST['post_approval']) : '0';
-                        //$query['SET'].=', g_allow_post_approval='.$post_approval;
                         $reg_approval=isset($_POST['reg_approval']) ? intval($_POST['reg_approval']) : '0';
-                        //$query['SET'].=',g_allow_reg_approval='.$reg_approval;
                         $query['SET'] .= ', g_without_approval='.$without_approval.',g_allow_post_approval='.$post_approval.',g_allow_reg_approval='.$reg_approval;
 
 		]]></hook>
+
+    <!-- Hook for administration/settings/features page-->
     <hook id="aop_features_pre_header_load"><![CDATA[
 
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
@@ -474,6 +479,7 @@
 
 		]]></hook>
 
+    <!-- Hook for administration/settings/features page-->
     <hook id="aop_features_validation"><![CDATA[
 
 			if (!isset($form['users_check']) || $form['users_check'] != '1') $form['users_check'] = '0';
@@ -484,6 +490,8 @@
 				include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
 		]]></hook>
+
+    <!--Adds checkbox to administration/settings/features page-->
     <hook id="aop_features_avatars_fieldset_end"><![CDATA[
                         ?>
                         <div class="content-head">
@@ -499,6 +507,34 @@
 			</fieldset>
                         <?php
                 ]]></hook>
+
+    <!--Adds a warning to quickpost form which says that a post should be approved/moderated -->
+    <hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
+
+       $need_approval_query=array(
+        'SELECT'    =>  'post_approval',
+        'FROM'  => 'forums as f, topics as t',
+        'WHERE' =>'t.id='.$id.' AND f.id=t.forum_id'
+        );
+
+       $result=$forum_db->query_build($need_approval_query) or error (__FILE__,__LINE__);
+       list($post_approval)=$forum_db->fetch_row($result);
+       if (!$forum_user['is_admmod'] && ($post_approval == 1 && $forum_user['g_without_approval'] == 0))
+	{
+
+		?>
+				
+		<div class="txt-set set3">
+			<label for="fld1">
+				<small><p><?php echo $lang_app_post['warning'] ?></p></small>
+			</label>
+		</div>
+
+		<?php
+
+	}
+
+    ]]></hook>
 
                 
 
