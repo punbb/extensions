@@ -367,9 +367,9 @@
                             $result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
                             if($forum_db->num_rows($result_unapp_posts))
-                                $visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
+                                $visit_links[] = '</div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
                             else
-				$visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' </a></span>';
+				$visit_links[] = '</div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' </a></span>';
 
                             $query_unapp_regs=array(
                             'SELECT'=>'id',
@@ -378,10 +378,10 @@
 
                             $result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
 
-                            //if ($forum_config['o_users_check'])
+                            if ($forum_config['o_users_check'])
                                 if($forum_db->num_rows($result_unapp_regs))
-                                    $visit_links[] = '<span id="visit-unapproved_reg"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['show upp regs'].'</a></span>';
-                            
+                                   $visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].'</a></span>';
+        
                         
                         $visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
                         }
@@ -389,7 +389,9 @@
 		]]></hook>
 
 
-
+    <hook id="hd_head"><![CDATA[
+        $forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
+    ]]></hook>
     <!--Adds a checkbox to Administration->Start->Forum->Edit page in order to allow user enable or disable post approval for the current forum-->
     <hook id="afo_edit_forum_pre_permissions_part"><![CDATA[
 
