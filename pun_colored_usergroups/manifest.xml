@@ -3,17 +3,17 @@
 
 <!--
 /**
- * Pun Move Posts extension main file
+ * pun_colored_usergroups extension main file
  *
- * @copyright Copyright (C) 2009 PunBB, partially based on code copyright (C) 2009 FluxBB.org
+ * @copyright Copyright (C) 2009 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
- * @package pun_move_posts
+ * @package pun_colored_usergroups
  */
 -->
 
 <extension engine="1.0">
-	<id>pun_coloured_usergroups</id>
-	<title>pun_coloured_usergroups</title>
+	<id>pun_colored_usergroups</id>
+	<title>pun_colored_usergroups</title>
 	<version>1.0.0</version>
 	<description>description</description>
 	<author>PunBB Development Team</author>
@@ -21,7 +21,7 @@
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
         <install><![CDATA[
-		if (!defined('EXT_CUR_VERSION'))
+		if (!$forum_db->field_exists('groups', 'link_color'))
 		{
 			$forum_db->add_field('groups', 'link_color', 'VARCHAR(6)', true);
 			$forum_db->add_field('groups', 'hover_color', 'VARCHAR(6)', true);
@@ -104,8 +104,6 @@
 
                 ]]></hook>
 
-
-
                 <hook id="ul_results_row_pre_data_output"><![CDATA[
                             $forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'"><span class="group_color_'.$user_data['g_id'].'"><a href="'.forum_link($forum_url['user'], $user_data['id']).'">'.forum_htmlencode($user_data['username']).'</span></a></td>';
                 ]]></hook>
@@ -113,8 +111,6 @@
                 <hook id="pf_change_details_about_output_start"><![CDATA[
                             $forum_page['user_ident']['username'] = '<li class="username'.(($user['realname'] =='') ? ' fn nickname' :  ' nickname').'"><strong><span class="group_color_'.$user['g_id'].'">'.forum_htmlencode($user['username']).'</span></strong></li>';
                 ]]></hook>
-
-
 
         </hooks>
 </extension>
