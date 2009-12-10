@@ -48,7 +48,7 @@
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/pun_colored_usergroups.php'))
 					include $ext_info['path'].'/lang/'.$forum_user['language'].'/pun_colored_usergroups.php';
 			else
-					include $ext_info['path'].'/lang/English/pun_repository.php';
+					include $ext_info['path'].'/lang/English/pun_colored_usergroups.php';
 					
 			?>
 
@@ -108,18 +108,17 @@
 };
 		]]></hook>
 
-		<hook id="in_start, agr_start"><![CDATA[
+		<hook id="in_start, agr_start, vt_start, ul_start, pf_start"><![CDATA[
+					if (!file_exists(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php'))
+					{
 							require $ext_info['path'].'/main.php';
 							cache_pun_coloured_usergroups();
+					};
 		]]></hook>
 
 		<hook id="hd_head"><![CDATA[
 						if (file_exists(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php'))
 							$forum_head['style_pun_coloured_usergroups'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css.php" />';
-		]]></hook>
-
-		<hook id="agr_edit_end_edit_group, agr_add_edit_pre_redirect"><![CDATA[
-							cache_pun_coloured_usergroups();
 		]]></hook>
 
 		<hook id="vt_row_pre_post_ident_merge"><![CDATA[

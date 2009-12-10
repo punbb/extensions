@@ -37,14 +37,18 @@ function cache_pun_coloured_usergroups()
 				$output[] = '.brd .group_color_'.$all_groups['g_id'].' {color: '.$all_groups['hover_color'].';}'."\n\n";
 		};
 	}
-
-	$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php', 'wb');
-	if (!$fh)
-		error('Unable to write configuration cache file to cache directory. Please make sure PHP has write access to the directory \'cache\'.', __FILE__, __LINE__);
-
-	fwrite($fh, '<?php'."\n\n".'$pun_colored_usergroups_cache = \''.implode(" ",$output)."';\n".'?>');
-
-	fclose($fh);
+	echo '444444444f';
+	if (!empty($output))
+	{ 
+	echo ('wefwef');
+		$fh = @fopen(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php', 'wb');
+		if (!$fh)
+			error('Unable to write configuration cache file to cache directory. Please make sure PHP has write access to the directory \'cache\'.', __FILE__, __LINE__);
+	
+		fwrite($fh, '<?php'."\n\n".'$pun_colored_usergroups_cache = \''.implode(" ",$output)."';\n".'?>');
+	
+		fclose($fh);
+	}
 }
 
 ?>
