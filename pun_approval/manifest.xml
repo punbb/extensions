@@ -523,7 +523,7 @@
 	{
 
 		?>
-				
+	
 		<div class="txt-set set3">
 			<label for="fld1">
 				<small><p><?php echo $lang_app_post['warning'] ?></p></small>
@@ -536,7 +536,35 @@
 
     ]]></hook>
 
-                
+    <!--Adds a parameter to the query which gets all the posts on the page and the information about current forum user. The value of this parameter determines whether current user can post without approval or not-->
+    <hook id="vt_qr_get_posts"><![CDATA[
+			$query['SELECT'] .= ', g_without_approval';
+		]]></hook>
+    
+    <!--Adds information about post_approval (needed or not)to the query-->
+    <hook id="po_qr_get_forum_info"><![CDATA[
+			$query['SELECT'] .= ', f.post_approval';
+		]]></hook>
+    <!--Adds information about post_approval (needed or not)to the query-->
+    <hook id="po_qr_get_topic_forum_info"><![CDATA[
+			$query['SELECT'] .= ', f.post_approval';
+		]]></hook>
+    <!--Adds a warning to the "Post New Topic" page which says that warns a user that a topic beig created should be moderated.-->
+    <hook id="po_pre_optional_fieldset"><![CDATA[
+			if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1) && ($forum_user['g_without_approval'] == 0))
+			{
+
+				?>
+
+				<div class="txt-set set3">
+					<label for="fld1">
+            <small><p><?php echo $lang_app_post['Topic warning'] ?></p></small>
+					</label>
+				</div>
+				<?php
+
+			}
+		]]></hook>
 
 </hooks>
 
