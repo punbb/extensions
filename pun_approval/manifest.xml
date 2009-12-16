@@ -26,8 +26,8 @@
 -->
 
 <extension engine="1.0">
-	<id>pun_approval_new</id>
-	<title>Post approval NEW!!!!</title>
+	<id>pun_approval</id>
+	<title>Post approval</title>
 	<version>0.8</version>
 	<description>Pun approval extension</description>
 	<author>PunBB Development Team</author>
