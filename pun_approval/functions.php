@@ -226,6 +226,7 @@ function extension_action()
 
 
 }
+
 function show_unapproved_posts()
 {
     global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
@@ -649,9 +650,9 @@ function show_unapproved_posts()
                                 else
                                         $forum_page['item_status']['replypost'] = 'replypost';
 
-                                if (!$all_post)
-                                        $forum_page['item_select'] = '<p class="item-select"><input type="checkbox" id="fld'.$cur_post['id'].'" name="sel_posts[]" value="'.$cur_post['id'].'" /> <label for="fld'.$cur_post['id'].'">'.$lang_misc['Select post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</label></p>';
-                                else
+                                //if (!$all_post)
+                                  //      $forum_page['item_select'] = '<p class="item-select"><input type="checkbox" id="fld'.$cur_post['id'].'" name="sel_posts[]" value="'.$cur_post['id'].'" /> <label for="fld'.$cur_post['id'].'">'.$lang_misc['Select post'].' '.forum_number_format($forum_page['start_from'] + $forum_page['item_count']).'</label></p>';
+                                //else
                                         $forum_page['item_select'] = '<p></p>';
 
                                 $forum_page['author_ident']['username'] = '<li class="username">'.(($forum_user['g_view_users'] == '1') ? '<a title="'.sprintf($lang_topic['Go to profile'], forum_htmlencode($cur_post['username'])).'" href="'.forum_link($forum_url['user'], $cur_post['poster_id']).'">'.forum_htmlencode($cur_post['username']).'</a>' : '<strong>'.forum_htmlencode($cur_post['username']).'</strong>').'</li>';
@@ -841,26 +842,7 @@ function show_unapproved_posts()
                         }
 
                         ?>
-                                        <div class="frm-buttons">
-
-                                        <?php
-
-                                        if (!$all_post)
-                                        {
-
-                                        ?>
-
-                                                <span class="submit"><input type="submit" name="app_sev" value="Approve selected" /></span>
-                                                <span class="submit"><input type="submit" name="del_sev" value="Remove selected" /></span>
-
-                                        <?php
-
-                                        }
-
-                                        ?>
-
-                                                <span class="submit"><input type="submit" name="app_all" value="Approve all" /></span>
-                                        </div>
+                                        
                                 </form>
                         </div>
                         <div class="main-foot">
