@@ -1,2 +1,4 @@
 #brd-approval {border-top:none; }
 #brd-visit {border-bottom:none;}
+#brd-index #brd-visit {margin-bottom: 0;}
+#brd-index #brd-approval {margin-bottom: 1em;}
