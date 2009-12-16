@@ -829,7 +829,7 @@ function show_unapproved_posts()
 
 function delete_unapproved_post()
 {
-    global $forum_db,$lang_app_post,$forum_user;
+    global $forum_db,$lang_app_post,$forum_user,$ext_info;
     require $ext_info['path'].'/post_app_url.php';
     $pid = $_GET['del'];
     $aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;;
@@ -933,7 +933,7 @@ function delete_unapproved_post()
 
 function approve_post()
 {
-    global $forum_db,$lang_app_post,$forum_user;
+    global $forum_db,$lang_app_post,$forum_user,$ext_info;
     require $ext_info['path'].'/post_app_url.php';
     $pid = $_GET['app'];
     $query_app = array(
