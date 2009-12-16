@@ -226,7 +226,7 @@ function extension_action()
 function show_unapproved_posts()
 {
     global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
-		$base_url, $forum_page, $cur_forum;
+		$base_url, $forum_page, $cur_forum, $ext_info;
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
 	$del = isset($_GET['del']) ? intval($_GET['del']) : 0;
@@ -284,9 +284,7 @@ function show_unapproved_posts()
 
 		?>
 
-		<div class="main-subhead">
-			<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp topics'] ?></strong></span></h2>
-		</div>
+		
 		<div class="main-content main-forum">
 
 		<?php
@@ -557,13 +555,7 @@ function show_unapproved_posts()
                         'csrf_token'	=> '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />'
                 );
 
-                ?>
-
-                <div class="main-subhead">
-                        <h2 class="hn"><span><strong><?php echo $lang_app_post['Unp posts'] ?></strong></span></h2>
-                </div>
-
-        <?php
+               
 
 
                 if (!$forum_db->num_rows($result))
@@ -1124,9 +1116,7 @@ function approve_post()
                             $forum_db->query_build($query) or error(__FILE__, __LINE__);
                     }
             }
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             $num_replies = app_count_tid($post_info['topic_id']);
 
             // Update topic 
@@ -1160,18 +1150,12 @@ function approve_post()
 
 
 
-
-
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             $query_app_post = array(
                     'DELETE'	=> 'post_approval_posts',
                     'WHERE'		=> 'id='.$pid
             );
 
             $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
 
 
             sync_forum($post_info['forum_id']);
