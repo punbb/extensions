@@ -1,8 +1,4 @@
 <?php
-/* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 function app_count_tid($tid)
 {
 	global $forum_db;
@@ -333,24 +329,6 @@ function show_unapproved_posts()
 					if ($forum_config['o_censoring'] == '1')
 						$cur_topic['subject'] = censor_words($cur_topic['subject']);
 
-					// Should we display the dot or not? :)
-					if (!$forum_user['is_guest'] && $forum_config['o_show_dot'] == '1' && $cur_topic['has_posted'] > 0)
-					{
-						$forum_page['item_title']['posted'] = '<span class="posted-mark">'.$lang_forum['You posted indicator'].'</span>';
-						$forum_page['item_status']['posted'] = 'posted';
-					}
-
-					if ($cur_topic['sticky'] == '1')
-					{
-						$forum_page['item_title_status']['sticky'] = '<em class="sticky">'.$lang_forum['Sticky'].'</em>';
-						$forum_page['item_status']['sticky'] = 'sticky';
-					}
-
-					if ($cur_topic['closed'] == '1')
-					{
-						$forum_page['item_title_status']['closed'] = '<em class="closed">'.$lang_forum['Closed'].'</em>';
-						$forum_page['item_status']['closed'] = 'closed';
-					}
 
 					if (!empty($forum_page['item_title_status']))
 						$forum_page['item_title']['status'] = '<span class="item-status">'.sprintf($lang_forum['Item status'], implode(', ', $forum_page['item_title_status'])).'</span>';
