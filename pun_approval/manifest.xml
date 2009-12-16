@@ -367,7 +367,7 @@
                             $result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
                             if($forum_db->num_rows($result_unapp_posts))
-                                $visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
+                                $visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
                             else
 				$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' </a></span>';
 
@@ -577,7 +577,6 @@
 			}
 		]]></hook>
 
-    <!--******hooks responsible for adding of a new topic******************************************************************************-->
     <hook id="po_pre_redirect"><![CDATA[
 			if (isset($approve))
 			{
@@ -598,6 +597,7 @@
 					redirect(forum_link($forum_url['forum'], $fid), 'Your topic will be approved (moderated)');
 			}
 		]]></hook>
+
     <hook id="po_pre_add_topic"><![CDATA[
         if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
         {
@@ -706,6 +706,7 @@
             redirect(forum_link($forum_url['forum'], $res_posts['forum_id']),'Your topic will be approved (moderated)');
         }
     ]]></hook>
+
     <hook id="po_pre_add_post"><![CDATA[
         if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
         {
@@ -779,6 +780,7 @@
                 $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
         }
     ]]></hook>
+
     <hook id="fn_add_topic_end"><![CDATA[
 
 			if (($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
@@ -803,22 +805,21 @@
 			}
 
 		]]></hook>
+
     <hook id="fn_add_topic_start"><![CDATA[
 			global $cur_posting, $forum_user;
 
 			if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 				return 1;
-		]]></hook>		
+		]]></hook>
+
     <hook id="fn_add_post_start"><![CDATA[
 	global $cur_posting, $forum_user;
 
 	if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 		return 1;
     ]]></hook>
-    <!--**************************************************************************************************************************-->
-
-
-
+    
     <hook id="co_common"><![CDATA[
 
 			$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost';
@@ -868,10 +869,6 @@
             }
 
     ]]></hook>
-
-
-
-
 
     <hook id="aex_new_action"><![CDATA[
 
@@ -968,7 +965,6 @@
                 require FORUM_ROOT.'footer.php';
         }
        ]]></hook>
-
 
 </hooks>
 
