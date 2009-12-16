@@ -524,8 +524,9 @@
 
        $need_approval_query=array(
         'SELECT'    =>  'post_approval',
-        'FROM'  => 'forums as f, topics as t',
-        'WHERE' =>'t.id='.$id.' AND f.id=t.forum_id'
+        'FROM'      =>	$forum_db->prefix.'topics as t, '.$forum_db->prefix.'forums as f',
+        'WHERE'     =>'t.id='.$id.' AND f.id=t.forum_id',
+        'PARAMS'	=>	array('NO_PREFIX' => true)
         );
 
        $result=$forum_db->query_build($need_approval_query) or error (__FILE__,__LINE__);
