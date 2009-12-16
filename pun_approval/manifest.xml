@@ -31,10 +31,10 @@
 	<version>0.8</version>
 	<description>Pun approval extension</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3 SVN</minversion>
-	<maxtestedon>1.3 SVN</maxtestedon>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
 
-<install><![CDATA[
+	<install><![CDATA[
 
 		if (!$forum_db->table_exists('post_approval_users'))
 		{
@@ -295,11 +295,11 @@
 		if (!$forum_db->field_exists('groups', 'g_without_approval'))
 			$forum_db->add_field('groups', 'g_without_approval', 'INT(3)', false, '0');
 
-                if (!$forum_db->field_exists('groups','g_allow_post_approval'))
-                    $forum_db->add_field('groups','g_allow_post_approval','INT(3)', false, '0');
+		if (!$forum_db->field_exists('groups','g_allow_post_approval'))
+			$forum_db->add_field('groups','g_allow_post_approval','INT(3)', false, '0');
 
-                if(!$forum_db->field_exists('groups','g_allow_reg_approval'))
-                    $forum_db->add_field('groups','g_allow_reg_approval','INT(3)',false,'0');
+		if(!$forum_db->field_exists('groups','g_allow_reg_approval'))
+			$forum_db->add_field('groups','g_allow_reg_approval','INT(3)',false,'0');
 
 		if (!$forum_db->field_exists('posts', 'app_timestamp'))
 			$forum_db->add_field('posts', 'app_timestamp', 'INT(10) UNSIGNED', true, '0');
@@ -327,10 +327,10 @@
 
 	]]></install>
 
-<uninstall><![CDATA[
-                $forum_db->drop_table('post_approval_posts');
+	<uninstall><![CDATA[
+		$forum_db->drop_table('post_approval_posts');
 		$forum_db->drop_table('post_approval_topics');
-                $forum_db->drop_table('post_approval_users');
+		$forum_db->drop_table('post_approval_users');
 		$forum_db->drop_field('forums', 'post_approval');
 		$forum_db->drop_field('groups', 'g_without_approval');
 		$forum_db->drop_field('posts', 'app_timestamp');
@@ -340,7 +340,6 @@
 			'DELETE'	=> 'config',
 			'WHERE'		=> 'conf_name="o_users_check"'
 		);
-
 		$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 	]]></uninstall>
 
@@ -348,43 +347,39 @@
     <!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
     <hook id="hd_visit_elements"><![CDATA[
 
-			if ($forum_user['group_id']==FORUM_ADMIN)
-                        {
-                            $forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
+			if ($forum_user['group_id'] == FORUM_ADMIN)
+			{
+				$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
 
-                            if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php')) //массив для локализации
+				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 					require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 				else
 					require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
-                            require $ext_info['path'].'/post_app_url.php';
+				require $ext_info['path'].'/post_app_url.php';
+				$query_unapp_posts=array(
+					'SELECT' =>  'id',
+					'FROM'=>    'post_approval_posts'
+				);
 
-                            $query_unapp_posts=array(
-                            'SELECT' =>  'id',
-                            'FROM'=>    'post_approval_posts'
-                            );
+				$result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
-                            $result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
+				if ($forum_db->num_rows($result_unapp_posts))
+					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
+				else
+					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' </a></span>';
 
-                            if($forum_db->num_rows($result_unapp_posts))
-                                $visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
-                            else
-				$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' </a></span>';
+				$query_unapp_regs=array(
+					'SELECT' => 'id',
+					'FROM'  =>'post_approval_users'
+				);
 
-                            $query_unapp_regs=array(
-                            'SELECT'=>'id',
-                            'FROM'  =>'post_approval_users'
-                            );
+				$result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
 
-                            $result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
-
-                            if ($forum_config['o_users_check'])
-                                if($forum_db->num_rows($result_unapp_regs))
-                                   $visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].'</a></span>';
-        
-                        
-                            $visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
-                        }
+				if ($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs))
+					$visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].'</a></span>';
+				$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
+			}
 
 		]]></hook>
     <!--Adds information to the forum footer-->
