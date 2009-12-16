@@ -241,7 +241,7 @@ function show_unapproved_posts()
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/profile.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/common.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/misc.php';
-	require FORUM_ROOT.'extensions/pun_approval/post_app_url.php';
+	require $ext_info['path'].'/post_app_url.php';
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
@@ -838,7 +838,7 @@ function show_unapproved_posts()
 function delete_unapproved_post()
 {
     global $forum_db,$lang_app_post,$forum_user;
-    require FORUM_ROOT.'extensions/pun_approval/post_app_url.php';
+    require $ext_info['path'].'/post_app_url.php';
     $pid = $_GET['del'];
     $aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;;
     $query_app = array(
@@ -942,7 +942,7 @@ function delete_unapproved_post()
 function approve_post()
 {
     global $forum_db,$lang_app_post,$forum_user;
-    require FORUM_ROOT.'extensions/pun_approval/post_app_url.php';
+    require $ext_info['path'].'/post_app_url.php';
     $pid = $_GET['app'];
     $query_app = array(
             'SELECT'	=> 'p.id,t.id as tid',
