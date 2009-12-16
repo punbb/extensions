@@ -367,9 +367,9 @@
                             $result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
                             if($forum_db->num_rows($result_unapp_posts))
-                                $visit_links[] = '</div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
+                                $visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
                             else
-				$visit_links[] = '</div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['admin_extensions_approvalpost']).'">'.$lang_app_post['show app posts'].' </a></span>';
+				$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' </a></span>';
 
                             $query_unapp_regs=array(
                             'SELECT'=>'id',
@@ -400,6 +400,7 @@
 
     <!--Adds new styles to the forum header. Wee neeed these styles to display hyper links for approval under all the other links in header-->
     <hook id="hd_head"><![CDATA[
+    if ($forum_user['group_id']==FORUM_ADMIN)
         $forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
     ]]></hook>
 
