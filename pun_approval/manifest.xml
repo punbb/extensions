@@ -348,7 +348,7 @@
     <!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
     <hook id="hd_visit_elements"><![CDATA[
 
-			if ($forum_user['group_id']=FORUM_ADMIN)
+			if ($forum_user['group_id']==FORUM_ADMIN)
                         {
                             $forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
 
