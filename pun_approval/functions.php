@@ -1034,7 +1034,7 @@ function approve_post()
             $tracked_topics['topics'][$aptid] = time();
             set_tracked_topics($tracked_topics);
     }
-    else
+    else   //if this post is NOT the first post of the topic
     {
             $query = array(
                     'SELECT'	=> 'p.id, p.poster, p.poster_id, p.poster_ip, p.poster_email, p.message, p.hide_smilies, p.posted, p.edited, p.edited_by, p.topic_id, t.subject',
@@ -1128,9 +1128,16 @@ function approve_post()
 
             $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
+             $query_app_post = array(                             //delete the approved post from ythe table
+                    'DELETE'	=> 'post_approval_posts',
+                    'WHERE'		=> 'id='.$pid
+            );
+
+            $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+
             $num_replies = app_count_tid_approval($post_info['topic_id']);
 
-            $query_app = array(
+            $query_app = array(                                     //check if there are any other unapproved posts for this topic
                     'SELECT'	=> 'id, posted',
                     'FROM'		=> 'post_approval_posts',
                     'WHERE'		=> 'topic_id='.$post_info['topic_id'],
@@ -1138,24 +1145,28 @@ function approve_post()
             );
 
             $result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-            $tid_app = $forum_db->fetch_assoc($result_app);
+
+            $last_post_id=0;
+            $posted=0;
+            if ($forum_db->num_rows($result_app))
+            {
+                $tid_app = $forum_db->fetch_assoc($result_app);
+                $last_post_id=$tid_app['id'];
+                $posted=$tid_app['posted'];
+            }
 
             $query = array(
                     'UPDATE'	=> 'post_approval_topics',
-                    'SET'		=> 'last_post='.$tid_app['posted'].', last_post_id='.$tid_app['id'].', num_replies='.$num_replies,
+                    'SET'		=> 'last_post='.$posted.', last_post_id=0, num_replies='.$num_replies,
                     'WHERE'		=> 'id='.$post_info['topic_id']
             );
+
 
             $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 
 
-            $query_app_post = array(
-                    'DELETE'	=> 'post_approval_posts',
-                    'WHERE'		=> 'id='.$pid
-            );
-
-            $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+           
 
 
             sync_forum($post_info['forum_id']);
