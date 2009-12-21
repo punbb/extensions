@@ -840,8 +840,8 @@
 
             if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN))
             {
-                    $forum_page['admin_submenu']['unapp_topics'] = '<li'.((isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
-                    $forum_page['admin_submenu']['unapp_posts'] = '<li'.((isset($_GET['all_post']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
+                    $forum_page['admin_submenu']['unapp_topics'] = '<li'.((!isset($_GET['aptid'])&& isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
+                    $forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
 
                     if ($forum_config['o_users_check'])
                     {
