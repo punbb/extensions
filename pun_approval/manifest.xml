@@ -28,7 +28,7 @@
 <extension engine="1.0">
 	<id>pun_approval</id>
 	<title>Post approval</title>
-	<version>0.8</version>
+	<version>1.0.0</version>
 	<description>Pun approval extension</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
@@ -344,8 +344,8 @@
 	]]></uninstall>
 
 <hooks>
-    <!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
-    <hook id="hd_visit_elements"><![CDATA[
+	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
+	<hook id="hd_visit_elements"><![CDATA[
 
 			if ($forum_user['group_id'] == FORUM_ADMIN)
 			{
@@ -382,27 +382,26 @@
 			}
 
 		]]></hook>
-    <!--Adds information to the forum footer-->
-    <hook id="ft_about_end" priority="10"><![CDATA[
+	<!--Adds information to the forum footer-->
+	<hook id="ft_about_end" priority="10"><![CDATA[
 
-            if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
-            {
-                    define('PUN_EXTENSIONS_USED', 1);
-                    echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
-            }
+			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+			{
+					define('PUN_EXTENSIONS_USED', 1);
+					echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+			}
+	]]></hook>
 
-    ]]></hook>
+	<!--Adds new styles to the forum header. Wee neeed these styles to display hyper links for approval under all the other links in header-->
+	<hook id="hd_head"><![CDATA[
+	if ($forum_user['group_id']==FORUM_ADMIN)
+		$forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
+	]]></hook>
 
-    <!--Adds new styles to the forum header. Wee neeed these styles to display hyper links for approval under all the other links in header-->
-    <hook id="hd_head"><![CDATA[
-    if ($forum_user['group_id']==FORUM_ADMIN)
-        $forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
-    ]]></hook>
+	<!--Adds a checkbox to Administration->Start->Forum->Edit page in order to allow user enable or disable post approval for the current forum-->
+	<hook id="afo_edit_forum_pre_permissions_part"><![CDATA[
 
-    <!--Adds a checkbox to Administration->Start->Forum->Edit page in order to allow user enable or disable post approval for the current forum-->
-    <hook id="afo_edit_forum_pre_permissions_part"><![CDATA[
-
-        $query_app_post = array(
+		$query_app_post = array(
 				'SELECT'	=> 'post_approval',
 				'FROM'		=> 'forums',
 				'WHERE'		=> 'id='.$forum_id
@@ -430,18 +429,18 @@
 				</fieldset>
 
 			<?php
-    ]]></hook>
+	]]></hook>
 
-    <!--Adds informatiion about post approval to the query which is made at the end of editing Administration->Start->Forum->Edit page when "Submit" button is pressed -->
-    <hook id="afo_save_forum_qr_update_forum"><![CDATA[
+	<!--Adds informatiion about post approval to the query which is made at the end of editing Administration->Start->Forum->Edit page when "Submit" button is pressed -->
+	<hook id="afo_save_forum_qr_update_forum"><![CDATA[
 
 			$allow_app_post = isset($_POST['allow_app_post']) ? '1' : '0';
 			$query['SET'] .= ', post_approval='.$allow_app_post;
 
 		]]></hook>
 
-    <!-- Adds checkboxes to administration/Groups in order to allow certain groups posting without approval, approving posts of others and so on-->
-    <hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
+	<!-- Adds checkboxes to administration/Groups in order to allow certain groups posting without approval, approving posts of others and so on-->
+	<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
 
 			?>
 				<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -451,32 +450,32 @@
 							<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="without_approval" value="1"<?php if ($group['g_without_approval'] == '1') echo ' checked="checked"' ?> /></span>
 							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow without approval'] ?></label>
 						</div>
-                                                <div class="mf-item">
-                                                        <span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="post_approval" value="1"<?php if ($group['g_allow_post_approval']=='1') echo ' checked="checked"' ?>  /></span>
-                                                        <label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow post approval'] ?></label>
-                                                </div>
-                                                <div class="mf-item">
-                                                        <span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="reg_approval" value="1"<?php if ($group['g_allow_reg_approval']=='1') echo ' checked="checked"' ?>  /></span>
-                                                        <label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow reg approval'] ?></label>
-                                                </div>
+												<div class="mf-item">
+														<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="post_approval" value="1"<?php if ($group['g_allow_post_approval']=='1') echo ' checked="checked"' ?>  /></span>
+														<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow post approval'] ?></label>
+												</div>
+												<div class="mf-item">
+														<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="reg_approval" value="1"<?php if ($group['g_allow_reg_approval']=='1') echo ' checked="checked"' ?>  /></span>
+														<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow reg approval'] ?></label>
+												</div>
 					</div>
 				</fieldset>
 			<?php
 
 		]]></hook>
 
-    <!--Adds values of the checkboxes on administration/groups page to the query, executed when the page is being submitted-->
-    <hook id="agr_edit_end_qr_update_group"><![CDATA[
+	<!--Adds values of the checkboxes on administration/groups page to the query, executed when the page is being submitted-->
+	<hook id="agr_edit_end_qr_update_group"><![CDATA[
 
 			$without_approval = isset($_POST['without_approval']) ? intval($_POST['without_approval']) : '0';
-                        $post_approval=isset($_POST['post_approval'])? intval($_POST['post_approval']) : '0';
-                        $reg_approval=isset($_POST['reg_approval']) ? intval($_POST['reg_approval']) : '0';
-                        $query['SET'] .= ', g_without_approval='.$without_approval.',g_allow_post_approval='.$post_approval.',g_allow_reg_approval='.$reg_approval;
+						$post_approval=isset($_POST['post_approval'])? intval($_POST['post_approval']) : '0';
+						$reg_approval=isset($_POST['reg_approval']) ? intval($_POST['reg_approval']) : '0';
+						$query['SET'] .= ', g_without_approval='.$without_approval.',g_allow_post_approval='.$post_approval.',g_allow_reg_approval='.$reg_approval;
 
 		]]></hook>
 
-    <!-- Hook for administration/settings/features page-->
-    <hook id="aop_features_pre_header_load"><![CDATA[
+	<!-- Hook for administration/settings/features page-->
+	<hook id="aop_features_pre_header_load"><![CDATA[
 
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -485,8 +484,8 @@
 
 		]]></hook>
 
-    <!-- Hook for administration/settings/features page-->
-    <hook id="aop_features_validation"><![CDATA[
+	<!-- Hook for administration/settings/features page-->
+	<hook id="aop_features_validation"><![CDATA[
 
 			if (!isset($form['users_check']) || $form['users_check'] != '1') $form['users_check'] = '0';
 
@@ -497,11 +496,11 @@
 
 		]]></hook>
 
-    <!--Adds checkbox to administration/settings/features page-->
-    <hook id="aop_features_avatars_fieldset_end"><![CDATA[
-                        ?>
-                        <div class="content-head">
-                            <h2 class="hn"><span><?php echo $lang_app_post['Title'] ?></span></h2>
+	<!--Adds checkbox to administration/settings/features page-->
+	<hook id="aop_features_avatars_fieldset_end"><![CDATA[
+						?>
+						<div class="content-head">
+							<h2 class="hn"><span><?php echo $lang_app_post['Title'] ?></span></h2>
 			</div>
 			<fieldset class="frm-group group1">
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -511,22 +510,22 @@
 					</div>
 				</div>
 			</fieldset>
-                        <?php
-                ]]></hook>
+						<?php
+				]]></hook>
 
-    <!--Adds a warning to quickpost form which says that a post should be approved/moderated -->
-    <hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
+	<!--Adds a warning to quickpost form which says that a post should be approved/moderated -->
+	<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
 
-       $need_approval_query=array(
-        'SELECT'    =>  'post_approval',
-        'FROM'      =>	$forum_db->prefix.'topics as t, '.$forum_db->prefix.'forums as f',
-        'WHERE'     =>'t.id='.$id.' AND f.id=t.forum_id',
-        'PARAMS'	=>	array('NO_PREFIX' => true)
-        );
+		$need_approval_query=array(
+		'SELECT'    =>  'post_approval',
+		'FROM'      =>	$forum_db->prefix.'topics as t, '.$forum_db->prefix.'forums as f',
+		'WHERE'     =>'t.id='.$id.' AND f.id=t.forum_id',
+		'PARAMS'	=>	array('NO_PREFIX' => true)
+		);
 
-       $result=$forum_db->query_build($need_approval_query) or error (__FILE__,__LINE__);
-       list($post_approval)=$forum_db->fetch_row($result);
-       if (!$forum_user['is_admmod'] && ($post_approval == 1 && $forum_user['g_without_approval'] == 0))
+		$result=$forum_db->query_build($need_approval_query) or error (__FILE__,__LINE__);
+		list($post_approval)=$forum_db->fetch_row($result);
+		if (!$forum_user['is_admmod'] && ($post_approval == 1 && $forum_user['g_without_approval'] == 0))
 	{
 
 		?>
@@ -541,23 +540,23 @@
 
 	}
 
-    ]]></hook>
+	]]></hook>
 
-    <!--Adds a parameter to the query which gets all the posts on the page and the information about current forum user. The value of this parameter determines whether current user can post without approval or not-->
-    <hook id="vt_qr_get_posts"><![CDATA[
+	<!--Adds a parameter to the query which gets all the posts on the page and the information about current forum user. The value of this parameter determines whether current user can post without approval or not-->
+	<hook id="vt_qr_get_posts"><![CDATA[
 			$query['SELECT'] .= ', g_without_approval';
 		]]></hook>
-    
-    <!--Adds information about post_approval (needed or not)to the query-->
-    <hook id="po_qr_get_forum_info"><![CDATA[
+	
+	<!--Adds information about post_approval (needed or not)to the query-->
+	<hook id="po_qr_get_forum_info"><![CDATA[
 			$query['SELECT'] .= ', f.post_approval';
 		]]></hook>
-    <!--Adds information about post_approval (needed or not)to the query-->
-    <hook id="po_qr_get_topic_forum_info"><![CDATA[
+	<!--Adds information about post_approval (needed or not)to the query-->
+	<hook id="po_qr_get_topic_forum_info"><![CDATA[
 			$query['SELECT'] .= ', f.post_approval';
 		]]></hook>
-    <!--Adds a warning to the "Post New Topic" page which says that warns a user that a topic beig created should be moderated.-->
-    <hook id="po_pre_optional_fieldset"><![CDATA[
+	<!--Adds a warning to the "Post New Topic" page which says that warns a user that a topic beig created should be moderated.-->
+	<hook id="po_pre_optional_fieldset"><![CDATA[
 			if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1) && ($forum_user['g_without_approval'] == 0))
 			{
 
@@ -573,7 +572,7 @@
 			}
 		]]></hook>
 
-    <hook id="po_pre_redirect"><![CDATA[
+	<hook id="po_pre_redirect"><![CDATA[
 			if (isset($approve))
 			{
 				//if its new post do redirect to previous
@@ -594,186 +593,183 @@
 			}
 		]]></hook>
 
-    <hook id="po_pre_add_topic"><![CDATA[
-        if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
-        {
-            $query = array(
-		'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id',
-		'INTO'		=> 'topics',
-		'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['posted'].', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['forum_id']
-            );
-            $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	<hook id="po_pre_add_topic"><![CDATA[
+		if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
+		{
+			$query = array(
+				'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id',
+				'INTO'		=> 'topics',
+				'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['posted'].', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['forum_id']
+				);
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-            $new_tid = $forum_db->insert_id(); // get the id of a new topic just added to the DB
-            // Create the first post of the topic
-            $query = array(
-		'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
-		'INTO'		=> 'posts',
-		'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape(get_remote_address()).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$new_tid
-            );
-
-
-           // If it's a guest post, there might be an e-mail address we need to include
-            if ($post_info['is_guest'] && $post_info['poster_email'] != null)
-            {
-                $query['INSERT'] .= ', poster_email';
-                $query['VALUES'] .= ', \''.$forum_db->escape($post_info['poster_email']).'\'';
-            }
-
-            $forum_db->query_build($query) or error(__FILE__, __LINE__);
-            $new_pid = $forum_db->insert_id(); // get ID of the first post in the topic.
-
-            //Copy new topic from "topics" table into post_approval_topics table
-            $query_app = array(
-                    'SELECT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
-                    'FROM'		=> 'topics',
-                    'WHERE'		=> 'id='.$new_tid
-            );
-
-            $result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-
-            $cur = $forum_db->fetch_assoc($result_app);
-
-            $query = array(
-                    'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
-                    'INTO'		=> 'post_approval_topics',
-                    'VALUES'	=> $new_tid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.(($cur['moved_to'] == '') ? 'NULL' : $cur['moved_to'] ).', '.$cur['forum_id']
-            );
-
-            $forum_db->query_build($query) or error(__FILE__, __LINE__);
+			$new_tid = $forum_db->insert_id(); // get the id of a new topic just added to the DB
+			// Create the first post of the topic
+			$query = array(
+				'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
+				'INTO'		=> 'posts',
+				'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape(get_remote_address()).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$new_tid
+			);
 
 
+			// If it's a guest post, there might be an e-mail address we need to include
+			if ($post_info['is_guest'] && $post_info['poster_email'] != null)
+			{
+				$query['INSERT'] .= ', poster_email';
+				$query['VALUES'] .= ', \''.$forum_db->escape($post_info['poster_email']).'\'';
+			}
+
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			$new_pid = $forum_db->insert_id(); // get ID of the first post in the topic.
+
+			//Copy new topic from "topics" table into post_approval_topics table
+			$query_app = array(
+					'SELECT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
+					'FROM'		=> 'topics',
+					'WHERE'		=> 'id='.$new_tid
+			);
+
+			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+
+			$cur = $forum_db->fetch_assoc($result_app);
+
+			$query = array(
+				'INSERT'	=> 'id, poster, subject, posted, first_post_id, last_post, last_post_id, last_poster, num_views, num_replies, closed, sticky, moved_to, forum_id',
+				'INTO'		=> 'post_approval_topics',
+				'VALUES'	=> $new_tid.', \''.$forum_db->escape($cur['poster']).'\', \''.$forum_db->escape($cur['subject']).'\', '.$cur['posted'].', '.$cur['first_post_id'].', '.$cur['last_post'].', '.$cur['last_post_id'].', \''.$forum_db->escape($cur['last_poster']).'\', '.$cur['num_views'].', '.$cur['num_replies'].', '.$cur['closed'].', '.$cur['sticky'].', '.(($cur['moved_to'] == '') ? 'NULL' : $cur['moved_to'] ).', '.$cur['forum_id']
+			);
+
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 
-            //Copy the first post of a new topic from "posts" table into "post_approval_posts"
-            $query_app = array(
-                    'SELECT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
-                    'FROM'		=> 'posts',
-                    'WHERE'		=> 'id='.$new_pid
-            );
+			//Copy the first post of a new topic from "posts" table into "post_approval_posts"
+			$query_app = array(
+				'SELECT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
+				'FROM'		=> 'posts',
+				'WHERE'		=> 'id='.$new_pid
+			);
 
-            $result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-            $cur = $forum_db->fetch_assoc($result_app);
+			$cur = $forum_db->fetch_assoc($result_app);
 
-            $query = array(
-                    'INSERT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
-                    'INTO'		=> 'post_approval_posts',
-                    'VALUES'	=> $new_pid.', \''.$forum_db->escape($cur['poster']).'\', '.$cur['poster_id'].', \''.$forum_db->escape($cur['poster_ip']).'\', \''.$forum_db->escape($cur['poster_email']).'\', \''.$forum_db->escape($cur['message']).'\', '.$cur['hide_smilies'].', '.$cur['posted'].', '.(($cur['edited'] == '') ? 'NULL' : $cur['edited']).', \''.$forum_db->escape($cur['edited_by']).'\', '.$cur['topic_id']
-            );
+			$query = array(
+				'INSERT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
+				'INTO'		=> 'post_approval_posts',
+				'VALUES'	=> $new_pid.', \''.$forum_db->escape($cur['poster']).'\', '.$cur['poster_id'].', \''.$forum_db->escape($cur['poster_ip']).'\', \''.$forum_db->escape($cur['poster_email']).'\', \''.$forum_db->escape($cur['message']).'\', '.$cur['hide_smilies'].', '.$cur['posted'].', '.(($cur['edited'] == '') ? 'NULL' : $cur['edited']).', \''.$forum_db->escape($cur['edited_by']).'\', '.$cur['topic_id']
+			);
 
-            $forum_db->query_build($query) or error(__FILE__, __LINE__);$query_app = array(
-                    'SELECT'	=> 'p.poster, p.posted, t.subject, t.forum_id',
-                    'FROM'		=> 'post_approval_posts AS p',
-                    'JOINS'		=> array(
-                            array(
-                                    'INNER JOIN'	=> 'post_approval_topics AS t',
-                                    'ON'			=> 't.id=p.topic_id',
-                            ),
-                    ),
-                    'WHERE'		=> 'p.id='.$new_pid
-            );
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			$query_app = array(
+				'SELECT'	=> 'p.poster, p.posted, t.subject, t.forum_id',
+				'FROM'		=> 'post_approval_posts AS p',
+				'JOINS'		=> array(
+					array(
+						'INNER JOIN'	=> 'post_approval_topics AS t',
+						'ON'			=> 't.id=p.topic_id',
+						),
+				),
+				'WHERE'		=> 'p.id='.$new_pid
+			);
 
-            $result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-            $res_posts = $forum_db->fetch_assoc($result_app);
+			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$res_posts = $forum_db->fetch_assoc($result_app);
 
-            $query_app = array(
-                    'UPDATE'	=> 'post_approval_topics',
-                    'SET'		=> 'subject=\''.$forum_db->escape($res_posts['subject']).' (being approved)\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
-                    'WHERE'		=> 'id='.$new_tid
-            );
+			$query_app = array(
+				'UPDATE'	=> 'post_approval_topics',
+				'SET'		=> 'subject=\''.$forum_db->escape($res_posts['subject']).' (being approved)\', first_post_id='.$new_pid.', last_post_id='.$new_pid.', last_post='.$res_posts['posted'],
+				'WHERE'		=> 'id='.$new_tid
+			);
 
-            $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-            $query_app = array(
-                    'DELETE'	=> 'posts',
-                    'WHERE'		=> 'id='.$new_pid
-            );
+			$query_app = array(
+				'DELETE'	=> 'posts',
+				'WHERE'		=> 'id='.$new_pid
+			);
 
-            $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-            $query_app = array(
-                    'DELETE'	=> 'topics',
-                    'WHERE'		=> 'id='.$new_tid
-            );
+			$query_app = array(
+				'DELETE'	=> 'topics',
+				'WHERE'		=> 'id='.$new_tid
+			);
 
-            $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-            redirect(forum_link($forum_url['forum'], $res_posts['forum_id']),'Your topic will be approved (moderated)');
-        }
-    ]]></hook>
+			redirect(forum_link($forum_url['forum'], $res_posts['forum_id']),'Your topic will be approved (moderated)');
+		}
+	]]></hook>
 
-    <hook id="po_pre_add_post"><![CDATA[
-        if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
-        {
-                $query = array(
-                        'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
-                        'INTO'		=> 'posts',
-                        'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.get_remote_address().'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
-                );
+	<hook id="po_pre_add_post"><![CDATA[
+		if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
+		{
+			$query = array(
+				'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
+				'INTO'		=> 'posts',
+				'VALUES'	=> '\''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.get_remote_address().'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
+			);
 
-                // If it's a guest post, there might be an e-mail address we need to include
-                if ($post_info['is_guest'] && $post_info['poster_email'] != null)
-                {
-                        $query['INSERT'] .= ', poster_email';
-                        $query['VALUES'] .= ', \''.$post_info['poster_email'].'\'';
-                }
-                $forum_db->query_build($query) or error(__FILE__, __LINE__);
-                $approve = true;
-                $new_pid = 0;
+			// If it's a guest post, there might be an e-mail address we need to include
+			if ($post_info['is_guest'] && $post_info['poster_email'] != null)
+			{
+				$query['INSERT'] .= ', poster_email';
+				$query['VALUES'] .= ', \''.$post_info['poster_email'].'\'';
+			}
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			$approve = true;
+			$new_pid = 0;
 
-                $new_app_pid = $forum_db->insert_id();
+			$new_app_pid = $forum_db->insert_id();
 
-                $query_app = array(
-                        'SELECT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
-                        'FROM'		=> 'posts',
-                        'WHERE'		=> 'id='.$new_app_pid
-                );
+			$query_app = array(
+				'SELECT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
+				'FROM'		=> 'posts',
+				'WHERE'		=> 'id='.$new_app_pid
+			);
 
-                $result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$cur = $forum_db->fetch_assoc($result_app);
 
-                $cur = $forum_db->fetch_assoc($result_app);
+			$query = array(
+				'INSERT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
+				'INTO'		=> 'post_approval_posts',
+				'VALUES'	=> $new_app_pid.', \''.$forum_db->escape($cur['poster']).'\', '.$cur['poster_id'].', \''.$forum_db->escape($cur['poster_ip']).'\', \''.$forum_db->escape($cur['poster_email']).'\', \''.$forum_db->escape($cur['message']).'\', '.$cur['hide_smilies'].', '.$cur['posted'].', '.(($cur['edited'] == '') ? 'NULL' : $cur['edited']).', \''.$forum_db->escape($cur['edited_by']).'\', '.$cur['topic_id']
+			);
 
-                $query = array(
-                        'INSERT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
-                        'INTO'		=> 'post_approval_posts',
-                        'VALUES'	=> $new_app_pid.', \''.$forum_db->escape($cur['poster']).'\', '.$cur['poster_id'].', \''.$forum_db->escape($cur['poster_ip']).'\', \''.$forum_db->escape($cur['poster_email']).'\', \''.$forum_db->escape($cur['message']).'\', '.$cur['hide_smilies'].', '.$cur['posted'].', '.(($cur['edited'] == '') ? 'NULL' : $cur['edited']).', \''.$forum_db->escape($cur['edited_by']).'\', '.$cur['topic_id']
-                );
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-                $forum_db->query_build($query) or error(__FILE__, __LINE__);
+			$query_app = array(
+				'SELECT'	=> 't.num_replies, p.posted',
+				'FROM'		=> 'post_approval_topics AS t',
+				'JOINS'		=> array(
+					array(
+						'INNER JOIN'	=> 'post_approval_posts AS p',
+						'ON'			=> '(p.id='.$new_app_pid.' AND p.topic_id=t.id)',
+						),
+						),
+					'WHERE'		=> 't.id='.$post_info['topic_id']
+			);
+			$resour = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-                $query_app = array(
-                        'SELECT'	=> 't.num_replies, p.posted',
-                        'FROM'		=> 'post_approval_topics AS t',
-                        'JOINS'		=> array(
-                                array(
-                                        'INNER JOIN'	=> 'post_approval_posts AS p',
-                                        'ON'			=> '(p.id='.$new_app_pid.' AND p.topic_id=t.id)',
-                                ),
-                        ),
-                        'WHERE'		=> 't.id='.$post_info['topic_id']
-                );
-                $resour = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			if ($forum_db->num_rows($resour))
+			{
+				$line = $forum_db->fetch_assoc($resour);
+				$query_app = array(
+					'UPDATE'	=> 'post_approval_topics',
+					'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1).', last_post='.$line['posted'],
+					'WHERE'		=> 'id='.$post_info['topic_id']
+				);
 
-                if ($forum_db->num_rows($resour))
-                {
-                        $line = $forum_db->fetch_assoc($resour);
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+		}
 
-                        $query_app = array(
-                                'UPDATE'	=> 'post_approval_topics',
-                                'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1).', last_post='.$line['posted'],
-                                'WHERE'		=> 'id='.$post_info['topic_id']
-                        );
+				$query_app = array(
+					'DELETE'	=> 'posts',
+					'WHERE'		=> 'id='.$new_app_pid
+				);
 
-                        $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-                }
-
-                $query_app = array(
-                        'DELETE'	=> 'posts',
-                        'WHERE'		=> 'id='.$new_app_pid
-                );
-
-                $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
         }
     ]]></hook>
 
@@ -820,147 +816,142 @@
 
 			$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost';
 
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		require $ext_info['path'].'/functions.php';
+
+		$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+
+	]]></hook>
+
+	<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
+
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		require $ext_info['path'].'/post_app_url.php';
+
+		if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN))
+		{
+			$forum_page['admin_submenu']['unapp_topics'] = '<li'.((!isset($_GET['aptid'])&& isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
+			$forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
+			if ($forum_config['o_users_check'])
+			{
+				$forum_page['admin_submenu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Unp users'].'</a></li>';
+			}
+		}
+
+	]]></hook>
+
+	<hook id="ca_fn_generate_admin_menu_new_link"><![CDATA[
+
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		require $ext_info['path'].'/post_app_url.php';
+
+	if ($forum_user['g_id'] == FORUM_ADMIN)
+	{
+		$forum_page['admin_menu']['unapp_posts'] = '<li class="'.((FORUM_PAGE_SECTION == 'unapp_posts') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
+	}
+
+	]]></hook>
+
+	<hook id="aex_new_action"><![CDATA[
+
+		if ((isset($_GET['all_post']) || isset($_GET['topics'])) && ($section == 'approvalpost') || ($section == 'unapp_posts'))
+		{
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-			require $ext_info['path'].'/functions.php';
+			require $ext_info['path'].'/post_app_url.php';
 
-			$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+			$aptid = isset($_GET['aptid']) ? $_GET['aptid'] : 0;
+			$del = isset($_GET['del']) ? $_GET['del'] : 0;
+			$app = isset($_GET['app']) ? $_GET['app'] : 0;
+			$appid = isset($_GET['appid']) ? $_GET['appid'] : 0;
+			$p_cr = isset($_GET['p']) ? $_GET['p'] : 0;
+			$topics = isset($_GET['topics']) ? $_GET['topics'] : 0;
 
-		]]></hook>
+			// Setup breadcrumbs
+			$forum_page['crumbs'] = array(
+				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+				array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
+				array($lang_app_post['Unp posts'], forum_link($post_app_url['Section']))
+			);
 
-    <hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
+			if ($aptid || $appid)
+			{
+				if ($appid)
+				{
+					$query_app = array(
+						'SELECT'	=> 'topic_id',
+						'FROM'		=> 'post_approval_posts',
+						'WHERE'		=> 'id='.$appid
+						);
 
-            if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-                    require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-            else
-                    require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-            require $ext_info['path'].'/post_app_url.php';
+					$res_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
+					$tmp_app = $forum_db->fetch_assoc($res_app);
+					$aptid = intval($tmp_app['topic_id']);
+				}
 
-            if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN))
-            {
-                    $forum_page['admin_submenu']['unapp_topics'] = '<li'.((!isset($_GET['aptid'])&& isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
-                    $forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
+				array_push($forum_page['crumbs'], array($lang_app_post['Topics'], forum_link($post_app_url['Section'])));
+			}
 
-                    if ($forum_config['o_users_check'])
-                    {
-                            $forum_page['admin_submenu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Unp users'].'</a></li>';
-                    }
-            }
+			extension_action();
+			define('FORUM_PAGE_SECTION', 'unapp_posts');
+			define('FORUM_PAGE', 'admin-unapp_posts-approvalpost');
+			require FORUM_ROOT.'header.php';
 
-    ]]></hook>
+			ob_start();
 
-    <hook id="ca_fn_generate_admin_menu_new_link"><![CDATA[
+			show_unapproved_posts();
+			$tpl_app_post = trim(ob_get_contents());
+			$tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
 
-            if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-                    require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-            else
-                    require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-            require $ext_info['path'].'/post_app_url.php';
+			ob_end_clean();
 
-            if ($forum_user['g_id'] == FORUM_ADMIN)
-            {
-                    $forum_page['admin_menu']['unapp_posts'] = '<li class="'.((FORUM_PAGE_SECTION == 'unapp_posts') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
-            }
+			require FORUM_ROOT.'footer.php';
+		}
 
-    ]]></hook>
+		if (isset($_GET['users']) && ($section == 'approvalpost') || ($section == 'unapp_posts'))
+		{
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			require $ext_info['path'].'/post_app_url.php';
 
-    <hook id="aex_new_action"><![CDATA[
-
-        if ((isset($_GET['all_post']) || isset($_GET['topics'])) && ($section == 'approvalpost') || ($section == 'unapp_posts'))
-        {
-                if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-                        require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-                else
-                        require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-                require $ext_info['path'].'/post_app_url.php';
-
-                $aptid = isset($_GET['aptid']) ? $_GET['aptid'] : 0;
-                $del = isset($_GET['del']) ? $_GET['del'] : 0;
-                $app = isset($_GET['app']) ? $_GET['app'] : 0;
-                $appid = isset($_GET['appid']) ? $_GET['appid'] : 0;
-                $p_cr = isset($_GET['p']) ? $_GET['p'] : 0;
-                $topics = isset($_GET['topics']) ? $_GET['topics'] : 0;
-
-                // Setup breadcrumbs
-                $forum_page['crumbs'] = array(
-                        array($forum_config['o_board_title'], forum_link($forum_url['index'])),
-                        array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-                        array($lang_app_post['Unp posts'], forum_link($post_app_url['Section']))
-                );
-
-                if ($aptid || $appid)
-                {
-                        if ($appid)
-                        {
-                                $query_app = array(
-                                        'SELECT'	=> 'topic_id',
-                                        'FROM'		=> 'post_approval_posts',
-                                        'WHERE'		=> 'id='.$appid
-                                );
-
-                                $res_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-                                $tmp_app = $forum_db->fetch_assoc($res_app);
-                                $aptid = intval($tmp_app['topic_id']);
-                        }
-
-                        array_push($forum_page['crumbs'], array($lang_app_post['Topics'], forum_link($post_app_url['Section'])));
-                }
-
-                extension_action();
-                define('FORUM_PAGE_SECTION', 'unapp_posts');
-                define('FORUM_PAGE', 'admin-unapp_posts-approvalpost');
-                require FORUM_ROOT.'header.php';
-
-                ob_start();
-
-                
-                show_unapproved_posts();
-                $tpl_app_post = trim(ob_get_contents());
-                $tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
-
-                ob_end_clean();
-
-                require FORUM_ROOT.'footer.php';
-        }
-
-        if (isset($_GET['users']) && ($section == 'approvalpost') || ($section == 'unapp_posts'))
-        {
-                if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-                        require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-                else
-                        require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-                require $ext_info['path'].'/post_app_url.php';
-
-                // Setup breadcrumbs
-                $forum_page['crumbs'] = array(
-                        array($forum_config['o_board_title'], forum_link($forum_url['index'])),
-                        array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-                        array($lang_app_post['Unp posts'], forum_link($post_app_url['Topics section']))
-                );
+			// Setup breadcrumbs
+			$forum_page['crumbs'] = array(
+					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+					array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
+					array($lang_app_post['Unp posts'], forum_link($post_app_url['Topics section']))
+			);
 
 
+				extension_action();
+				define('FORUM_PAGE_SECTION', 'unapp_posts');
+				define('FORUM_PAGE', 'admin-unapp_posts-approvalpost');
+				require FORUM_ROOT.'header.php';
 
-               
-                extension_action();
-                define('FORUM_PAGE_SECTION', 'unapp_posts');
-                define('FORUM_PAGE', 'admin-unapp_posts-approvalpost');
-                require FORUM_ROOT.'header.php';
+				ob_start();
 
-                ob_start();
+				show_unapproved_posts();
 
-                show_unapproved_posts();
-                
+				$tpl_app_post = trim(ob_get_contents());
+				$tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
 
-                $tpl_app_post = trim(ob_get_contents());
-                $tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
+				ob_end_clean();
 
-                ob_end_clean();
-
-                require FORUM_ROOT.'footer.php';
-        }
-       ]]></hook>
+				require FORUM_ROOT.'footer.php';
+		}
+	]]></hook>
 
 </hooks>
 
