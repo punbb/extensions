@@ -29,7 +29,7 @@
 	<id>pun_approval</id>
 	<title>Post approval</title>
 	<version>1.0.0</version>
-	<description>Pun approval extension</description>
+	<description>Allows to control all new posts and approve them</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
