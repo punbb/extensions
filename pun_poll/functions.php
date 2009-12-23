@@ -167,9 +167,9 @@ function update_poll($topic_id, $question, $poll_answers, $days_poll, $votes_pol
 	if ($question != $old_question)
 		$question_update_set[] = 'question = \''.$forum_db->escape($question).'\'';
 	if ($days_poll != $old_days_poll)
-		$question_update_set[] = 'days_count = '.$days_poll;
+		$question_update_set[] = 'days_count = '.(empty($days_poll) ? 'NULL' : $days_poll);
 	if ($votes_poll != $old_votes_poll)
-		$question_update_set[] = 'votes_count = '.$votes_poll;
+		$question_update_set[] = 'votes_count = '.(empty($votes_poll) ? 'NULL' : $votes_poll);
 	if ($read_unvote_users != $old_read_unvote_users)
 		$question_update_set[] = 'read_unvote_users = '.$read_unvote_users;
 	if ($revote != $old_revote)
