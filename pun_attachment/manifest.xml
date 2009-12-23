@@ -801,7 +801,8 @@ if (!$forum_config['attach_disable_attach'] && isset($_GET['item']))
 
 	if (isset($_GET['secure_str']))
 	{
-		if (preg_match('~(\d+)f(\d+)~', $_GET['secure_str'], $match))
+		preg_match('~(\d+)f(\d+)~', $_GET['secure_str'], $match);
+		if (isset($match[0]))
 		{
 			$query = array(
 				'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
@@ -816,33 +817,37 @@ if (!$forum_config['attach_disable_attach'] && isset($_GET['item']))
 						'ON'		=> '(fp.forum_id = f.id AND fp.group_id = '.$forum_user['g_id'].')'
 					)
 				),
-				'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1) AND secure_str = \''.$_GET['secure_str'].'\''
-			);
-		}
-		else if (preg_match('~(\d+)t(\d+)~', $_GET['secure_str'], $match))
-		{
-			$query = array(
-				'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
-				'FROM'		=>	'attach_files AS a',
-				'JOINS'		=>	array(
-					array(
-						'INNER JOIN'	=> 'topics AS t',
-						'ON'		=> 't.id = '.$match[2]
-					),
-					array(
-						'INNER JOIN'	=> 'forums AS f',
-						'ON'		=> 'f.id = t.forum_id'
-					),
-					array(
-						'LEFT JOIN'		=> 'forum_perms AS fp',
-						'ON'		=> '(fp.forum_id = f.id AND fp.group_id = '.$forum_user['g_id'].')'
-					)
-				),
-				'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1) AND secure_str = \''.$_GET['secure_str'].'\''
+				'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1) AND secure_str = \''.$match[0].'\''
 			);
 		}
 		else
-			message($lang_common['Bad request']);
+		{
+			preg_match('~(\d+)t(\d+)~', $_GET['secure_str'], $match);
+			if (isset($match[0]))
+			{
+				$query = array(
+					'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
+					'FROM'		=>	'attach_files AS a',
+					'JOINS'		=>	array(
+						array(
+							'INNER JOIN'	=> 'topics AS t',
+							'ON'		=> 't.id = '.$match[2]
+						),
+						array(
+							'INNER JOIN'	=> 'forums AS f',
+							'ON'		=> 'f.id = t.forum_id'
+						),
+						array(
+							'LEFT JOIN'		=> 'forum_perms AS fp',
+							'ON'		=> '(fp.forum_id = f.id AND fp.group_id = '.$forum_user['g_id'].')'
+						)
+					),
+					'WHERE'		=> 'a.id = '.$attach_item.' AND (fp.read_forum IS NULL OR fp.read_forum = 1) AND secure_str = \''.$match[0].'\''
+				);
+			}
+			else
+				message($lang_common['Bad request']);
+		}
 		if ($forum_user['id'] != $match[1])
 			message($lang_common['Bad request']);
 	}
