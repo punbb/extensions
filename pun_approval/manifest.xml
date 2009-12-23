@@ -370,8 +370,8 @@
 					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' </a></span>';
 
 				$query_unapp_regs=array(
-					'SELECT' => 'id',
-					'FROM'  =>'post_approval_users'
+					'SELECT'	=>	'id',
+					'FROM'		=>	'post_approval_users'
 				);
 
 				$result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
@@ -871,12 +871,12 @@
 				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 			require $ext_info['path'].'/post_app_url.php';
 
-			$aptid = isset($_GET['aptid']) ? $_GET['aptid'] : 0;
-			$del = isset($_GET['del']) ? $_GET['del'] : 0;
-			$app = isset($_GET['app']) ? $_GET['app'] : 0;
-			$appid = isset($_GET['appid']) ? $_GET['appid'] : 0;
-			$p_cr = isset($_GET['p']) ? $_GET['p'] : 0;
-			$topics = isset($_GET['topics']) ? $_GET['topics'] : 0;
+			$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
+			$del = isset($_GET['del']) ? intval($_GET[$_GET['del']) : 0;
+			$app = isset($_GET['app']) ? intval($_GET[$_GET['app']) : 0;
+			$appid = isset($_GET['appid']) ? intval($_GET['appid']) : 0;
+			$p_cr = isset($_GET['p']) ? intval($_GET['p']) : 0;
+			$topics = isset($_GET['topics']) ? intval($_GET['topics']) : 0;
 
 			// Setup breadcrumbs
 			$forum_page['crumbs'] = array(

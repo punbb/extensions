@@ -212,15 +212,10 @@ function extension_action()
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
 
-        if (isset($_GET['del']))
+        if ($del)
             delete_unapproved_post();
-        if (isset($_GET['app']))
+        if ($app)
             approve_post();
-
-
-        
-
-
 }
 
 function show_unapproved_posts()
@@ -245,9 +240,8 @@ function show_unapproved_posts()
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
-    
-    
-        if (!$aptid && !$appid && !$all_post)
+
+    if (!$aptid && !$appid && !$all_post)
 	{
 		$forum_page['num_pages'] = ceil($cur_forum['num_topics'] / $forum_user['disp_topics']);
 		$forum_page['page'] = (!isset($_GET['p']) || !is_numeric($_GET['p']) || $_GET['p'] <= 1 || $_GET['p'] > $forum_page['num_pages']) ? 1 : $_GET['p'];
@@ -401,8 +395,6 @@ function show_unapproved_posts()
 	}
 
 	$id = 0;
-
-
 		if ($aptid || $appid || $all_post)
         {
 				$forum_page = array();
@@ -824,10 +816,14 @@ function show_unapproved_posts()
 
 function delete_unapproved_post()
 {
-	global $forum_db,$lang_app_post,$forum_user,$ext_info;
-	require $ext_info['path'].'/post_app_url.php';
-	$pid = $_GET['del'];
-	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;;
+	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common;
+
+	require $ext_info['path'].'/post_app_url.php';	
+	$pid = isset($_GET['del']) ? intval($_GET['del']) : 0;
+	if ($pid < 1)
+		message($lang_common['Bad request']);
+
+	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
 	$query_app = array(
 			'SELECT'	=> 'id',
 			'FROM'		=> 'post_approval_topics',
@@ -928,9 +924,12 @@ function delete_unapproved_post()
 
 function approve_post()
 {
-	global $forum_db,$lang_app_post,$forum_user,$ext_info;
+	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common;
+
 	require $ext_info['path'].'/post_app_url.php';
-	$pid = $_GET['app'];
+	$pid = isset($_GET['app']) ? intval($_GET['app']) : 0;
+	if ($pid < 1)
+		message($lang_common['Bad request']);
 	$query_app = array(
 			'SELECT'	=> 'p.id,t.id as tid',
 			'FROM'		=> 'post_approval_posts AS p',
