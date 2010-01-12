@@ -513,6 +513,23 @@
 						<?php
 				]]></hook>
 
+
+		<!--Adds a warning to registration form which says that registration should be approved by forum admin-->
+		<hook id="rg_register_pre_group_end"><![CDATA[
+				if ($forum_config['o_users_check'] == '1')
+				{
+				?>
+				<div class="txt-set set3">
+			<label for="fld1">
+				<small><p><?php echo $lang_app_post['warning registration'] ?></p></small>
+			</label>
+		</div>
+				<?php
+				}
+				
+		]]></hook>
+
+
 	<!--Adds a warning to quickpost form which says that a post should be approved/moderated -->
 	<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
 

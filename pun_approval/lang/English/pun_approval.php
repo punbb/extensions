@@ -60,6 +60,7 @@ $lang_app_post = array(
 	'no posts'					=> "There are no topics with unaproved posts\nsince your last visit.",
 	'no topic'					=> 'No posts',
 	'warning'					=> 'Your post should be approved(moderated)',
+	'warning registration'		=>'Your registration will be completed after it is approved by the forum admin.',
 	'name 1 col'				=> 'Topic',
 	'name 2 col'				=> 'Category',
 	'name 3 col'				=> 'Replies',
