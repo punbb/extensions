@@ -530,6 +530,29 @@
 		]]></hook>
 
 
+		<!--This hook overridesstandart implementation of "add_user" function. Standart function is blocked with the help of the "fn_add_user_start" hook-->
+		<hook id="rg_register_pre_add_user"><![CDATA[
+			if (!$forum_user['is_admmod'] && $forum_config['o_users_check']=='1')
+			{
+				$query = array(
+				'INSERT'	=> 'username, group_id, password, email, email_setting, timezone, dst, language, style, registered, registration_ip, last_visit, salt, activate_key',
+				'INTO'		=> 'post_approval_users',
+				'VALUES'	=> '\''.$forum_db->escape($user_info['username']).'\', '.$user_info['group_id'].', \''.$forum_db->escape($user_info['password_hash']).'\', \''.$forum_db->escape($user_info['email']).'\', '.$user_info['email_setting'].', '.floatval($user_info['timezone']).', '.$user_info['dst'].', \''.$forum_db->escape($user_info['language']).'\', \''.$forum_db->escape($user_info['style']).'\', '.$user_info['registered'].', \''.$forum_db->escape($user_info['registration_ip']).'\', '.$user_info['registered'].', \''.$forum_db->escape($user_info['salt']).'\', '.$user_info['activate_key'].''
+				);
+
+				($hook = get_hook('fn_add_user_qr_insert_user')) ? eval($hook) : null;
+				$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			}
+		]]></hook>
+
+		<!--Used if "add_user" function in functions php. If this hook returns any data, standart "add_user" won't work. We need it to ovrride "add_user" function-->
+		<hook id="fn_add_user_start"><![CDATA[
+				global  $forum_user;
+				if (!$forum_user['is_admmod'] && $forum_config['o_users_check']=='1')
+				return 1;
+		]]></hook>
+
+
 	<!--Adds a warning to quickpost form which says that a post should be approved/moderated -->
 	<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
 
@@ -843,6 +866,7 @@
 
 	]]></hook>
 
+        <!--Adds a sublink to Admin Menu to allow access to unapproved posts-->
 	<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
 
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
