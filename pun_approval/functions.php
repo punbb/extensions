@@ -212,15 +212,124 @@ function extension_action()
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
 
-        if ($del)
-            delete_unapproved_post();
-        if ($app)
-            approve_post();
+		if(isset($_GET['topics']))
+		{
+			if (isset($_GET['del']))
+				delete_unapproved_post();
+			if (isset($_GET['app']))
+				approve_post();
+		}
+		else if(isset($_GET['users']))
+		{
+			if (isset($_GET['del']))
+				delete_unapproved_user();
+			if (isset($_GET['app']))
+				approve_user();
+		}
+
+
+
+}
+
+function show_unapproved_users()
+{
+	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
+		$base_url, $forum_page, $cur_forum, $post_app_url;
+
+	require FORUM_ROOT.'lang/'.$forum_user['language'].'/userlist.php';
+	require_once FORUM_ROOT.'include/common.php';
+	require_once FORUM_ROOT.'include/email.php';
+    // Grab the users
+	$query = array(
+		'SELECT'	=> 'u.id, u.username, u.registered, u.email, g.g_id, g.g_user_title',
+		'FROM'		=> 'post_approval_users AS u',
+		'JOINS'		=> array(
+			array(
+				'LEFT JOIN'		=> 'groups AS g',
+				'ON'			=> 'g.g_id=u.group_id'
+			)
+		)
+	);
+
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+        $forum_page['item_count'] = 0;
+
+	?>
+
+	<div class="main-subhead">
+		<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp users'] ?></strong></span></h2>
+	</div>
+	<div class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
+
+	<?php
+
+	if ($forum_db->num_rows($result))
+	{
+			$forum_page['form_action'] = $base_url.'/'.$post_app_url['Users section'];
+			$forum_page['table_header'] = array();
+			$forum_page['table_header']['username'] = '<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['username'].'</th>';
+			$forum_page['table_header']['email']='<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['email'].'</th>';
+			$forum_page['table_header']['registered'] = '<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['registered'].'</th>';
+			$forum_page['table_header']['check'] = '<th class="tc'.count($forum_page['table_header']).'" scope=col">'.$lang_app_post['Check user'].'</th>';
+			
+			?>
+			<form class="frm-form" id="afocus" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
+		<div class="hidden">
+			<input type="hidden" name="form_sent" value="1" />
+			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
+		</div>
+                <div class="ct-group">
+			<table cellspacing="0" summary="<?php echo $lang_ul['Table summary'] ?>">
+				<thead>
+					<tr>
+						<?php echo implode("\n\t\t\t\t\t\t", $forum_page['table_header'])."\n" ?>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					while ($user_data = $forum_db->fetch_assoc($result))
+					{
+						$forum_page['table_row'] = array();
+						$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['username']).'</td>';
+						$forum_page['table_row']['email'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['email'], 1).'</td>';
+						$forum_page['table_row']['registered'] = '<td class="tc'.count($forum_page['table_row']).'">'.format_time($user_data['registered'], 1).'</td>';
+						$forum_page['table_row']['check'] = '<td class="tc'.count($forum_page['table_row']).'"><a href="'.forum_link($post_app_url['approve user'], $user_data['id']).'">'.$lang_app_post['Approve reg'].'</a>&nbsp&nbsp&nbsp<a href="'.forum_link($post_app_url['delete user'], $user_data['id']).'">'.$lang_app_post['Remove reg'].'</a></td>';
+						++$forum_page['item_count'];
+					?>
+						<tr class="<?php echo ($forum_page['item_count'] % 2 != 0) ? 'odd' : 'even' ?><?php echo ($forum_page['item_count'] == 1) ? ' row1' : '' ?>">
+							<?php echo implode("\n\t\t\t\t\t\t", $forum_page['table_row'])."\n" ?>
+						</tr>
+				<?php
+
+					}
+                                ?>
+				</tbody>
+			</table>
+		</div>
+            </form>
+            <?php
+	}
+	else
+	{
+		?>
+
+		<div class="ct-box error-box">
+			<ul class="error-list">
+				<?php echo $lang_app_post['No results']; ?>
+			</ul>
+		</div>
+		
+		<?php
+	}
+
+	?>
+		</div>
+	<?php
 }
 
 function show_unapproved_posts()
 {
-    global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
+	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
 		$base_url, $forum_page, $cur_forum, $ext_info;
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
@@ -240,8 +349,9 @@ function show_unapproved_posts()
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
-
-    if (!$aptid && !$appid && !$all_post)
+    
+    
+        if (!$aptid && !$appid && !$all_post)
 	{
 		$forum_page['num_pages'] = ceil($cur_forum['num_topics'] / $forum_user['disp_topics']);
 		$forum_page['page'] = (!isset($_GET['p']) || !is_numeric($_GET['p']) || $_GET['p'] <= 1 || $_GET['p'] > $forum_page['num_pages']) ? 1 : $_GET['p'];
@@ -395,8 +505,10 @@ function show_unapproved_posts()
 	}
 
 	$id = 0;
+
+
 		if ($aptid || $appid || $all_post)
-        {
+		{
 				$forum_page = array();
 				$posts_check = array();
 				// Determine on what page the post is located (depending on $forum_user['disp_posts'])
@@ -814,6 +926,18 @@ function show_unapproved_posts()
 		}
 }
 
+function delete_unapproved_user()
+{
+	global $forum_db,$lang_app_post,$forum_user,$ext_info;
+	require $ext_info['path'].'/post_app_url.php';
+	$uid = $_GET['del'];
+	$query = array(
+	'DELETE'	=> 'post_approval_users',
+	'WHERE'		=> 'id='.$uid
+	);
+
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+}
 function delete_unapproved_post()
 {
 	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common;
@@ -922,10 +1046,34 @@ function delete_unapproved_post()
 
 }
 
+function approve_user()
+{
+    global $forum_db,$lang_app_post,$forum_user,$ext_info;
+    require $ext_info['path'].'/post_app_url.php';
+    $uid=$_GET['app'];
+    $query = array(
+		'SELECT'	=> 'id,username, group_id, password, salt, email, email_setting, timezone, dst, language, style, registered, registration_ip, last_visit, salt, activate_key',
+		'FROM'		=> 'post_approval_users',
+		'WHERE'         => 'id='.$uid
+                );
+    $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    $row=$forum_db->fetch_assoc($result);
+    $query = array(
+		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit',
+		'INTO'		=> 'users',
+		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$row['salt'].'\',\''.$row['email'].'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\''
+                );
+     $forum_db->query_build($query) or error(__FILE__, __LINE__);
+     $query = array(
+		'DELETE'	=> 'post_approval_users',
+		'WHERE'		=> 'id='.$uid
+		);
+
+    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+}
 function approve_post()
 {
 	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common;
-
 	require $ext_info['path'].'/post_app_url.php';
 	$pid = isset($_GET['app']) ? intval($_GET['app']) : 0;
 	if ($pid < 1)
