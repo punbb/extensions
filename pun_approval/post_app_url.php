@@ -16,5 +16,7 @@ $post_app_url = array(
 	'app sev'						=> 'admin/extensions.php?section=approvalpost&amp;topics=1&amp;app_sev=1',
 	'app all'						=> 'admin/extensions.php?section=approvalpost&amp;topics=1&amp;app_all=1',
 	'approval'						=> 'admin/extensions.php?section=approvalpost&amp;topics=1&amp;app=$1',
+	'approve user'					=> 'admin/extensions.php?section=approvalpost&amp;users=1&amp;app=$1',
+	'delete user'					=> 'admin/extensions.php?section=approvalpost&amp;users=1&amp;del=$1',
 	'Page url'						=> 'admin/extensions.php?section=approvalpost&amp;topics=1&amp;page=$1'
 );
