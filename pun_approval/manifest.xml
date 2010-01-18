@@ -897,10 +897,7 @@
 	if ($forum_user['g_id'] == FORUM_ADMIN)
 	{
 		$forum_page['admin_menu']['unapp_posts'] = '<li class="'.(((isset($_GET['topics']))&&(FORUM_PAGE_SECTION == 'unapp_posts'))? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
-                if ($forum_config['o_users_check'])
-			{
-				$forum_page['admin_menu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Unp users'].'</a></li>';
-			}
+		$forum_page['admin_menu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Title users'].'</a></li>';
         }
 
 	]]></hook>
