@@ -1057,13 +1057,39 @@ function approve_user()
 		'WHERE'         => 'id='.$uid
                 );
     $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+    
+    $activate_key='NULL';
+    if($forum_config['o_regs_verify'] == '1')
+    {
+        $activate_key=random_key(8, true);
+    }
+
     $row=$forum_db->fetch_assoc($result);
     $query = array(
-		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit',
+		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
 		'INTO'		=> 'users',
-		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\''
+		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
                 );
      $forum_db->query_build($query) or error(__FILE__, __LINE__);
+     $new_uid = $forum_db->insert_id();
+
+     if($forum_config['o_regs_verify'] == '1')
+     {
+        // Load the "welcome" template
+		$mail_tpl = forum_trim(file_get_contents(FORUM_ROOT.'lang/'.$forum_user['language'].'/mail_templates/welcome.tpl'));
+
+		// The first row contains the subject
+		$first_crlf = strpos($mail_tpl, "\n");
+		$mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
+		$mail_message = forum_trim(substr($mail_tpl, $first_crlf));
+
+		$mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
+		$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
+		$mail_message = str_replace('<username>', $row['username'], $mail_message);
+		$mail_message = str_replace('<activation_url>', str_replace('&amp;', '&', forum_link($forum_url['change_password_key'], array($new_uid, substr($activate_key, 1, -1)))), $mail_message);
+		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
+		forum_mail($user_info['email'], $mail_subject, $mail_message);
+    }
      $query = array(
 		'DELETE'	=> 'post_approval_users',
 		'WHERE'		=> 'id='.$uid
