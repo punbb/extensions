@@ -377,6 +377,8 @@
 				$result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
 
 				if ($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs))
+					$visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
+				else
 					$visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].'</a></span>';
 				$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
 			}
@@ -604,7 +606,7 @@
 
 				<div class="txt-set set3">
 					<label for="fld1">
-                                            <small><p><?php echo $lang_app_post['Topic warning'] ?></p></small>
+						<small><p><?php echo $lang_app_post['Topic warning'] ?></p></small>
 					</label>
 				</div>
 				<?php
@@ -913,8 +915,8 @@
 			require $ext_info['path'].'/post_app_url.php';
 
 			$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
-			$del = isset($_GET['del']) ? intval($_GET[$_GET['del']) : 0;
-			$app = isset($_GET['app']) ? intval($_GET[$_GET['app']) : 0;
+			$del = isset($_GET['del']) ? intval($_GET['del']) : 0;
+			$app = isset($_GET['app']) ? intval($_GET['app']) : 0;
 			$appid = isset($_GET['appid']) ? intval($_GET['appid']) : 0;
 			$p_cr = isset($_GET['p']) ? intval($_GET['p']) : 0;
 			$topics = isset($_GET['topics']) ? intval($_GET['topics']) : 0;
@@ -983,7 +985,7 @@
 
 				ob_start();
 
-				show_unapproved_posts();
+				show_unapproved_users();
 
 				$tpl_app_post = trim(ob_get_contents());
 				$tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
