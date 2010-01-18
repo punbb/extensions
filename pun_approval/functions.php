@@ -256,9 +256,6 @@ function show_unapproved_users()
 
 	?>
 
-	<div class="main-subhead">
-		<h2 class="hn"><span><strong><?php echo $lang_app_post['Unp users'] ?></strong></span></h2>
-	</div>
 	<div class="main-content main-forum<?php echo ($forum_config['o_topic_views'] == '1') ? ' forum-views' : ' forum-noview' ?>">
 
 	<?php
