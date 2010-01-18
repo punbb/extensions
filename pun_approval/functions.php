@@ -1061,19 +1061,28 @@ function approve_user()
 		'WHERE'         => 'id='.$uid
                 );
     $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-    
+    $row=$forum_db->fetch_assoc($result);
+
+
     $activate_key='NULL';
     if($forum_config['o_regs_verify'] == '1')
     {
         $activate_key=random_key(8, true);
+        $group_id=0;
+         $query = array(
+		'INSERT'	=> 'group_id,username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
+		'INTO'		=> 'users',
+		'VALUES'	=> '\''.$group_id.'\',\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
+                );
     }
-
-    $row=$forum_db->fetch_assoc($result);
-    $query = array(
+    else
+    {
+        $query = array(
 		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
 		'INTO'		=> 'users',
 		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
                 );
+    }
      $forum_db->query_build($query) or error(__FILE__, __LINE__);
      $new_uid = $forum_db->insert_id();
 
