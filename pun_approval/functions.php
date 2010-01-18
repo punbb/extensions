@@ -271,7 +271,7 @@ function show_unapproved_users()
 			$forum_page['table_header']['email']='<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['email'].'</th>';
 			$forum_page['table_header']['registered'] = '<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['registered'].'</th>';
 			$forum_page['table_header']['check'] = '<th class="tc'.count($forum_page['table_header']).'" scope=col">'.$lang_app_post['Check user'].'</th>';
-			
+
 			?>
 			<form class="frm-form" id="afocus" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
 		<div class="hidden">
@@ -318,7 +318,7 @@ function show_unapproved_users()
 				<?php echo $lang_app_post['No results']; ?>
 			</ul>
 		</div>
-		
+
 		<?php
 	}
 
@@ -1061,7 +1061,7 @@ function approve_user()
     $query = array(
 		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit',
 		'INTO'		=> 'users',
-		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$row['salt'].'\',\''.$row['email'].'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\''
+		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\''
                 );
      $forum_db->query_build($query) or error(__FILE__, __LINE__);
      $query = array(
