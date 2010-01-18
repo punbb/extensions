@@ -1090,7 +1090,7 @@ function approve_user()
 		$mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
 		$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
 		$mail_message = str_replace('<username>', $row['username'], $mail_message);
-		$mail_message = str_replace('<activation_url>', str_replace('&amp;', '&', forum_link($forum_url['change_password_key'], array($new_uid, substr($activate_key, 1, -1)))), $mail_message);
+		$mail_message = str_replace('<activation_url>', str_replace('&amp;', '&', forum_link($forum_url['change_password_key'], array($new_uid, $activate_key))), $mail_message);
 		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 		forum_mail($row['email'], $mail_subject, $mail_message);
     }
