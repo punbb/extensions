@@ -812,10 +812,10 @@
 				);
 
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-        }
-    ]]></hook>
+		}
+	]]></hook>
 
-    <hook id="fn_add_topic_end"><![CDATA[
+	<hook id="fn_add_topic_end"><![CDATA[
 
 			if (($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 			{
@@ -840,21 +840,21 @@
 
 		]]></hook>
 
-    <hook id="fn_add_topic_start"><![CDATA[
+	<hook id="fn_add_topic_start"><![CDATA[
 			global $cur_posting, $forum_user;
 
 			if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 				return 1;
-		]]></hook>
+	]]></hook>
 
-    <hook id="fn_add_post_start"><![CDATA[
+	<hook id="fn_add_post_start"><![CDATA[
 	global $cur_posting, $forum_user;
 
 	if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 		return 1;
-    ]]></hook>
-    
-    <hook id="co_common"><![CDATA[
+	]]></hook>
+
+	<hook id="co_common"><![CDATA[
 
 			$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost';
 
@@ -868,7 +868,7 @@
 
 	]]></hook>
 
-        <!--Adds a sublink to Admin Menu to allow access to unapproved posts-->
+	<!--Adds a sublink to Admin Menu to allow access to unapproved posts-->
 	<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
 
 		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))

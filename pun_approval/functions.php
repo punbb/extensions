@@ -271,12 +271,12 @@ function show_unapproved_users()
 
 			?>
 			<form class="frm-form" id="afocus" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
-		<div class="hidden">
-			<input type="hidden" name="form_sent" value="1" />
-			<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
-		</div>
-                <div class="ct-group">
-			<table cellspacing="0" summary="<?php echo $lang_ul['Table summary'] ?>">
+				<div class="hidden">
+					<input type="hidden" name="form_sent" value="1" />
+					<input type="hidden" name="csrf_token" value="<?php echo generate_form_token($forum_page['form_action']) ?>" />
+				</div>
+				<div class="ct-group">
+				<table cellspacing="0" summary="<?php echo $lang_ul['Table summary'] ?>">
 				<thead>
 					<tr>
 						<?php echo implode("\n\t\t\t\t\t\t", $forum_page['table_header'])."\n" ?>
@@ -299,12 +299,12 @@ function show_unapproved_users()
 				<?php
 
 					}
-                                ?>
+				?>
 				</tbody>
-			</table>
-		</div>
-            </form>
-            <?php
+				</table>
+			</div>
+		</form>
+		<?php
 	}
 	else
 	{
@@ -1056,36 +1056,36 @@ function approve_user()
 		'SELECT'	=> 'id,username, group_id, password, salt, email, email_setting, timezone, dst, language, style, registered, registration_ip, last_visit, salt, activate_key',
 		'FROM'		=> 'post_approval_users',
 		'WHERE'         => 'id='.$uid
-                );
-    $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-    $row=$forum_db->fetch_assoc($result);
+				);
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$row=$forum_db->fetch_assoc($result);
 
 
-    $activate_key='NULL';
-    if($forum_config['o_regs_verify'] == '1')
-    {
-        $activate_key=random_key(8, true);
-        $group_id=0;
-         $query = array(
+	$activate_key='NULL';
+	if($forum_config['o_regs_verify'] == '1')
+	{
+		$activate_key=random_key(8, true);
+		$group_id=0;
+		$query = array(
 		'INSERT'	=> 'group_id,username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
 		'INTO'		=> 'users',
 		'VALUES'	=> '\''.$group_id.'\',\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
-                );
-    }
-    else
-    {
-        $query = array(
+		);
+	}
+	else
+	{
+		$query = array(
 		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
 		'INTO'		=> 'users',
 		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
-                );
-    }
-     $forum_db->query_build($query) or error(__FILE__, __LINE__);
-     $new_uid = $forum_db->insert_id();
+		);
+	}
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$new_uid = $forum_db->insert_id();
 
-     if($forum_config['o_regs_verify'] == '1')
-     {
-        // Load the "welcome" template
+	if($forum_config['o_regs_verify'] == '1')
+	{
+		// Load the "welcome" template
 		$mail_tpl = forum_trim(file_get_contents(FORUM_ROOT.'lang/'.$forum_user['language'].'/mail_templates/welcome.tpl'));
 
 		// The first row contains the subject
@@ -1100,7 +1100,7 @@ function approve_user()
 		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 		forum_mail($row['email'], $mail_subject, $mail_message);
     }
-     $query = array(
+		$query = array(
 		'DELETE'	=> 'post_approval_users',
 		'WHERE'		=> 'id='.$uid
 		);
