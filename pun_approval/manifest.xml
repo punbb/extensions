@@ -367,7 +367,7 @@
 				if ($forum_db->num_rows($result_unapp_posts))
 					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
 				else
-					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' </a></span>';
+					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].'</a></span>';
 
 				$query_unapp_regs=array(
 					'SELECT'	=>	'id',
