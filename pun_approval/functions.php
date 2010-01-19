@@ -927,7 +927,7 @@ function delete_unapproved_user()
 {
 	global $forum_db,$lang_app_post,$forum_user,$ext_info;
 	require $ext_info['path'].'/post_app_url.php';
-	$uid = $_GET['del'];
+	$uid = isset($_GET['del']) ? intval($_GET['del']) : 0;
 	$query = array(
 	'DELETE'	=> 'post_approval_users',
 	'WHERE'		=> 'id='.$uid
@@ -1051,7 +1051,7 @@ function approve_user()
     require $ext_info['path'].'/post_app_url.php';
     require_once FORUM_ROOT.'include/common.php';
 	require_once FORUM_ROOT.'include/email.php';
-    $uid=$_GET['app'];
+    $uid=isset($_GET['app']) ? intval($_GET['app']) : 0;
     $query = array(
 		'SELECT'	=> 'id,username, group_id, password, salt, email, email_setting, timezone, dst, language, style, registered, registration_ip, last_visit, salt, activate_key',
 		'FROM'		=> 'post_approval_users',
