@@ -6,3 +6,7 @@
 .brd .options span {
 white-space:nowrap;
 }
+
+.brd p.options {
+white-space:nowrap;
+}
