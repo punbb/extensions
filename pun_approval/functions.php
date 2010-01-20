@@ -290,7 +290,7 @@ function show_unapproved_users()
 						$forum_page['table_row'] = array();
 						$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['username']).'</td>';
 						$forum_page['table_row']['email'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['email'], 1).'</td>';
-						$forum_page['table_row']['registration_ip'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['registration_ip'], 1).'</td>';
+						$forum_page['table_row']['registration_ip'] = '<td class="tc'.count($forum_page['table_row']).'"><a href="'.forum_link($forum_url['get_host'], forum_htmlencode($user_data['registration_ip'])).'">'.forum_htmlencode($user_data['registration_ip']).'</a></td>';
 						$forum_page['table_row']['registered'] = '<td class="tc'.count($forum_page['table_row']).'">'.format_time($user_data['registered'], 1).'</td>';
 						$forum_page['table_row']['check'] = '<td class="tc'.count($forum_page['table_row']).'"><a href="'.forum_link($post_app_url['approve user'], $user_data['id']).'">'.$lang_app_post['Approve reg'].'</a>&nbsp&nbsp&nbsp<a href="'.forum_link($post_app_url['delete user'], $user_data['id']).'">'.$lang_app_post['Remove reg'].'</a></td>';
 						++$forum_page['item_count'];
@@ -348,9 +348,9 @@ function show_unapproved_posts()
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
-    
-    
-        if (!$aptid && !$appid && !$all_post)
+	
+	
+	if (!$aptid && !$appid && !$all_post)
 	{
 		$forum_page['num_pages'] = ceil($cur_forum['num_topics'] / $forum_user['disp_topics']);
 		$forum_page['page'] = (!isset($_GET['p']) || !is_numeric($_GET['p']) || $_GET['p'] <= 1 || $_GET['p'] > $forum_page['num_pages']) ? 1 : $_GET['p'];
@@ -1050,11 +1050,11 @@ function approve_user()
     global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic, 
 		$base_url, $forum_page, $cur_forum, $post_app_url,$ext_info;
 
-    require $ext_info['path'].'/post_app_url.php';
-    require_once FORUM_ROOT.'include/common.php';
+	require $ext_info['path'].'/post_app_url.php';
+	require_once FORUM_ROOT.'include/common.php';
 	require_once FORUM_ROOT.'include/email.php';
-    $uid=isset($_GET['app']) ? intval($_GET['app']) : 0;
-    $query = array(
+	$uid=isset($_GET['app']) ? intval($_GET['app']) : 0;
+	$query = array(
 		'SELECT'	=> 'id,username, group_id, password, salt, email, email_setting, timezone, dst, language, style, registered, registration_ip, last_visit, salt, activate_key',
 		'FROM'		=> 'post_approval_users',
 		'WHERE'         => 'id='.$uid
