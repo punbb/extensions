@@ -239,9 +239,9 @@ function show_unapproved_users()
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/userlist.php';
 	require_once FORUM_ROOT.'include/common.php';
 	require_once FORUM_ROOT.'include/email.php';
-    // Grab the users
+	// Grab the users
 	$query = array(
-		'SELECT'	=> 'u.id, u.username, u.registered, u.email, g.g_id, g.g_user_title',
+		'SELECT'	=> 'u.id, u.username, u.registration_ip, u.registered, u.email, g.g_id, g.g_user_title',
 		'FROM'		=> 'post_approval_users AS u',
 		'JOINS'		=> array(
 			array(
@@ -266,6 +266,7 @@ function show_unapproved_users()
 			$forum_page['table_header'] = array();
 			$forum_page['table_header']['username'] = '<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['username'].'</th>';
 			$forum_page['table_header']['email']='<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['email'].'</th>';
+			$forum_page['table_header']['registration_ip']='<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['registration ip'].'</th>';
 			$forum_page['table_header']['registered'] = '<th class="tc'.count($forum_page['table_header']).'" scope="col">'.$lang_app_post['registered'].'</th>';
 			$forum_page['table_header']['check'] = '<th class="tc'.count($forum_page['table_header']).'" scope=col">'.$lang_app_post['Check user'].'</th>';
 
@@ -289,6 +290,7 @@ function show_unapproved_users()
 						$forum_page['table_row'] = array();
 						$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['username']).'</td>';
 						$forum_page['table_row']['email'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['email'], 1).'</td>';
+						$forum_page['table_row']['registration_ip'] = '<td class="tc'.count($forum_page['table_row']).'">'.forum_htmlencode($user_data['registration_ip'], 1).'</td>';
 						$forum_page['table_row']['registered'] = '<td class="tc'.count($forum_page['table_row']).'">'.format_time($user_data['registered'], 1).'</td>';
 						$forum_page['table_row']['check'] = '<td class="tc'.count($forum_page['table_row']).'"><a href="'.forum_link($post_app_url['approve user'], $user_data['id']).'">'.$lang_app_post['Approve reg'].'</a>&nbsp&nbsp&nbsp<a href="'.forum_link($post_app_url['delete user'], $user_data['id']).'">'.$lang_app_post['Remove reg'].'</a></td>';
 						++$forum_page['item_count'];
