@@ -26,10 +26,15 @@ function cache_pun_coloured_usergroups()
 	{
 		if(isset($all_groups['link_color']))
 		{
-				$output[] = '.group_color_'.$all_groups['g_id'].' a:link {color: '.$all_groups['link_color'].';}'."\n";
-				$output[] = '.group_color_'.$all_groups['g_id'].' a:visited {color: '.$all_groups['link_color'].';}'."\n";
-				$output[] = '#brd-main .group_color_'.$all_groups['g_id'].' {font-size:12px; position:static; visibility:visible; color: '.$all_groups['link_color'].';}'."\n";
-		};
+			$link_color=' color: '.$all_groups['link_color'].';';
+			$output[] = '.group_color_'.$all_groups['g_id'].' a:link {color: '.$all_groups['link_color'].';}'."\n";
+			$output[] = '.group_color_'.$all_groups['g_id'].' a:visited {color: '.$all_groups['link_color'].';}'."\n";
+		}
+		else
+			$link_color='';
+				
+		$output[] = '#brd-main .group_color_'.$all_groups['g_id'].' {font-size:12px; position:static; visibility:visible;'.$link_color.'}'."\n";
+		
 
 		if(isset($all_groups['hover_color']))
 		{

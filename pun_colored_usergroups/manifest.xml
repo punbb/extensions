@@ -23,8 +23,8 @@
 	<install><![CDATA[
 		if (!$forum_db->field_exists('groups', 'link_color'))
 		{
-			$forum_db->add_field('groups', 'link_color', 'VARCHAR(10)', true);
-			$forum_db->add_field('groups', 'hover_color', 'VARCHAR(10)', true);
+			$forum_db->add_field('groups', 'link_color', 'VARCHAR(20)', true);
+			$forum_db->add_field('groups', 'hover_color', 'VARCHAR(20)', true);
 		}
 	]]>
 	</install>
@@ -55,11 +55,11 @@
 			<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_colored_usergroups['link'] ?></span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="link_color" size="10" maxlength="10" value="<?php echo forum_htmlencode($group['link_color']) ?>" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="link_color" size="20" maxlength="20" value="<?php echo forum_htmlencode($group['link_color']) ?>" /></span>
 					</div>
 					<div class="sf-box text required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_colored_usergroups['hover'] ?></span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="hover_color" size="10" maxlength="10" value="<?php echo forum_htmlencode($group['hover_color']) ?>" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="hover_color" size="20" maxlength="20" value="<?php echo forum_htmlencode($group['hover_color']) ?>" /></span>
 					</div>
 			</div>
 			
@@ -136,5 +136,9 @@
 					$forum_page['user_ident']['username'] = '<li class="username'.(($user['realname'] =='') ? ' fn nickname' :  ' nickname').'"><strong><span class="group_color_'.$user['g_id'].'">'.forum_htmlencode($user['username']).'</span></strong></li>';
 		]]></hook>
 
+		<hook id="agr_add_edit_pre_redirect"><![CDATA[
+					require $ext_info['path'].'/main.php';
+					cache_pun_coloured_usergroups();
+		]]></hook>
 	</hooks>
 </extension>
