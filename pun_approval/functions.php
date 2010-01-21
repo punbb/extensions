@@ -771,7 +771,7 @@ function show_unapproved_posts()
 								// Generate IP information for moderators/administrators
 								if ($forum_user['is_admmod'])
 								{
-										$forum_page['author_info']['ip'] = '<li><span>'.$lang_topic['IP'].' <a href="'.forum_link($forum_url['get_host'], $cur_post['id']).'">'.$cur_post['poster_ip'].'</a></span></li>';
+										$forum_page['author_info']['ip'] = '<li><span>'.$lang_topic['IP'].' <a href="'.forum_link($forum_url['get_host'], $cur_post['poster_ip']).'">'.$cur_post['poster_ip'].'</a></span></li>';
 								}
 
 								// Generate author contact details
