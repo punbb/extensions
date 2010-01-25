@@ -1101,13 +1101,31 @@ function approve_user()
 		$mail_message = str_replace('<activation_url>', str_replace('&amp;', '&', forum_link($forum_url['change_password_key'], array($new_uid, $activate_key))), $mail_message);
 		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 		forum_mail($row['email'], $mail_subject, $mail_message);
-    }
-		$query = array(
-		'DELETE'	=> 'post_approval_users',
-		'WHERE'		=> 'id='.$uid
-		);
+        }
+        else
+        {
+                $mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/reg_approved.tpl'));
 
-    $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		// The first row contains the subject
+		$first_crlf = strpos($mail_tpl, "\n");
+		$mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
+		$mail_message = forum_trim(substr($mail_tpl, $first_crlf));
+
+		$mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
+		$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
+		$mail_message = str_replace('<username>', $row['username'], $mail_message);
+		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
+		forum_mail($row['email'], $mail_subject, $mail_message);
+        }
+
+    	$query = array(
+	'DELETE'	=> 'post_approval_users',
+	'WHERE'		=> 'id='.$uid
+	);
+
+
+
+        $forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 function approve_post()
 {
