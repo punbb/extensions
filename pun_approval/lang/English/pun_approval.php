@@ -4,7 +4,7 @@ if (!defined('FORUM')) die();
 
 // Language definitions used in profile, users, options, moderate, register, groups
 $lang_app_post = array(
-	'No posts'					=> 'There are no unaproved posts since your last visit.',
+	'No posts'					=> 'There are no unapproved posts since your last visit.',
 	'Unp posts'					=> 'Unapproved posts',
 	'Unp topics'				=> 'Unapproved topics',
 	'Unp users'					=> 'Unapproved registrations',
@@ -64,7 +64,7 @@ $lang_app_post = array(
 	'email'						=>'Email',
 	'registered'				=>'Registration date',
 	'name page'					=> 'Post approval',
-	'no posts'					=> "There are no topics with unaproved posts\nsince your last visit.",
+	'no posts'					=> "There are no topics with unapproved posts since your last visit.",
 	'no topic'					=> 'No posts',
 	'warning'					=> 'Your post should be approved(moderated)',
 	'warning registration'		=>'Your registration will be completed after it is approved by the forum admin.',
