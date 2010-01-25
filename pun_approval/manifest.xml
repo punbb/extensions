@@ -532,6 +532,11 @@
 		]]></hook>
 
 
+		<hook id="rg_register_pre_login_redirect"><![CDATA[
+			if (!($forum_config['o_regs_verify'] == '1') &&($forum_config['o_users_check'] == '1'))
+				message(sprintf($lang_app_post['Reg e-mail'], '<a href="mailto:'.forum_htmlencode($forum_config['o_admin_email']).'">'.forum_htmlencode($forum_config['o_admin_email']).'</a>'));
+		]]></hook>
+
 		<!--This hook overridesstandart implementation of "add_user" function. Standart function is blocked with the help of the "fn_add_user_start" hook-->
 		<hook id="rg_register_pre_add_user"><![CDATA[
 			if (!$forum_user['is_admmod'] && $forum_config['o_users_check']=='1')
@@ -898,7 +903,7 @@
 	{
 		$forum_page['admin_menu']['unapp_posts'] = '<li class="'.(((isset($_GET['topics']))&&(FORUM_PAGE_SECTION == 'unapp_posts'))? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
 		$forum_page['admin_menu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Title users'].'</a></li>';
-        }
+	}
 
 	]]></hook>
 

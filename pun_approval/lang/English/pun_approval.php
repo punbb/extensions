@@ -58,6 +58,7 @@ $lang_app_post = array(
 	'users check name'			=> 'Allow registration approval',
 	'users check value'			=> 'Enable new registrations approval',
 //other page
+	'Reg e-mail'				=>'Your registration should be approved by the forum administrator. An e-mail message confirming or rejecting your registration will be sent to the specifyed e-mail address.',
 	'registration ip'			=>'Registration ip',
 	'username'					=>'User name',
 	'email'						=>'Email',
