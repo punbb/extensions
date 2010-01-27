@@ -11,9 +11,12 @@
 if (!defined('FORUM')) die();
 
 $lang_pun_move_posts = array(
+        'Destination forum'		=> 'Destination forum',
 	'Destination topic'		=> 'Destination topic',
 	'Move selected'			=> 'Move selected posts',
-	'Move posts'			=> 'Move posts'
+	'Move posts'			=> 'Move posts',
+	'Ignore dates'			=> 'Ignore dates',
+	'Ignore text'			=> 'The time and date of the moved posts will change to the time of moving'
 );
 
 ?>
