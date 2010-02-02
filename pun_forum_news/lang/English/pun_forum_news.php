@@ -13,7 +13,8 @@ if (!defined('FORUM')) die();
 
 
 $lang_pun_forum_news = array(
-
+	'Permission legend'		=> 	'Forum news',
+	'Permission text'		=>	'Allow users to add forum news'
 );
 
 ?>
