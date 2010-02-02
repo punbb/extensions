@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+/**
+ * >Allow users to mark topics or posts as "news".
+ *
+ * @copyright (C) 2010 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_forum_news
+ */
+-->
+
+<extension engine="1.0">
+	<id>pun_forum_news</id>
+	<title>Pun forum news</title>
+	<version>1.0.0</version>
+	<description>Allow users to mark topics or posts as "news". News show in the speical topic.</description>
+	<author>PunBB Development Team</author>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
+
+	<install><![CDATA[
+if (!$forum_db->table_exists('pun_forum_news'))
+{
+	$schema = array(
+		'FIELDS'	=> array(
+			'id'	=>	array(
+				'datatype'		=> 'SERIAL',
+				'allow_null'	=> false
+			),
+			'poster'	=>	array(
+				'datatype'		=> 'VARCHAR(200)',
+				'allow_null'	=> false
+			),
+			'poster_id'	=>	array(
+				'datatype'		=> 'INT(10) UNSIGNED',
+				'allow_null'	=> false
+			),
+			'poster_e_mail'	=>	array(
+				'datatype'		=> 'VARCHAR(80)',
+				'allow_null'	=> false
+			),
+			'message' => array(
+				'datatype'		=> 'TEXT',
+				'allow_null'	=> false
+			),
+			'hide_smilies'	=>	array(
+				'datatype'		=> 'TINYINT(1)',
+				'allow_null'	=> false,
+				'default'		=> '0'
+			),
+			'posted'		=> array(
+				'datatype'		=> 'INT(10) UNSIGNED',
+				'allow_null'	=> false,
+				'default'		=> '0'
+			),
+		),
+		'PRIMARY KEY'	=> array('id')
+	);
+	$forum_db->create_table('pun_forum_news', $schema);
+}
+
+$forum_db->add_field('posts', 'forum_news', 'tinyint(1)', TRUE);
+	]]></install>
+
+	<uninstall><![CDATA[
+$forum_db->drop_table('pun_forum_news');
+$forum_db->drop_field('posts', 'forum_news');
+	]]></uninstall>
+
+	<hooks>
+		<hook id="hd_head"><![CDATA[
+		]]></hook>
+	</hooks>
+</extension>
