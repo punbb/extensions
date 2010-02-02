@@ -347,7 +347,7 @@
 	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
 	<hook id="hd_visit_elements"><![CDATA[
 
-			if ($forum_user['group_id'] == FORUM_ADMIN)
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')
 			{
 				$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
 
@@ -882,7 +882,7 @@
 			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		require $ext_info['path'].'/post_app_url.php';
 
-		if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN)&&(!isset($_GET['users'])))
+		if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')&&(!isset($_GET['users'])))
 		{
 			$forum_page['admin_submenu']['unapp_topics'] = '<li'.((!isset($_GET['aptid'])&& isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
 			$forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
@@ -899,16 +899,22 @@
 			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		require $ext_info['path'].'/post_app_url.php';
 
-	if ($forum_user['g_id'] == FORUM_ADMIN)
-	{
-		$forum_page['admin_menu']['unapp_posts'] = '<li class="'.(((isset($_GET['topics'])||isset($_GET['all_post']))&&(FORUM_PAGE_SECTION == 'unapp_posts'))? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
-		$forum_page['admin_menu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Title users'].'</a></li>';
-	}
+		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')
+			$forum_page['admin_menu']['unapp_posts'] = '<li class="'.(((isset($_GET['topics'])||isset($_GET['all_post']))&&(FORUM_PAGE_SECTION == 'unapp_posts'))? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
+	
+		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')
+			$forum_page['admin_menu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Title users'].'</a></li>';
+	
 
 	]]></hook>
 
-	<hook id="aex_new_action"><![CDATA[
+	<hook id="aex_start"><![CDATA[
 
+	require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';
+
+	if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')
+	{
+		$section = isset($_GET['section']) ? $_GET['section'] : null;
 		if ((isset($_GET['all_post']) || isset($_GET['topics'])) && ($section == 'approvalpost') || ($section == 'unapp_posts'))
 		{
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
@@ -964,7 +970,12 @@
 
 			require FORUM_ROOT.'footer.php';
 		}
+	}
 
+
+	if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')
+	{
+		$section = isset($_GET['section']) ? $_GET['section'] : null;
 		if (isset($_GET['users']) && ($section == 'approvalpost') || ($section == 'unapp_posts'))
 		{
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
@@ -997,6 +1008,8 @@
 
 				require FORUM_ROOT.'footer.php';
 		}
+	}
+
 	]]></hook>
 
 </hooks>
