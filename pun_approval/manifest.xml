@@ -347,7 +347,7 @@
 	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
 	<hook id="hd_visit_elements"><![CDATA[
 
-			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
 			{
 				$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
 
@@ -396,7 +396,7 @@
 
 	<!--Adds new styles to the forum header. Wee neeed these styles to display hyper links for approval under all the other links in header-->
 	<hook id="hd_head"><![CDATA[
-	if ($forum_user['group_id']==FORUM_ADMIN)
+	if ($forum_user['group_id']==FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
 		$forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
 	]]></hook>
 
