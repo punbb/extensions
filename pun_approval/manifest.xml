@@ -442,8 +442,7 @@
 		]]></hook>
 
 	<!-- Adds checkboxes to administration/Groups in order to allow certain groups posting without approval, approving posts of others and so on-->
-	<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
-
+	<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[ 
 			?>
 				<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<legend><span><?php echo $lang_app_post['legend post approval'] ?></span></legend>
@@ -452,18 +451,24 @@
 							<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="without_approval" value="1"<?php if ($group['g_without_approval'] == '1') echo ' checked="checked"' ?> /></span>
 							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow without approval'] ?></label>
 						</div>
-												<div class="mf-item">
-														<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="post_approval" value="1"<?php if ($group['g_allow_post_approval']=='1') echo ' checked="checked"' ?>  /></span>
-														<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow post approval'] ?></label>
-												</div>
-												<div class="mf-item">
-														<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="reg_approval" value="1"<?php if ($group['g_allow_reg_approval']=='1') echo ' checked="checked"' ?>  /></span>
-														<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow reg approval'] ?></label>
-												</div>
+							<?php
+								if($group['g_moderator']=='1')
+								{
+							?>
+							<div class="mf-item">
+								<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="post_approval" value="1"<?php if ($group['g_allow_post_approval']=='1') echo ' checked="checked"' ?>  /></span>
+								<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow post approval'] ?></label>
+							</div>
+							<div class="mf-item">
+								<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="reg_approval" value="1"<?php if ($group['g_allow_reg_approval']=='1') echo ' checked="checked"' ?>  /></span>
+								<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_app_post['allow reg approval'] ?></label>
+							</div>
+							<?php
+								}
+							?>
 					</div>
 				</fieldset>
 			<?php
-
 		]]></hook>
 
 	<!--Adds values of the checkboxes on administration/groups page to the query, executed when the page is being submitted-->
@@ -875,18 +880,20 @@
 
 	<!--Adds a sublink to Admin Menu to allow access to unapproved posts-->
 	<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
-
-		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+                if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 		else
 			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		require $ext_info['path'].'/post_app_url.php';
 
+		if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1'))
+			unset($forum_page);
+
+
 		if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')&&(!isset($_GET['users'])))
 		{
 			$forum_page['admin_submenu']['unapp_topics'] = '<li'.((!isset($_GET['aptid'])&& isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
-			$forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
-			
+			$forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';	
 		}
 
 	]]></hook>
@@ -899,12 +906,16 @@
 			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		require $ext_info['path'].'/post_app_url.php';
 
-		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')
+		if($forum_user['g_id'] == FORUM_ADMIN || ($forum_user['g_moderator']=='1' && $forum_user['g_allow_post_approval']=='1'))
 			$forum_page['admin_menu']['unapp_posts'] = '<li class="'.(((isset($_GET['topics'])||isset($_GET['all_post']))&&(FORUM_PAGE_SECTION == 'unapp_posts'))? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($post_app_url['Topics section']).'"><span>'.$lang_app_post['Title'].'</span></a></li>';
-	
-		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')
+
+		if($forum_user['g_id'] == FORUM_ADMIN || ($forum_user['g_moderator']=='1' && $forum_user['g_allow_reg_approval']=='1'))
 			$forum_page['admin_menu']['unapp_users'] = '<li'.((isset($_GET['users']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Title users'].'</a></li>';
-	
+
+
+		if($forum_user['g_moderator']=='1' && ($forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1'))
+			$forum_page['admin_menu']['index'] = '<li class="'.((FORUM_PAGE_SECTION == 'start') ? 'active' : 'normal').' first-item"><a href="'.forum_link($forum_url['admin_index']).'"><span>'.$lang_admin_common['Moderate'].'</span></a></li>';
+
 
 	]]></hook>
 
