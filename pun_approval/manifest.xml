@@ -363,9 +363,12 @@
 
 				$result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
-				if ($forum_db->num_rows($result_unapp_posts) &&($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1'))
+                                $unapproved_posts_shown='false';
+                                if ($forum_db->num_rows($result_unapp_posts)&& ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1'))
+                                {
 					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
-				
+                                        $unapproved_posts_shown='true';
+                                }
 
 				$query_unapp_regs=array(
 					'SELECT'	=>	'id',
@@ -374,11 +377,11 @@
 
 				$result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
 
-				if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')
+				if (($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')&& $forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs))
                                 {
-                                    if ($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs)&& $forum_db->num_rows($result_unapp_posts))
+                                    if ($unapproved_posts_shown && ($forum_user['g_allow_post_approval']=='1' ||$forum_user['g_id'] == FORUM_ADMIN))
                                             $visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
-                                    else if($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs)&& !$forum_db->num_rows($result_unapp_posts))
+                                    else if(!$unapproved_posts_shown || $forum_user['g_allow_post_approval']!='1'  || $forum_user['g_id']!= FORUM_ADMIN)
                                             $visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
                                 }
 				$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
