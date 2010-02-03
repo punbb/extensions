@@ -25,8 +25,8 @@ if (!$forum_db->table_exists('pun_forum_news'))
 {
 	$schema = array(
 		'FIELDS'	=> array(
-			'id'	=>	array(
-				'datatype'		=> 'SERIAL',
+			'post_id'	=>	array(
+				'datatype'		=> 'INT(10) UNSIGNED',
 				'allow_null'	=> false
 			),
 			'poster'	=>	array(
@@ -35,10 +35,6 @@ if (!$forum_db->table_exists('pun_forum_news'))
 			),
 			'poster_id'	=>	array(
 				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false
-			),
-			'poster_e_mail'	=>	array(
-				'datatype'		=> 'VARCHAR(80)',
 				'allow_null'	=> false
 			),
 			'message' => array(
@@ -56,7 +52,9 @@ if (!$forum_db->table_exists('pun_forum_news'))
 				'default'		=> '0'
 			),
 		),
-		'PRIMARY KEY'	=> array('id')
+		'UNIQUE KEYS'	=> array(
+			'post_id_ident_idx'	=> array('post_id')
+		),
 	);
 	$forum_db->create_table('pun_forum_news', $schema);
 }
@@ -73,16 +71,16 @@ $forum_db->drop_field('groups', 'g_add_forum_news');
 
 	<hooks>
 		<hook id="agr_add_edit_end_validation"><![CDATA[
-$add_forum_news = isset($_POST['add_forum_news']) ? intval($_POST['add_forum_news']) : '0';
+$pun_forum_news_add_news = isset($_POST['add_forum_news']) ? intval($_POST['add_forum_news']) : '0';
 		]]></hook>
 		<hook id="agr_add_end_qr_add_group"><![CDATA[
 $query['INSERT'] .= ', g_add_forum_news';
-$query['VALUES'] .= ', '.$add_forum_news;
+$query['VALUES'] .= ', '.$pun_forum_news_add_news;
 		]]></hook>
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
-$query['SET'] .= ', g_add_forum_news = '.$add_forum_news;
+$query['SET'] .= ', g_add_forum_news = '.$pun_forum_news_add_news;
 		]]></hook>
-		<hook id="agr_add_edit_group_pre_header_load"><![CDATA[
+		<hook id="agr_add_edit_group_pre_header_load, po_pre_header_load, ed_pre_header_load"><![CDATA[
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 else
@@ -102,6 +100,88 @@ else
 </fieldset>
 <?php
 
+		]]></hook>
+		<hook id="po_end_validation, ed_end_validation"><![CDATA[
+$pun_forum_news = isset($_POST['pun_forum_news']) ? 1 : 0;
+		]]></hook>
+		<hook id="po_pre_add_post, po_pre_add_topic"><![CDATA[
+$post_info['forum_news'] = $pun_forum_news;
+		]]></hook>
+		<hook id="po_pre_optional_fieldset"><![CDATA[
+$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.(isset($_POST['pun_forum_news']) ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+		]]></hook>
+		<hook id="fn_add_topic_qr_add_topic_post, fn_add_post_qr_add_post"><![CDATA[
+$query['INSERT'] .= ', forum_news';
+$query['VALUES'] .= ', '.$post_info['forum_news'];
+		]]></hook>
+		<hook id="fn_add_topic_end"><![CDATA[
+if ($post_info['forum_news'])
+{
+	$pun_forum_news_query = array(
+		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted',
+		'INTO'		=>	'pun_forum_news',
+		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['subject']."\n\n".$post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted']
+	);
+	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+}
+		]]></hook>
+		<hook id="fn_add_post_end"><![CDATA[
+if ($post_info['forum_news'])
+{
+	$pun_forum_news_query = array(
+		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted',
+		'INTO'		=>	'pun_forum_news',
+		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted']
+	);
+	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+}
+		]]></hook>
+		<hook id="ed_qr_get_post_info"><![CDATA[
+$query['SELECT'] .= ', p.forum_news';
+		]]></hook>
+		<hook id="ed_qr_update_post"><![CDATA[
+if ($pun_forum_news != $cur_post['forum_news'])
+	$query['SET'] .= ', forum_news = '.$pun_forum_news;
+		]]></hook>
+		<hook id="ed_pre_redirect"><![CDATA[
+if ($cur_post['forum_news'])
+{
+	if ($pun_forum_news)
+	{
+		$pun_forum_news_query = array(
+			'UPDATE'	=>	'pun_forum_news',
+			'SET'		=>	'message=\''.$forum_db->escape($message).'\', hide_smilies=\''.$hide_smilies.'\'',
+			'WHERE'		=>	'post_id = '.$id
+		);
+	}
+	else
+	{
+		$pun_forum_news_query = array(
+			'DELETE'	=>	'pun_forum_news',
+			'WHERE'		=>	'post_id = '.$id
+		);
+	}
+	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+}
+else
+{
+	if ($pun_forum_news)
+	{
+		$pun_forum_news_query = array(
+			'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted',
+			'INTO'		=>	'pun_forum_news',
+			'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape(($can_edit_subject ? $subject."\n\n" : '').$message).'\', '.$hide_smilies.', '.$cur_post['posted']
+		);
+		$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+	}
+}
+		]]></hook>
+		<hook id="ed_pre_checkbox_display"><![CDATA[
+if (isset($_POST['form_sent']))
+	$pun_forum_news_option = isset($_POST['pun_forum_news']) ? 1 : 0;
+else
+	$pun_forum_news_option = $cur_post['forum_news'];
+$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.($pun_forum_news_option ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
 		]]></hook>
 	</hooks>
 </extension>
