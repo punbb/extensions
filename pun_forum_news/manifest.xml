@@ -80,7 +80,7 @@ $query['VALUES'] .= ', '.$pun_forum_news_add_news;
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
 $query['SET'] .= ', g_add_forum_news = '.$pun_forum_news_add_news;
 		]]></hook>
-		<hook id="agr_add_edit_group_pre_header_load, po_pre_header_load, ed_pre_header_load"><![CDATA[
+		<hook id="agr_add_edit_group_pre_header_load, po_pre_header_load, ed_pre_header_load, vt_pre_header_load"><![CDATA[
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 else
@@ -182,6 +182,17 @@ if (isset($_POST['form_sent']))
 else
 	$pun_forum_news_option = $cur_post['forum_news'];
 $forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.($pun_forum_news_option ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+		]]></hook>
+		<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
+
+?>
+	<fieldset class="mf-set set2">
+		<div class="mf-box checkbox">
+			<div class="mf-item"><span class="fld-input"><input type="checkbox" value="1" name="pun_forum_news" id="fld3"></span> <label for="fld3"><?php echo $lang_pun_forum_news['Post mark']; ?></label></div>
+		</div>
+	</fieldset>
+<?php
+
 		]]></hook>
 	</hooks>
 </extension>
