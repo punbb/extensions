@@ -346,7 +346,6 @@
 <hooks>
 	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
 	<hook id="hd_visit_elements"><![CDATA[
-
 			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
 			{
 				$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
@@ -364,7 +363,7 @@
 
 				$result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
-				if ($forum_db->num_rows($result_unapp_posts))
+				if ($forum_db->num_rows($result_unapp_posts) &&($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1'))
 					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
 				
 
@@ -375,11 +374,13 @@
 
 				$result_unapp_regs=$forum_db->query_build($query_unapp_regs) or error (__FILE__,__LINE__);
 
-				if ($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs)&& $forum_db->num_rows($result_unapp_posts))
-					$visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
-				else if($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs)&& !$forum_db->num_rows($result_unapp_posts))
-					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
-
+				if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')
+                                {
+                                    if ($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs)&& $forum_db->num_rows($result_unapp_posts))
+                                            $visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
+                                    else if($forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs)&& !$forum_db->num_rows($result_unapp_posts))
+                                            $visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
+                                }
 				$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
 			}
 
@@ -577,7 +578,7 @@
 
 		$result=$forum_db->query_build($need_approval_query) or error (__FILE__,__LINE__);
 		list($post_approval)=$forum_db->fetch_row($result);
-		if (!$forum_user['is_admmod'] && ($post_approval == 1 && $forum_user['g_without_approval'] == 0))
+		if ($forum_user['g_id']!=FORUM_ADMIN && ($post_approval == 1 && $forum_user['g_without_approval'] == 0))
 	{
 
 		?>
@@ -754,7 +755,7 @@
 	]]></hook>
 
 	<hook id="po_pre_add_post"><![CDATA[
-		if (!$forum_user['is_admmod'] && ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0))
+		if ($forum_user['g_id']!=FORUM_ADMIN && $cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0)
 		{
 			$query = array(
 				'INSERT'	=> 'poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
@@ -853,14 +854,14 @@
 	<hook id="fn_add_topic_start"><![CDATA[
 			global $cur_posting, $forum_user;
 
-			if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
+			if (!($forum_user['g_id']==FORUM_ADMIN || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 				return 1;
 	]]></hook>
 
 	<hook id="fn_add_post_start"><![CDATA[
 	global $cur_posting, $forum_user;
 
-	if (!($forum_user['is_admmod'] || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
+	if (!($forum_user['g_id']==FORUM_ADMIN || ($cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 1) || $cur_posting['post_approval'] == 0))
 		return 1;
 	]]></hook>
 
