@@ -346,7 +346,7 @@
 <hooks>
 	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
 	<hook id="hd_visit_elements"><![CDATA[
-			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
+			if ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
 			{
 				$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost&topics=1';
 
@@ -400,7 +400,7 @@
 
 	<!--Adds new styles to the forum header. Wee neeed these styles to display hyper links for approval under all the other links in header-->
 	<hook id="hd_head"><![CDATA[
-	if ($forum_user['group_id']==FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
+	if ($forum_user['g_id']==FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1' || $forum_user['g_allow_reg_approval']=='1')
 		$forum_head['style'.$num_temp++] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles.css" />';
 	]]></hook>
 
@@ -944,19 +944,20 @@
 			$appid = isset($_GET['appid']) ? intval($_GET['appid']) : 0;
 			$p_cr = isset($_GET['p']) ? intval($_GET['p']) : 0;
 			$topics = isset($_GET['topics']) ? intval($_GET['topics']) : 0;
+                        $all_post = isset($_GET['all_post']) ? intval($_GET['all_post']) : 0;
 
 			// Setup breadcrumbs
 			$forum_page['crumbs'] = array(
 				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 				array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-				array($lang_app_post['Unp posts'], forum_link($post_app_url['Section']))
+				array($lang_app_post['Unp topics'], forum_link($post_app_url['Section']))
 			);
 
-			if ($aptid || $appid)
+			if ($aptid || $appid|| $all_post)
 			{
 				if ($appid)
 				{
-					$query_app = array(
+                                        $query_app = array(
 						'SELECT'	=> 'topic_id',
 						'FROM'		=> 'post_approval_posts',
 						'WHERE'		=> 'id='.$appid
@@ -967,7 +968,7 @@
 					$aptid = intval($tmp_app['topic_id']);
 				}
 
-				array_push($forum_page['crumbs'], array($lang_app_post['Topics'], forum_link($post_app_url['Section'])));
+				array_push($forum_page['crumbs'], array($lang_app_post['Unp posts'], forum_link($post_app_url['Section'])));
 			}
 
 			extension_action();
@@ -1003,7 +1004,7 @@
 			$forum_page['crumbs'] = array(
 					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 					array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-					array($lang_app_post['Unp posts'], forum_link($post_app_url['Topics section']))
+					array($lang_app_post['Unp users'], forum_link($post_app_url['Users section']))
 			);
 
 
