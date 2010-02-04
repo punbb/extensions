@@ -950,6 +950,7 @@
 			$forum_page['crumbs'] = array(
 				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 				array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
+                                array($lang_app_post['Title'], forum_link($post_app_url['Section'])),
 				array($lang_app_post['Unp topics'], forum_link($post_app_url['Section']))
 			);
 
@@ -968,7 +969,13 @@
 					$aptid = intval($tmp_app['topic_id']);
 				}
 
-				array_push($forum_page['crumbs'], array($lang_app_post['Unp posts'], forum_link($post_app_url['Section'])));
+				$forum_page['crumbs'] = array(
+				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+				array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
+                                array($lang_app_post['Title'], forum_link($post_app_url['Section'])),
+				array($lang_app_post['Unp posts'], forum_link($post_app_url['Posts section']))
+                                );
+                                //array_push($forum_page['crumbs'], array($lang_app_post['Unp posts'], forum_link($post_app_url['Section'])));
 			}
 
 			extension_action();
@@ -1004,7 +1011,7 @@
 			$forum_page['crumbs'] = array(
 					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 					array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-					array($lang_app_post['Unp users'], forum_link($post_app_url['Users section']))
+                                        array($lang_app_post['Title users'], forum_link($post_app_url['Users section']))
 			);
 
 
