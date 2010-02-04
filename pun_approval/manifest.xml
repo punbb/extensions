@@ -28,7 +28,7 @@
 <extension engine="1.0">
 	<id>pun_approval</id>
 	<title>Post approval</title>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<description>Allows to control all new posts and approve them</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
@@ -363,11 +363,11 @@
 
 				$result_unapp_posts=$forum_db->query_build($query_unapp_posts) or error(__FILE__,__LINE__);
 
-				$unapproved_posts_shown='false';
+				$unapproved_posts_shown=FALSE;
 				if ($forum_db->num_rows($result_unapp_posts)&& ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1'))
 				{
 					$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Section']).'">'.$lang_app_post['show app posts'].' <strong>('.$forum_db->num_rows($result_unapp_posts).') </strong></a></span>';
-					$unapproved_posts_shown='true';
+					$unapproved_posts_shown= TRUE;
 				}
 
 				$query_unapp_regs=array(
@@ -379,9 +379,9 @@
 
 				if (($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_reg_approval']=='1')&& $forum_config['o_users_check'] && $forum_db->num_rows($result_unapp_regs))
 				{
-					if ($unapproved_posts_shown && ($forum_user['g_allow_post_approval']=='1' ||$forum_user['g_id'] == FORUM_ADMIN))
+					if ($unapproved_posts_shown && ($forum_user['g_allow_post_approval']=='1' || $forum_user['g_id'] == FORUM_ADMIN))
 						$visit_links[] = '<span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
-					else if(!$unapproved_posts_shown || $forum_user['g_allow_post_approval']!='1'  || $forum_user['g_id']!= FORUM_ADMIN)
+					else if(!$unapproved_posts_shown|| $forum_user['g_allow_post_approval']!='1'  || $forum_user['g_id']!= FORUM_ADMIN)
 						$visit_links[] = '</p></div><div class="gen-content" id="brd-approval"><p class="options"><span id="visit-unapproved"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($post_app_url['Users section']).'">'.$lang_app_post['Show unappr regs'].' <strong>('.$forum_db->num_rows($result_unapp_regs).') </strong></a></span>';
 				}
 				$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
@@ -958,11 +958,11 @@
 			{
 				if ($appid)
 				{
-                                        $query_app = array(
+					$query_app = array(
 						'SELECT'	=> 'topic_id',
 						'FROM'		=> 'post_approval_posts',
 						'WHERE'		=> 'id='.$appid
-						);
+					);
 
 					$res_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 					$tmp_app = $forum_db->fetch_assoc($res_app);
@@ -970,12 +970,11 @@
 				}
 
 				$forum_page['crumbs'] = array(
-				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
-				array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-                                array($lang_app_post['Title'], forum_link($post_app_url['Section'])),
-				array($lang_app_post['Unp posts'], forum_link($post_app_url['Posts section']))
-                                );
-                                //array_push($forum_page['crumbs'], array($lang_app_post['Unp posts'], forum_link($post_app_url['Section'])));
+					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+					array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
+					array($lang_app_post['Title'], forum_link($post_app_url['Section'])),
+					array($lang_app_post['Unp posts'], forum_link($post_app_url['Posts section']))
+				);
 			}
 
 			extension_action();
@@ -1011,7 +1010,7 @@
 			$forum_page['crumbs'] = array(
 					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 					array($lang_admin_common['Forum administration'], forum_link($forum_url['admin_index'])),
-                                        array($lang_app_post['Title users'], forum_link($post_app_url['Users section']))
+					array($lang_app_post['Title users'], forum_link($post_app_url['Users section']))
 			);
 
 
