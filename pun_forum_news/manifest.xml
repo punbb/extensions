@@ -29,6 +29,10 @@ if (!$forum_db->table_exists('pun_forum_news'))
 				'datatype'		=> 'INT(10) UNSIGNED',
 				'allow_null'	=> false
 			),
+			'forum_id'	=>	array(
+				'datatype'		=> 'INT(10) UNSIGNED',
+				'allow_null'	=> false
+			),
 			'poster'	=>	array(
 				'datatype'		=> 'VARCHAR(200)',
 				'allow_null'	=> false
@@ -80,7 +84,7 @@ $query['VALUES'] .= ', '.$pun_forum_news_add_news;
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
 $query['SET'] .= ', g_add_forum_news = '.$pun_forum_news_add_news;
 		]]></hook>
-		<hook id="agr_add_edit_group_pre_header_load, po_pre_header_load, ed_pre_header_load, vt_pre_header_load"><![CDATA[
+		<hook id="co_common"><![CDATA[
 if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 else
@@ -118,9 +122,9 @@ $query['VALUES'] .= ', '.$post_info['forum_news'];
 if ($post_info['forum_news'])
 {
 	$pun_forum_news_query = array(
-		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted',
+		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
 		'INTO'		=>	'pun_forum_news',
-		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['subject']."\n\n".$post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted']
+		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['subject']."\n\n".$post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['forum_id']
 	);
 	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
 }
@@ -129,9 +133,9 @@ if ($post_info['forum_news'])
 if ($post_info['forum_news'])
 {
 	$pun_forum_news_query = array(
-		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted',
+		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
 		'INTO'		=>	'pun_forum_news',
-		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted']
+		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['forum_id']
 	);
 	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
 }
@@ -168,9 +172,9 @@ else
 	if ($pun_forum_news)
 	{
 		$pun_forum_news_query = array(
-			'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted',
+			'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
 			'INTO'		=>	'pun_forum_news',
-			'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape(($can_edit_subject ? $subject."\n\n" : '').$message).'\', '.$hide_smilies.', '.$cur_post['posted']
+			'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape(($can_edit_subject ? $subject."\n\n" : '').$message).'\', '.$hide_smilies.', '.$cur_post['posted'].', '.$cur_post['fid']
 		);
 		$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
 	}
@@ -192,6 +196,36 @@ $forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class=
 		</div>
 	</fieldset>
 <?php
+
+		]]></hook>
+		<hook id="re_rewrite_rules"><![CDATA[
+$forum_rewrite_rules['/^news(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
+		]]></hook>
+		<hook id="co_modify_url_scheme"><![CDATA[
+if ($forum_config['o_sef'] == 'Default')
+{
+	$forum_url['pun_forum_news'] = 'news.php';
+}
+else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
+{
+	$forum_url['pun_forum_news'] = 'news.html';
+}
+else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
+{
+	$forum_url['pun_forum_news'] = 'news/';
+}
+		]]></hook>
+		<hook id="fn_generate_navlinks_end"><![CDATA[
+global $lang_pun_forum_news;
+
+$tmp_links = array();
+foreach ($links as $link_index => $link_content)
+{
+	$tmp_links[$link_index] = $link_content;
+	if ($link_index == 'index')
+		$tmp_links['pun_forum_news'] = '<li id="forumnews"'.((FORUM_PAGE == 'news') ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_forum_news']).'">'.$lang_pun_forum_news['Forum news'].'</a></li>';
+}
+$links = $tmp_links;
 
 		]]></hook>
 	</hooks>

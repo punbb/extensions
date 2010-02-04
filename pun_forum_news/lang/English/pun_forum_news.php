@@ -16,6 +16,8 @@ $lang_pun_forum_news = array(
 	'Permission legend'		=> 	'Forum news',
 	'Permission text'		=>	'Allow users to add forum news',
 	'Post mark'				=>	'Mark as news',
+	'Forum news'			=>	'News',
+	'No news'				=>	'No news founded.'
 );
 
 ?>
