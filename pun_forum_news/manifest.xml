@@ -106,20 +106,27 @@ else
 
 		]]></hook>
 		<hook id="po_end_validation, ed_end_validation"><![CDATA[
-$pun_forum_news = isset($_POST['pun_forum_news']) ? 1 : 0;
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+	$pun_forum_news = isset($_POST['pun_forum_news']) ? 1 : 0;
 		]]></hook>
 		<hook id="po_pre_add_post, po_pre_add_topic"><![CDATA[
-$post_info['forum_news'] = $pun_forum_news;
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+	$post_info['forum_news'] = $pun_forum_news;
 		]]></hook>
 		<hook id="po_pre_optional_fieldset"><![CDATA[
-$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.(isset($_POST['pun_forum_news']) ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+	$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.(isset($_POST['pun_forum_news']) ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
 		]]></hook>
 		<hook id="fn_add_topic_qr_add_topic_post, fn_add_post_qr_add_post"><![CDATA[
-$query['INSERT'] .= ', forum_news';
-$query['VALUES'] .= ', '.$post_info['forum_news'];
+global $forum_user;
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+{
+	$query['INSERT'] .= ', forum_news';
+	$query['VALUES'] .= ', '.$post_info['forum_news'];
+}
 		]]></hook>
 		<hook id="fn_add_topic_end"><![CDATA[
-if ($post_info['forum_news'])
+if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $post_info['forum_news'])
 {
 	$pun_forum_news_query = array(
 		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
@@ -130,7 +137,7 @@ if ($post_info['forum_news'])
 }
 		]]></hook>
 		<hook id="fn_add_post_end"><![CDATA[
-if ($post_info['forum_news'])
+if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $post_info['forum_news'])
 {
 	$pun_forum_news_query = array(
 		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
@@ -141,62 +148,68 @@ if ($post_info['forum_news'])
 }
 		]]></hook>
 		<hook id="ed_qr_get_post_info"><![CDATA[
-$query['SELECT'] .= ', p.forum_news';
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+	$query['SELECT'] .= ', p.forum_news';
 		]]></hook>
 		<hook id="ed_qr_update_post"><![CDATA[
-if ($pun_forum_news != $cur_post['forum_news'])
+if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $pun_forum_news != $cur_post['forum_news'])
 	$query['SET'] .= ', forum_news = '.$pun_forum_news;
 		]]></hook>
 		<hook id="ed_pre_redirect"><![CDATA[
-if ($cur_post['forum_news'])
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
 {
-	if ($pun_forum_news)
+	if ($cur_post['forum_news'])
 	{
-		$pun_forum_news_query = array(
-			'UPDATE'	=>	'pun_forum_news',
-			'SET'		=>	'message=\''.$forum_db->escape($message).'\', hide_smilies=\''.$hide_smilies.'\'',
-			'WHERE'		=>	'post_id = '.$id
-		);
+		if ($pun_forum_news)
+		{
+			$pun_forum_news_query = array(
+				'UPDATE'	=>	'pun_forum_news',
+				'SET'		=>	'message=\''.$forum_db->escape($message).'\', hide_smilies=\''.$hide_smilies.'\'',
+				'WHERE'		=>	'post_id = '.$id
+			);
+		}
+		else
+		{
+			$pun_forum_news_query = array(
+				'DELETE'	=>	'pun_forum_news',
+				'WHERE'		=>	'post_id = '.$id
+			);
+		}
+		$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
 	}
 	else
 	{
-		$pun_forum_news_query = array(
-			'DELETE'	=>	'pun_forum_news',
-			'WHERE'		=>	'post_id = '.$id
-		);
-	}
-	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-}
-else
-{
-	if ($pun_forum_news)
-	{
-		$pun_forum_news_query = array(
-			'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
-			'INTO'		=>	'pun_forum_news',
-			'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape(($can_edit_subject ? $subject."\n\n" : '').$message).'\', '.$hide_smilies.', '.$cur_post['posted'].', '.$cur_post['fid']
-		);
-		$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+		if ($pun_forum_news)
+		{
+			$pun_forum_news_query = array(
+				'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
+				'INTO'		=>	'pun_forum_news',
+				'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape(($can_edit_subject ? $subject."\n\n" : '').$message).'\', '.$hide_smilies.', '.$cur_post['posted'].', '.$cur_post['fid']
+			);
+			$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+		}
 	}
 }
 		]]></hook>
 		<hook id="ed_pre_checkbox_display"><![CDATA[
-if (isset($_POST['form_sent']))
-	$pun_forum_news_option = isset($_POST['pun_forum_news']) ? 1 : 0;
-else
-	$pun_forum_news_option = $cur_post['forum_news'];
-$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.($pun_forum_news_option ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+{
+	if (isset($_POST['form_sent']))
+		$pun_forum_news_option = isset($_POST['pun_forum_news']) ? 1 : 0;
+	else
+		$pun_forum_news_option = $cur_post['forum_news'];
+	$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.($pun_forum_news_option ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+}
 		]]></hook>
 		<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
-
-?>
+if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']): ?>
 	<fieldset class="mf-set set2">
 		<div class="mf-box checkbox">
 			<div class="mf-item"><span class="fld-input"><input type="checkbox" value="1" name="pun_forum_news" id="fld3"></span> <label for="fld3"><?php echo $lang_pun_forum_news['Post mark']; ?></label></div>
 		</div>
 	</fieldset>
 <?php
-
+endif;
 		]]></hook>
 		<hook id="re_rewrite_rules"><![CDATA[
 $forum_rewrite_rules['/^news(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
