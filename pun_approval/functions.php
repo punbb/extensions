@@ -329,7 +329,7 @@ function show_unapproved_users()
 function show_unapproved_posts()
 {
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
-		$base_url, $forum_page, $cur_forum, $ext_info;
+		$base_url, $forum_page, $cur_forum, $ext_info, $smilies;
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
 	$del = isset($_GET['del']) ? intval($_GET['del']) : 0;
@@ -345,6 +345,8 @@ function show_unapproved_posts()
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/common.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/misc.php';
 	require $ext_info['path'].'/post_app_url.php';
+        if (!defined('FORUM_PARSER_LOADED'))
+            require FORUM_ROOT.'include/parser.php';
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
@@ -839,7 +841,7 @@ function show_unapproved_posts()
 								$forum_page['item_subject'] = forum_htmlencode($forum_page['item_subject']);
 
 								// Perform the main parsing of the message (BBCode, smilies, censor words etc)
-								$forum_page['message']['message'] = $cur_post['message'];
+								$forum_page['message']['message'] = parse_message($cur_post['message'], $cur_post['hide_smilies']);
 
 								if ($cur_post['edited'] != '')
 										$forum_page['message']['edited'] = '<p class="lastedit"><em>'.sprintf($lang_topic['Last edited'], forum_htmlencode($cur_post['edited_by']), format_time($cur_post['edited'])).'</em></p>';
@@ -1124,10 +1126,10 @@ function approve_user()
 		$mail_message = str_replace('<activation_url>', str_replace('&amp;', '&', forum_link($forum_url['change_password_key'], array($new_uid, $activate_key))), $mail_message);
 		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 		forum_mail($row['email'], $mail_subject, $mail_message);
-        }
-        else
-        {
-                $mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/reg_approved.tpl'));
+	}
+	else
+	{
+		$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/reg_approved.tpl'));
 
 		// The first row contains the subject
 		$first_crlf = strpos($mail_tpl, "\n");
@@ -1139,16 +1141,16 @@ function approve_user()
 		$mail_message = str_replace('<username>', $row['username'], $mail_message);
 		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 		forum_mail($row['email'], $mail_subject, $mail_message);
-        }
+	}
 
-    	$query = array(
-	'DELETE'	=> 'post_approval_users',
-	'WHERE'		=> 'id='.$uid
+	$query = array(
+		'DELETE'	=> 'post_approval_users',
+		'WHERE'		=> 'id='.$uid
 	);
 
 
 
-        $forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 function approve_post()
 {
@@ -1431,6 +1433,6 @@ function approve_post()
 			redirect(forum_link($post_app_url['Permalink topic'], $post_info['topic_id']), $lang_app_post['approve succesfull']);
 	}
 
-    redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['approve succesfull']);
+	redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['approve succesfull']);
 }
 
