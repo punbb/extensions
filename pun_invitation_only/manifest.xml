@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+***********************************************************************
+
+	Copyright (C) 2008  PunBB
+
+	PunBB is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published
+	by the Free Software Foundation; either version 2 of the License,
+	or (at your option) any later version.
+
+	PunBB is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+	MA  02111-1307  USA
+
+***********************************************************************
+-->
+
+<extension engine="1.0">
+        <id>pun_invitation_only</id>
+	<title>Invitation of new users</title>
+	<version>1.0.0</version>
+	<description>Allows to invite new users to register on a forum </description>
+	<author>PunBB Development Team</author>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
+
+        <install><![CDATA[
+
+            if(!$forum_db->table_exists('pun_invitations_only'))
+            {
+                $schema = array(
+                    'FIELDS'=> array(
+
+                        'inviter_id'=>array(
+                            'datatype' =>  'INT(10) UNSIGNED',
+                            'allow_null' => false
+                         ),
+
+                        'invitee_code'=>array(
+                            'datatype'		=> 'VARCHAR(32)',
+                            'allow_null'	=> false
+                        ),
+
+                        'invitee_email' => array(
+                            'datatype'		=> 'VARCHAR(80)',
+                            'allow_null'	=> false,
+                            'default'		=> '\'\''
+                        ),
+
+                        'created' => array(
+                            'datatype'		=> 'INT(10) UNSIGNED',
+                            'allow_null'	=> false,
+                            'default'		=> '0'
+                        ),
+
+                        'used' => array(
+                            'datatype'		=> 'INT(10) UNSIGNED',
+                            'allow_null'	=> false,
+                            'default'		=> '0'
+                        ),
+                   ),
+                   'INDEXES'		=> array(
+			'id_email_idx'	=> array('inviter_id','invitee_email'),
+			'code_email_idx'	=> array('invitee_code', 'invitee_email')
+                   )
+               );
+
+               $forum_db->create_table('pun_invitations_only', $schema);
+            }
+
+            if (!$forum_db->field_exists('groups', 'g_allow_invite'))
+		$forum_db->add_field('groups', 'g_allow_invite', 'INT(3)', false, '0');
+
+
+            $query_inv_sys = array(
+			'SELECT'	=>	'1',
+			'FROM'		=>	'config',
+			'WHERE'		=>	'conf_name="o_invite_system"'
+            );
+            $result_inv_sys = $forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
+
+            if (!$forum_db->num_rows($result_inv_sys))
+            {
+		$query_inv_sys = array(
+			'INSERT'	=> 'conf_name, conf_value',
+			'INTO'		=> 'config',
+			'VALUES'	=> '"o_invite_system", "0"'
+		);
+
+		$forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
+            }
+
+
+        ]]></install>
+
+        <uninstall><![CDATA[
+            $forum_db->drop_table('pun_invitations_only');
+            $forum_db->drop_field('groups', 'g_allow_invite');
+
+            $query_inv_sys = array(
+		'DELETE'	=> 'config',
+		'WHERE'		=> 'conf_name="o_invite_system"'
+            );
+            $forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
+        ]]></uninstall>
+
+        <hooks>
+
+
+        </hooks>
+</extension>
