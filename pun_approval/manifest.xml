@@ -333,6 +333,8 @@
 		$forum_db->drop_table('post_approval_users');
 		$forum_db->drop_field('forums', 'post_approval');
 		$forum_db->drop_field('groups', 'g_without_approval');
+		$forum_db->drop_field('groups', 'g_allow_post_approval');
+		$forum_db->drop_field('groups', 'g_allow_reg_approval');
 		$forum_db->drop_field('posts', 'app_timestamp');
 		$forum_db->drop_field('posts', 'app_username');
 
@@ -613,7 +615,6 @@
 		]]></hook>
 	<!--Adds a warning to the "Post New Topic" page which says that warns a user that a topic beig created should be moderated.-->
 	<hook id="po_pre_optional_fieldset"><![CDATA[
-        
 			if ($forum_user['g_id']!=FORUM_ADMIN && $cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0)
 			{
 
