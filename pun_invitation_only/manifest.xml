@@ -26,7 +26,7 @@
 -->
 
 <extension engine="1.0">
-        <id>pun_invitation_only</id>
+	<id>pun_invitation_only</id>
 	<title>Invitation of new users</title>
 	<version>1.0.0</version>
 	<description>Allows to invite new users to register on a forum </description>
@@ -34,63 +34,63 @@
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
 
-        <install><![CDATA[
+		<install><![CDATA[
 
-            if(!$forum_db->table_exists('pun_invitations_only'))
-            {
-                $schema = array(
-                    'FIELDS'=> array(
+			if(!$forum_db->table_exists('pun_invitations_only'))
+			{
+				$schema = array(
+					'FIELDS'=> array(
 
-                        'inviter_id'=>array(
-                            'datatype' =>  'INT(10) UNSIGNED',
-                            'allow_null' => false
-                         ),
+						'inviter_id'=>array(
+							'datatype' =>  'INT(10) UNSIGNED',
+							'allow_null' => false
+						),
 
-                        'invitee_code'=>array(
-                            'datatype'		=> 'VARCHAR(32)',
-                            'allow_null'	=> false
-                        ),
+						'invitee_code'=>array(
+							'datatype'		=> 'VARCHAR(32)',
+							'allow_null'	=> false
+						),
 
-                        'invitee_email' => array(
-                            'datatype'		=> 'VARCHAR(80)',
-                            'allow_null'	=> false,
-                            'default'		=> '\'\''
-                        ),
+						'invitee_email' => array(
+							'datatype'		=> 'VARCHAR(80)',
+							'allow_null'	=> false,
+							'default'		=> '\'\''
+						),
 
-                        'created' => array(
-                            'datatype'		=> 'INT(10) UNSIGNED',
-                            'allow_null'	=> false,
-                            'default'		=> '0'
-                        ),
+						'created' => array(
+							'datatype'		=> 'INT(10) UNSIGNED',
+							'allow_null'	=> false,
+							'default'		=> '0'
+						),
 
-                        'used' => array(
-                            'datatype'		=> 'INT(10) UNSIGNED',
-                            'allow_null'	=> false,
-                            'default'		=> '0'
-                        ),
-                   ),
-                   'INDEXES'		=> array(
-			'id_email_idx'	=> array('inviter_id','invitee_email'),
-			'code_email_idx'	=> array('invitee_code', 'invitee_email')
-                   )
-               );
+						'used' => array(
+							'datatype'		=> 'INT(10) UNSIGNED',
+							'allow_null'	=> false,
+							'default'		=> '0'
+						),
+					),
+					'INDEXES'		=> array(
+						'id_email_idx'	=> array('inviter_id','invitee_email'),
+						'code_email_idx'	=> array('invitee_code', 'invitee_email')
+					)
+				);
 
-               $forum_db->create_table('pun_invitations_only', $schema);
-            }
+				$forum_db->create_table('pun_invitations_only', $schema);
+			}
 
-            if (!$forum_db->field_exists('groups', 'g_allow_invite'))
+			if (!$forum_db->field_exists('groups', 'g_allow_invite'))
 		$forum_db->add_field('groups', 'g_allow_invite', 'INT(3)', false, '0');
 
 
-            $query_inv_sys = array(
+			$query_inv_sys = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
 			'WHERE'		=>	'conf_name="o_invite_system"'
-            );
-            $result_inv_sys = $forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
+			);
+			$result_inv_sys = $forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
 
-            if (!$forum_db->num_rows($result_inv_sys))
-            {
+			if (!$forum_db->num_rows($result_inv_sys))
+			{
 		$query_inv_sys = array(
 			'INSERT'	=> 'conf_name, conf_value',
 			'INTO'		=> 'config',
@@ -98,24 +98,58 @@
 		);
 
 		$forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
-            }
+			}
 
 
-        ]]></install>
+		]]></install>
 
-        <uninstall><![CDATA[
-            $forum_db->drop_table('pun_invitations_only');
-            $forum_db->drop_field('groups', 'g_allow_invite');
+		<uninstall><![CDATA[
+			$forum_db->drop_table('pun_invitations_only');
+			$forum_db->drop_field('groups', 'g_allow_invite');
 
-            $query_inv_sys = array(
+			$query_inv_sys = array(
 		'DELETE'	=> 'config',
 		'WHERE'		=> 'conf_name="o_invite_system"'
-            );
-            $forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
-        ]]></uninstall>
+			);
+			$forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
+		]]></uninstall>
 
-        <hooks>
+		<hooks>
+			<!-- Hook for administration/settings/features page-->
+	<hook id="aop_features_pre_header_load"><![CDATA[
+
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		]]></hook>
 
 
-        </hooks>
+
+	<!--Adds checkbox to administration/settings/features page-->
+	<hook id="aop_features_avatars_fieldset_end"><![CDATA[
+										?>
+						<div class="content-head">
+							<h2 class="hn"><span><?php echo $lang_inv_sys['Title'] ?></span></h2>
+			</div>
+			<fieldset class="frm-group group1">
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[invite_system]" value="1"<?php if ($forum_config['o_invite_system'] == '1') echo ' checked="checked"' ?> /></span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_inv_sys['Enable inv title'] ?></span> <?php echo $lang_inv_sys['Enable inv'] ?></label>
+					</div>
+				</div>
+			</fieldset>
+						<?php
+				]]></hook>
+
+
+
+
+	<hook id="aop_features_validation"><![CDATA[
+			if (!isset($form['invite_system']) || $form['invite_system'] != '1') $form['invite_system'] = '0';
+	]]></hook>
+
+
+</hooks>
 </extension>
