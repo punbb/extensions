@@ -114,15 +114,27 @@
 			$forum_db->query_build($query_inv_sys) or error(__FILE__, __LINE__);
 		]]></uninstall>
 
-		<hooks>
-			<!-- Hook for administration/settings/features page-->
-	<hook id="aop_features_pre_header_load"><![CDATA[
+	<hooks>
 
+
+	<!--Adds information to the forum footer-->
+	<hook id="ft_about_end" priority="10"><![CDATA[
+
+			if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+			{
+					define('PUN_EXTENSIONS_USED', 1);
+					echo '<p id="extensions-used">Currently used extensions: '.implode(', ', $pun_extensions_used).'. Copyright &copy; 2009 <a href="http://punbb.informer.com/">PunBB</a></p>';
+			}
+	]]></hook>
+
+
+	<!-- Hook for administration/settings/features page. Makes language definitions of the extension available on yhe page.-->
+	<hook id="aop_features_pre_header_load"><![CDATA[
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				include_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-		]]></hook>
+	]]></hook>
 
 
 
@@ -145,9 +157,37 @@
 
 
 
-
+	<!--In case checbox is not checked, this hook adds zero value to the vriable responsible for that checkbox.-->
 	<hook id="aop_features_validation"><![CDATA[
 			if (!isset($form['invite_system']) || $form['invite_system'] != '1') $form['invite_system'] = '0';
+	]]></hook>
+
+
+	<!-- Adds checkboxes to administration/Groups in order to allow certain groups snred invitations t their friends-->
+	<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
+
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			?>
+				<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<legend><span><?php echo $lang_inv_sys['Title'] ?></span></legend>
+					<div class="mf-box">
+						<div class="mf-item">
+							<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="allow_invite" value="1"<?php if ($group['g_allow_invite'] == '1') echo ' checked="checked"' ?> /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_inv_sys['Allow invite others'] ?></label>
+						</div>
+					</div>
+				</fieldset>
+			<?php
+		]]></hook>
+
+	<!--Adds values of the checkboxes on administration/groups page to the query, executed when the page is being submitted-->
+	<hook id="agr_edit_end_qr_update_group"><![CDATA[
+			$allow_invite = isset($_POST['allow_invite']) ? intval($_POST['allow_invite']) : '0';
+			$query['SET'] .= ', g_allow_invite='.$allow_invite;
+
 	]]></hook>
 
 
