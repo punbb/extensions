@@ -264,15 +264,51 @@ if (isset($_POST['move_posts_to']))
 
 // Move the posts
 	$query = array(
-			'UPDATE'	=> 'posts',
-			'SET'		=> 'topic_id='.$move_to_topic,
-			'WHERE'		=> 'id IN('.implode(',', $posts).')'
-	);
+					'UPDATE'	=> 'posts',
+					'SET'		=> 'topic_id='.$move_to_topic,
+					'WHERE'		=> 'id IN('.implode(',', $posts).')'
+			);
 
 	if (isset($_POST['change_time']))
 			$query['SET'] .= ', posted='.time();
 
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	$query = array(
+					'SELECT'	=> '*',
+					'FROM'		=> 'posts',
+					'WHERE'		=> 'id IN('.implode(',', $posts).')',
+					'ORDER BY'	=> 'posted'
+			);
+
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	while ($cur_sel_forum = $forum_db->fetch_assoc($result))
+	{
+		$values = array();
+
+		foreach ($cur_sel_forum as $k =>  $v)
+		{
+			if (!(empty($v)||$k=='id'))
+				$values[$k]='\''.$forum_db->escape($v).'\'';
+		}
+
+		$query = array(
+						'INSERT'	=>	implode(',', array_keys($values)),
+						'INTO'		=>	'posts',
+						'VALUES'	=>	implode(',', $values)
+				);
+
+		$forum_db->query_build($query);// or error(__FILE__, __LINE__);
+	}
+
+	$query = array(
+				'DELETE'	=> 'posts',
+				'WHERE'		=> 'id IN('.implode(',', $posts).')'
+			);
+
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
+
 	sync_topic($tid);
 	sync_topic($move_to_topic);
 	sync_forum($fid);
