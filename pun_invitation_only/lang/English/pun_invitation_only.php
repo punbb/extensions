@@ -9,7 +9,8 @@ $lang_inv_sys= array(
 	'Enable inv'=> 'Allow users to send emails to their friends with invitation to register on the forum',
 	//Administration->Users->Groups->Edit group
 	'Allow invite others' =>'Allow to invite other members',
-
+	//Header hyper link
+	'Send new invitation' =>'Invitation',
 );
 
 ?>

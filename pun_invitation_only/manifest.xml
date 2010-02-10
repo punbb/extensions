@@ -117,6 +117,25 @@
 	<hooks>
 
 
+	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
+	<hook id="hd_visit_elements"><![CDATA[
+		if ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allowinvite']=='1')
+		{
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+			require $ext_info['path'].'/inv_sys_url.php';
+
+			$visit_links[] = '<span id="invite"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($inv_sys_url['Section']).'">'.$lang_inv_sys['Send new invitation'].' </a></span>';
+			$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
+		}
+	]]></hook>
+
+
+
+
 	<!--Adds information to the forum footer-->
 	<hook id="ft_about_end" priority="10"><![CDATA[
 
@@ -189,6 +208,13 @@
 			$query['SET'] .= ', g_allow_invite='.$allow_invite;
 
 	]]></hook>
+
+
+
+
+        <hook id="aex_new_action"><![CDATA[
+
+        ]]>
 
 
 </hooks>
