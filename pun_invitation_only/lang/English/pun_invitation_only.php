@@ -11,6 +11,8 @@ $lang_inv_sys= array(
 	'Allow invite others' =>'Allow to invite other members',
 	//Header hyper link
 	'Send new invitation' =>'Invitation',
+	'Invite'=>'Invite new user',
+	'Email' => 'New user\'s emil',
 );
 
 ?>

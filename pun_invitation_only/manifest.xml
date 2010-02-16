@@ -117,9 +117,24 @@
 	<hooks>
 
 
+        <hook id="co_common"><![CDATA[
+
+		//$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost';
+
+		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+		else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		require $ext_info['path'].'/functions.php';
+
+		$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+
+	]]></hook>
+
+
 	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
 	<hook id="hd_visit_elements"><![CDATA[
-		if ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allowinvite']=='1')
+		if ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1')
 		{
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -210,11 +225,45 @@
 	]]></hook>
 
 
+	<hook id="re_rewrite_rules"><![CDATA[
+		// $forum_rewrite_rules['/^invite(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
+	]]></hook>
 
+	<hook id="aex_new_action" ><![CDATA[
+		echo 'INSIDE HOOK';
+		require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';
+		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1')
+		{
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+				else
+			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			require $ext_info['path'].'/inv_sys_url.php';
+			$section = isset($_GET['section']) ? $_GET['section'] : null;
+			echo $section;
+			if($section =='invitation')
+			{
+				// Setup breadcrumbs
+				$forum_page['crumbs'] = array(
+				array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+				$lang_inv_sys['Invite']
+				);
+				send_invitation();
+				define('FORUM_PAGE_SECTION', 'invitations');
+				define('FORUM_PAGE', 'invite_new_user');
+				require FORUM_ROOT.'header.php';
 
-        <hook id="aex_new_action"><![CDATA[
+				ob_start();
+				show_invitation_form();
+				$tpl_app_post = trim(ob_get_contents());
+				$tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
 
-        ]]>
+				ob_end_clean();
+				require FORUM_ROOT.'footer.php';
+			}	
+
+		}
+	]]>
 
 
 </hooks>
