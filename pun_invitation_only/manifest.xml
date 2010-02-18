@@ -232,8 +232,32 @@
 
 
         <hook id="rg_start" ><![CDATA[
+            //if invitation system is on
             if($forum_config['o_invite_system'])
-                message($lang_inv_sys['Registration forbidden']);
+            {
+                $invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
+                //if invitee code is empty we forbid the registration
+                if($invitee_code==null)
+                    message($lang_inv_sys['Registration forbidden']);
+                else
+                {
+                    //This query checks if the invitee code in the hyperlink can be found in our database
+                    $query=array(
+                        'SELECT'=>'invitee_code',
+                        'FROM'=>'pun_invitations_only',
+                        'WHERE' =>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
+                    );
+                    $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+                    //If invitee_code in the hyperlink is not in our daabase, we forbid regstration
+                    if (!$forum_db->num_rows($result))
+                        message($lang_inv_sys['Registration forbidden']);
+                }
+
+            }
+
+
+
 
         ]]></hook>
 

@@ -35,7 +35,7 @@ function send_invitation()
         $mail_message = str_replace('<board_title>', $forum_config['o_board_title'], $mail_message);
 	$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
 	$mail_message = str_replace('<username>', $forum_user['username'], $mail_message);
-	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], substr($invitee_code, 1, -1)), $mail_message);
+	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], $invitee_code), $mail_message);
 	$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 
         //Add information about this invitation to the table
@@ -47,7 +47,7 @@ function send_invitation()
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
        //Sen mail
-       forum_mail($email, $mail_subject, $mail_message);
+        forum_mail($email, $mail_subject, $mail_message);
 
         redirect(forum_link($forum_url['index']), $lang_inv_sys['Succesfully sent']);
     }
