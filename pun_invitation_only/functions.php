@@ -9,11 +9,25 @@ function send_invitation()
     {
       
         $email = forum_trim($_POST['req_email']);
-        $activate_key=random_key(8, true);
-    // Load the "welcome" template
+
+        //Check if we've already sent invitation letter to this email
+        $query=array(
+            'SELECT'=>'invitee_email',
+            'FROM'=>'pun_invitations_only',
+            'WHERE' =>'invitee_email=\''.$forum_db->escape($email).'\''
+        );
+        $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+        if ($forum_db->num_rows($result))
+            message($lang_inv_sys['Duplicate email']);
+
+
+        //Compose invitation email
+        $invitee_code=random_key(8, true);
+        $created= time();
+        // Load the "invitation" template
 	$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/invitation.tpl'));
 
-	// The first row contains the subject
+
 	$first_crlf = strpos($mail_tpl, "\n");
 	$mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
 	$mail_message = forum_trim(substr($mail_tpl, $first_crlf));
@@ -21,12 +35,23 @@ function send_invitation()
         $mail_message = str_replace('<board_title>', $forum_config['o_board_title'], $mail_message);
 	$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
 	$mail_message = str_replace('<username>', $forum_user['username'], $mail_message);
-	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], substr($activate_key, 1, -1)), $mail_message);
+	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], substr($invitee_code, 1, -1)), $mail_message);
 	$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 
+        //Add information about this invitation to the table
+        $query = array(
+		'INSERT'	=> 'inviter_id, invitee_code, invitee_email, created',
+		'INTO'		=> 'pun_invitations_only',
+		'VALUES'	=> '\''.$forum_user['id'].'\',\''.$forum_db->escape($invitee_code).'\',\''.$forum_db->escape($email).'\',\''.$forum_db->escape($created).'\''
+		);
+	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	forum_mail($email, $mail_subject, $mail_message);
+       //Sen mail
+       forum_mail($email, $mail_subject, $mail_message);
+
+        redirect(forum_link($forum_url['index']), $lang_inv_sys['Succesfully sent']);
     }
+    
 
 }
 

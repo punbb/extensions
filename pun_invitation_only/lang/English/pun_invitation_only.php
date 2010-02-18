@@ -13,6 +13,9 @@ $lang_inv_sys= array(
 	'Send new invitation' =>'Invitation',
 	'Invite'=>'Invite new user',
 	'Email' => 'New user\'s emil',
+        'Registration forbidden'=>'Registration is temporary unavailable. You can register on the froum if somebody sends you an invitation letter.',
+        'Duplicate email' =>'Invitation letter has already been sent to this email.',
+        'Succesfully sent'=>'Invitation letter has been sent succesfully',
 );
 
 ?>

@@ -229,6 +229,15 @@
 		// $forum_rewrite_rules['/^invite(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
 	]]></hook>
 
+
+
+        <hook id="rg_start" ><![CDATA[
+            if($forum_config['o_invite_system'])
+                message($lang_inv_sys['Registration forbidden']);
+
+        ]]></hook>
+
+
 	<hook id="aex_new_action" ><![CDATA[
 		echo 'INSIDE HOOK';
 		require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';
