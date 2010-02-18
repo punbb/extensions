@@ -2,12 +2,30 @@
 
 function send_invitation()
 {
-    global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $forum_config, $base_url, $forum_page, $cur_forum;
-
+    global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $base_url, $forum_config, $base_url, $forum_page, $cur_forum, $ext_info,$inv_sys_url;
+    require_once FORUM_ROOT.'include/email.php';
     $invite = isset($_GET['invite']) ? intval($_GET['invite']) : 0;
     if($invite)
     {
+      
+        $email = forum_trim($_POST['req_email']);
+        $activate_key=random_key(8, true);
+    // Load the "welcome" template
+	$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/invitation.tpl'));
 
+	// The first row contains the subject
+	$first_crlf = strpos($mail_tpl, "\n");
+	$mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
+	$mail_message = forum_trim(substr($mail_tpl, $first_crlf));
+	$mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
+        $mail_message = str_replace('<board_title>', $forum_config['o_board_title'], $mail_message);
+	$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
+	$mail_message = str_replace('<username>', $forum_user['username'], $mail_message);
+	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], substr($activate_key, 1, -1)), $mail_message);
+	$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
+
+
+	forum_mail($email, $mail_subject, $mail_message);
     }
 
 }
@@ -37,7 +55,7 @@ function show_invitation_form()
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required longtext">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_inv_sys['Email'] ?>  <em><?php echo $lang_common['Required'] ?></em></span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="req_subject" value="<?php echo(isset($_POST['req_subject']) ? forum_htmlencode($_POST['req_subject']) : '') ?>" size="35" maxlength="80" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="req_email" value="<?php echo(isset($_POST['req_email']) ? forum_htmlencode($_POST['req_email']) : '') ?>" size="35" maxlength="80" /></span>
 					</div>
 				</div>
 			</fieldset>
