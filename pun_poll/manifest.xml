@@ -325,7 +325,7 @@ if ((($forum_user['group_id'] == FORUM_ADMIN && $can_edit_subject) || ($can_edit
 							for ($iter = 0; $iter < count($new_poll_answers); $iter++)
 							{
 								echo '<div class="mf-item"><span class="fld-input">'.($iter + 1).'</span>';
-								echo '<label>'.$new_poll_answers[$iter].'</label>';
+								echo '<label>'.forum_htmlencode($new_poll_answers[$iter]).'</label>';
 								echo '</div>';
 							}
 
@@ -436,7 +436,7 @@ if ($fid && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']
 					for ($iter = 0; $iter < count($poll_answers); $iter++)
 					{
 						echo '<div class="mf-item"><span class="fld-input">'.($iter + 1).'</span>';
-						echo '<label>'.$poll_answers[$iter].'</label>';
+						echo '<label>'.forum_htmlencode($poll_answers[$iter]).'</label>';
 						echo '</div>';
 					}
 
