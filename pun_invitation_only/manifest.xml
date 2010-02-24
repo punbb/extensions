@@ -261,6 +261,16 @@
 
         ]]></hook>
 
+        <hook id="rg_rules_pre_group" ><![CDATA[
+            require $ext_info['path'].'/inv_sys_url.php';
+            $invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
+            $action = forum_link($inv_sys_url['Registration link'], $invitee_code);
+            ?>
+                <div class="hidden">
+                    <input type="hidden" name="invitee_code" value="<?php echo $invitee_code ?>" />
+                </div>
+            <?php
+        ]]></hook>
 
 	<hook id="aex_new_action" ><![CDATA[
 		echo 'INSIDE HOOK';
