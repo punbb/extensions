@@ -15,6 +15,8 @@ $lang_inv_sys= array(
 	'Email' => 'New user\'s emil',
         'Registration forbidden'=>'Registration is temporary unavailable. You can register on the froum if somebody sends you an invitation letter.',
         'Duplicate email' =>'Invitation letter has already been sent to this email.',
+        'Wrong invitee code' => 'The invitee code you are using is out of date or not from the invitation message you recieved',
+        'Email is wrong'=>'The specifyed email address is not the one to which we sent invitation letter' ,
         'Succesfully sent'=>'Invitation letter has been sent succesfully',
 );
 
