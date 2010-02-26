@@ -214,22 +214,26 @@ endif;
 		<hook id="re_rewrite_rules"><![CDATA[
 $forum_rewrite_rules['/^news(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
 $forum_rewrite_rules['/^news(\.php?|\/)?[\/_\-?]?p(age)?[\/_\-=]?([0-9]+)?(.html?|\/)?$/i'] = 'misc.php?action=news&p=$3';
+$forum_rewrite_rules['/^feed[\/_-]?(rss|atom)[\/_-]?news[\/_-]?(\.xml?|\/)?$/i'] = 'extern.php?action=news&type=$1';
 		]]></hook>
 		<hook id="co_modify_url_scheme"><![CDATA[
 if ($forum_config['o_sef'] == 'Default')
 {
 	$forum_url['pun_forum_news'] = 'news.php?';
 	$forum_url['pun_forum_news_page'] = 'p=$1';
+	$forum_url['pun_forum_news_rss'] = 'extern.php?action=news&amp;type=rss';
 }
 else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
 {
 	$forum_url['pun_forum_news'] = 'news.html';
 	$forum_url['pun_forum_news_page'] = 'p$1';
+	$forum_url['pun_forum_news_rss'] = 'feed-rss-news.xml';
 }
 else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
 {
 	$forum_url['pun_forum_news'] = 'news/';
 	$forum_url['pun_forum_news_page'] = 'page/$1/';
+	$forum_url['pun_forum_news_rss'] = 'feed/rss/news/';
 }
 		]]></hook>
 		<hook id="fn_generate_navlinks_end"><![CDATA[
@@ -330,6 +334,7 @@ if ($action == 'news')
 
 	?>
 	<div class="main-head">
+		<p class="options"><span class="feed first-item"><a class="feed" href="<?php echo forum_link($forum_url['pun_forum_news_rss']); ?>"><?php echo $lang_pun_forum_news['RSS news feed']; ?></a></span></p>
 		<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
 	</div>
 	<div class="main-content main-topic">
