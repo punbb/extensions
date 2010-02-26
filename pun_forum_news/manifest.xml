@@ -15,7 +15,7 @@
 	<id>pun_forum_news</id>
 	<title>Forum news</title>
 	<version>1.0.0</version>
-	<description>Allow users to mark topics or posts as "news". News shows at the speical page.</description>
+	<description>Allow users to mark topics or posts as "news". News is shown on a speical page.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
@@ -475,8 +475,18 @@ if ($action == 'news')
 
 		$post_news_id = array_slice($post_news_id, 0, $show);
 		$pun_forum_news_query = array(
-			'SELECT'	=>	'news.*',
+			'SELECT'	=>	'news.*, t.subject',
 			'FROM'		=>	'pun_forum_news AS news',
+			'JOINS'		=> array(
+				array(
+					'INNER JOIN'	=> 'posts AS p',
+					'ON'			=> 'news.post_id = p.id'
+				),
+				array(
+					'INNER JOIN'	=> 'topics AS t',
+					'ON'			=> 'p.topic_id = t.id'
+				)
+			),
 			'WHERE'		=>	'post_id IN ('.implode(',', $post_news_id).')'
 		);
 		$query_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
@@ -510,7 +520,7 @@ if ($action == 'news')
 
 			$item = array(
 				'id'			=>	$post_info['post_id'],
-				'title'			=>	$lang_pun_forum_news['Forum news'],
+				'title'			=>	$lang_common['RSS reply'].$post_info['subject'],
 				'link'			=>	forum_link($forum_url['post'], $post_info['post_id']),
 				'description'	=>	$post_info['message'],
 				'author'		=>	array(
