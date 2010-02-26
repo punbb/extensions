@@ -219,7 +219,7 @@ $forum_rewrite_rules['/^feed[\/_-]?(rss|atom)[\/_-]?news[\/_-]?(\.xml?|\/)?$/i']
 		<hook id="co_modify_url_scheme"><![CDATA[
 if ($forum_config['o_sef'] == 'Default')
 {
-	$forum_url['pun_forum_news'] = 'news.php?';
+	$forum_url['pun_forum_news'] = 'misc.php?action=news';
 	$forum_url['pun_forum_news_page'] = 'p=$1';
 	$forum_url['pun_forum_news_rss'] = 'extern.php?action=news&amp;type=rss';
 }
