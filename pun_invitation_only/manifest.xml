@@ -143,7 +143,7 @@
 
 			require $ext_info['path'].'/inv_sys_url.php';
 
-			$visit_links[] = '<span id="invite"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($inv_sys_url['Section']).'">'.$lang_inv_sys['Send new invitation'].' </a></span>';
+			$visit_links[] = '<span id="invite"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['Section']).'">'.$lang_inv_sys['Send new invitation'].' </a></span>';
 			$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
 		}
 	]]></hook>
@@ -225,11 +225,6 @@
 	]]></hook>
 
 
-	<hook id="re_rewrite_rules"><![CDATA[
-		// $forum_rewrite_rules['/^invite(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
-	]]></hook>
-
-
         <!--Ths hook allows to use invitee code when registration form is submitted-->
         <hook id="rg_register_pre_group"><![CDATA[
             require $ext_info['path'].'/inv_sys_url.php';
@@ -262,7 +257,7 @@
                 {
                     //This query checks if the invitee code in the hyperlink can be found in our database
                     $query=array(
-                        'SELECT'=>'invitee_code',
+                        'SELECT'=>'invitee_code,used',
                         'FROM'=>'pun_invitations_only',
                         'WHERE' =>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
                     );
@@ -271,6 +266,12 @@
                     //If invitee_code in the hyperlink is not in our daabase, we forbid regstration
                     if (!$forum_db->num_rows($result))
                         message($lang_inv_sys['Wrong invitee code']);
+                    else //if invitee code IS in our Data Base, but it has already been used, registration is forbidden too.
+                    {
+                        $result_row=$forum_db->fetch_assoc($result);
+                        if($result_row['used']!='0')
+                            message($lang_inv_sys['Invitee code used']);
+                    }
                 }
 
             }
@@ -317,17 +318,38 @@
             <?php
         ]]></hook>
 
-	<hook id="aex_new_action" ><![CDATA[
+
+        <hook id="re_rewrite_rules"><![CDATA[
+            $forum_rewrite_rules['/^invite(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?section=invitation';
+	]]></hook>
+
+
+        <hook id="co_modify_url_scheme"><![CDATA[
+        echo 'INSIDE HOOK';
+
+        if ($forum_config['o_sef'] == 'Default')
+        {
+            $forum_url['Section'] = 'misc.php?section=invitation';
+            echo '<br/>DEFAULT';
+            echo '<br/>Here:'.$forum_url['Section'];
+        }
+        else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
+            $forum_url['Section'] = 'invite.html';
+        else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
+            $forum_url['Section'] = 'invite/';
+		]]></hook>
+
+
+	<hook id="mi_new_action" ><![CDATA[
 		require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';
 		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1')
-		{
+                {
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 				else
 			require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 			require $ext_info['path'].'/inv_sys_url.php';
 			$section = isset($_GET['section']) ? $_GET['section'] : null;
-			echo $section;
 			if($section =='invitation')
 			{
 				// Setup breadcrumbs
