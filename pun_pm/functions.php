@@ -380,7 +380,7 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 		$errors[] = $lang_pun_pm['Empty body'];
 	elseif (strlen($body) > FORUM_MAX_POSTSIZE_BYTES)
 		$errors[] = sprintf($lang_pun_pm['Too long message'], forum_number_format(strlen($body)), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
-	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_page['is_admmod'])
+	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_user['is_admmod'])
 		$body = utf8_ucwords(utf8_strtolower($body));
 
 	// Validate BBCode syntax
@@ -467,7 +467,7 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 
 	if (strlen($body) > FORUM_MAX_POSTSIZE_BYTES)
 		$errors[] = sprintf($lang_pun_pm['Too long message'], forum_number_format(strlen($body)), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
-	else if ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_page['is_admmod'])
+	else if ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_user['is_admmod'])
 		$body = utf8_ucwords(utf8_strtolower($body));
 
 	// Validate BBCode syntax
@@ -614,7 +614,7 @@ function pun_pm_preview($receiver, $subject, $body, &$errors)
 		$errors[] = $lang_pun_pm['Empty body'];
 	elseif (strlen($body) > FORUM_MAX_POSTSIZE_BYTES)
 		$errors[] = sprintf($lang_pun_pm['Too long message'], forum_number_format(strlen($body)), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
-	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_page['is_admmod'])
+	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_user['is_admmod'])
 		$body = utf8_ucwords(utf8_strtolower($body));
 
 	// Validate BBCode syntax
