@@ -2,29 +2,28 @@
 
 function send_invitation()
 {
-    global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $base_url, $forum_config, $base_url, $forum_page, $cur_forum, $ext_info,$inv_sys_url;
-    require_once FORUM_ROOT.'include/email.php';
-    $invite = isset($_GET['invite']) ? intval($_GET['invite']) : 0;
-    if($invite)
-    {
-      
-        $email = forum_trim($_POST['req_email']);
+	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $base_url, $forum_config, $base_url, $forum_page, $cur_forum, $ext_info,$inv_sys_url;
+	require_once FORUM_ROOT.'include/email.php';
+	$invite = isset($_GET['invite']) ? intval($_GET['invite']) : 0;
+	if($invite)
+	{
+		$email = forum_trim($_POST['req_email']);
 
-        //Check if we've already sent invitation letter to this email
-        $query=array(
-            'SELECT'=>'invitee_email',
-            'FROM'=>'pun_invitations_only',
-            'WHERE' =>'invitee_email=\''.$forum_db->escape($email).'\''
-        );
-        $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-        if ($forum_db->num_rows($result))
-            message($lang_inv_sys['Duplicate email']);
+		//Check if we've already sent invitation letter to this email
+		$query=array(
+			'SELECT'=>'invitee_email',
+			'FROM'=>'pun_invitations_only',
+			'WHERE' =>'invitee_email=\''.$forum_db->escape($email).'\''
+		);
+		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($result))
+			message($lang_inv_sys['Duplicate email']);
 
 
-        //Compose invitation email
-        $invitee_code=random_key(8, true);
-        $created= time();
-        // Load the "invitation" template
+		//Compose invitation email
+		$invitee_code=random_key(8, true);
+		$created= time();
+		// Load the "invitation" template
 	$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/invitation.tpl'));
 
 
@@ -38,41 +37,41 @@ function send_invitation()
 	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], $invitee_code), $mail_message);
 	$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 
-        //Add information about this invitation to the table
-        $query = array(
+		//Add information about this invitation to the table
+		$query = array(
 		'INSERT'	=> 'inviter_id, invitee_code, invitee_email, created',
 		'INTO'		=> 'pun_invitations_only',
 		'VALUES'	=> '\''.$forum_user['id'].'\',\''.$forum_db->escape($invitee_code).'\',\''.$forum_db->escape($email).'\',\''.$forum_db->escape($created).'\''
 		);
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-       //Sen mail
-        forum_mail($email, $mail_subject, $mail_message);
+		//Send mail
+		forum_mail($email, $mail_subject, $mail_message);
 
-        redirect(forum_link($forum_url['index']), $lang_inv_sys['Succesfully sent']);
-    }
-    
+		redirect(forum_link($forum_url['index']), $lang_inv_sys['Succesfully sent']);
+	}
+
 
 }
 
 function show_invitation_form()
 {
-    global $forum_page, $base_url, $inv_sys_url, $lang_common, $lang_inv_sys,$forum_user;
+	global $forum_page, $base_url, $inv_sys_url, $lang_common, $lang_inv_sys,$forum_user;
 
-    $forum_page['form_action'] = $base_url.'/'.$inv_sys_url['Invite'];
-    $forum_page['group_count'] =  $forum_page['item_count'] = $forum_page['fld_count']= 0;
-    $forum_page['main_head'] = 'Invite new user';
-    $forum_page['hidden_fields'] = array(
+	$forum_page['form_action'] = $base_url.'/'.$inv_sys_url['Invite'];
+	$forum_page['group_count'] =  $forum_page['item_count'] = $forum_page['fld_count']= 0;
+	$forum_page['main_head'] = 'Invite new user';
+	$forum_page['hidden_fields'] = array(
 	'csrf_token'	=> '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />',
-    );
-    
-    ?>
+	);
 
-    <div class="main-head">
+	?>
+
+	<div class="main-head">
 	<h2 class="hn"><span><?php echo $forum_page['main_head'] ?></span></h2>
-    </div>
-    <div class="main-content main-forum">
-                <form id="afocus" class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
+	</div>
+	<div class="main-content main-forum">
+				<form id="afocus" class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
 			<div class="hidden">
 				<?php echo implode("\n\t\t\t\t", $forum_page['hidden_fields'])."\n" ?>
 			</div>
@@ -89,8 +88,8 @@ function show_invitation_form()
 				<span class="cancel"><input type="submit" name="cancel" value="<?php echo $lang_common['Cancel'] ?>" /></span>
 			</div>
 		</form>
-    </div>
-    <?php
+	</div>
+	<?php
 
 }
 

@@ -117,7 +117,7 @@
 	<hooks>
 
 
-        <hook id="co_common"><![CDATA[
+		<hook id="co_common"><![CDATA[
 
 		//$forum_url['admin_extensions_approvalpost'] = 'admin/extensions.php?section=approvalpost';
 
@@ -225,125 +225,120 @@
 	]]></hook>
 
 
-        <!--Ths hook allows to use invitee code when registration form is submitted-->
-        <hook id="rg_register_pre_group"><![CDATA[
-            require $ext_info['path'].'/inv_sys_url.php';
-            $invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
-            $action = forum_link($inv_sys_url['Registration link'], $invitee_code);
-            ?>
-                <div class="hidden">
-                    <input type="hidden" name="invitee_code" value="<?php echo $invitee_code ?>" />
-                </div>
-            <?php
-        ]]></hook>
+		<!--Ths hook allows to use invitee code when registration form is submitted-->
+		<hook id="rg_register_pre_group"><![CDATA[
+			require $ext_info['path'].'/inv_sys_url.php';
+			$invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
+			$action = forum_link($inv_sys_url['Registration link'], $invitee_code);
+			?>
+				<div class="hidden">
+					<input type="hidden" name="invitee_code" value="<?php echo $invitee_code ?>" />
+				</div>
+			<?php
+		]]></hook>
 
-        <!--Ini the very begining of registration we check if invitation syste mis on and allow user to contine only in case he came by using the link from invitation letter-->
-        <hook id="rg_start" ><![CDATA[
-            //if invitation system is on
-            if($forum_config['o_invite_system'])
-            {
-                $action = isset($_GET['action'])? $_GET['action']: null;
+		<!--Ini the very begining of registration we check if invitation syste mis on and allow user to contine only in case he came by using the link from invitation letter-->
+		<hook id="rg_start" ><![CDATA[
+			//if invitation system is on
+			if($forum_config['o_invite_system'])
+			{
+				$action = isset($_GET['action'])? $_GET['action']: null;
 
-                //in case the submit button was pressed, invitee code is sent via $_POST, in other cases through $_GET.
-                if($action == 'register')//Submit button pressed
-                    $invitee_code=isset($_POST['invitee_code']) ? $_POST['invitee_code'] : null;
-                else
-                    $invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
+				//in case the submit button was pressed, invitee code is sent via $_POST, in other cases through $_GET.
+				if($action == 'register')//Submit button pressed
+					$invitee_code=isset($_POST['invitee_code']) ? $_POST['invitee_code'] : null;
+				else
+					$invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
 
-                //if invitee code is empty we forbid the registration
-                if($invitee_code==null)
-                    message($lang_inv_sys['Registration forbidden']);
-                else
-                {
-                    //This query checks if the invitee code in the hyperlink can be found in our database
-                    $query=array(
-                        'SELECT'=>'invitee_code,used',
-                        'FROM'=>'pun_invitations_only',
-                        'WHERE' =>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
-                    );
-                    $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+				//if invitee code is empty we forbid the registration
+				if($invitee_code==null)
+					message($lang_inv_sys['Registration forbidden']);
+				else
+				{
+					//This query checks if the invitee code in the hyperlink can be found in our database
+					$query=array(
+						'SELECT'=>'invitee_code,used',
+						'FROM'=>'pun_invitations_only',
+						'WHERE' =>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
+					);
+					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-                    //If invitee_code in the hyperlink is not in our daabase, we forbid regstration
-                    if (!$forum_db->num_rows($result))
-                        message($lang_inv_sys['Wrong invitee code']);
-                    else //if invitee code IS in our Data Base, but it has already been used, registration is forbidden too.
-                    {
-                        $result_row=$forum_db->fetch_assoc($result);
-                        if($result_row['used']!='0')
-                            message($lang_inv_sys['Invitee code used']);
-                    }
-                }
+					//If invitee_code in the hyperlink is not in our daabase, we forbid regstration
+					if (!$forum_db->num_rows($result))
+						message($lang_inv_sys['Wrong invitee code']);
+					else //if invitee code IS in our Data Base, but it has already been used, registration is forbidden too.
+					{
+						$result_row=$forum_db->fetch_assoc($result);
+						if($result_row['used']!='0')
+							message($lang_inv_sys['Invitee code used']);
+					}
+				}
 
-            }
-        ]]></hook>
+			}
+		]]></hook>
 
-         <hook id="rg_register_pre_add_user" ><![CDATA[
-            if($forum_config['o_invite_system'])
-            {
-                $invitee_code=isset($_POST['invitee_code']) ? $_POST['invitee_code'] : null;
-                $query=array(
-                        'SELECT'=>'invitee_email',
-                        'FROM'=>'pun_invitations_only',
-                        'WHERE' =>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
-                );
-                $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+		<hook id="rg_register_pre_add_user" ><![CDATA[
+			if($forum_config['o_invite_system'])
+			{
+				$invitee_code=isset($_POST['invitee_code']) ? $_POST['invitee_code'] : null;
+				$query=array(
+						'SELECT'=>'invitee_email',
+						'FROM'=>'pun_invitations_only',
+						'WHERE' =>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
+				);
+				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-                $result_row = $forum_db->fetch_assoc($result);
-                if($result_row['invitee_email']!=$user_info['email'])
-                    message($lang_inv_sys['Email is wrong']);
+				$result_row = $forum_db->fetch_assoc($result);
+				if($result_row['invitee_email']!=$user_info['email'])
+					message($lang_inv_sys['Email is wrong']);
 
-                $used=time();
+				$used=time();
 
-                $query= array(
-                'UPDATE' =>'pun_invitations_only',
-                'SET' =>'used='.$forum_db->escape($used),
-                'WHERE'=>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
-                );
+				$query= array(
+				'UPDATE' =>'pun_invitations_only',
+				'SET' =>'used='.$forum_db->escape($used),
+				'WHERE'=>'invitee_code=\''.$forum_db->escape($invitee_code).'\''
+				);
 
-                $forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-            }
+			}
 
-         ]]></hook>
+		]]></hook>
 
-        <!--Allows to pass invitee code from the window with registration rules to thenext window where it will be checked-->
-        <hook id="rg_rules_pre_group" ><![CDATA[
-            require $ext_info['path'].'/inv_sys_url.php';
-            $invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
-            $action = forum_link($inv_sys_url['Registration link'], $invitee_code);
-            ?>
-                <div class="hidden">
-                    <input type="hidden" name="invitee_code" value="<?php echo $invitee_code ?>" />
-                </div>
-            <?php
-        ]]></hook>
+		<!--Allows to pass invitee code from the window with registration rules to thenext window where it will be checked-->
+		<hook id="rg_rules_pre_group" ><![CDATA[
+			require $ext_info['path'].'/inv_sys_url.php';
+			$invitee_code=isset($_GET['invitee_code']) ? $_GET['invitee_code'] : null;
+			$action = forum_link($inv_sys_url['Registration link'], $invitee_code);
+			?>
+				<div class="hidden">
+					<input type="hidden" name="invitee_code" value="<?php echo $invitee_code ?>" />
+				</div>
+			<?php
+		]]></hook>
 
 
-        <hook id="re_rewrite_rules"><![CDATA[
-            $forum_rewrite_rules['/^invite(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?section=invitation';
+		<hook id="re_rewrite_rules"><![CDATA[
+			$forum_rewrite_rules['/^invite(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?section=invitation';
 	]]></hook>
 
 
-        <hook id="co_modify_url_scheme"><![CDATA[
-        echo 'INSIDE HOOK';
+		<hook id="co_modify_url_scheme"><![CDATA[
 
-        if ($forum_config['o_sef'] == 'Default')
-        {
-            $forum_url['Section'] = 'misc.php?section=invitation';
-            echo '<br/>DEFAULT';
-            echo '<br/>Here:'.$forum_url['Section'];
-        }
-        else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
-            $forum_url['Section'] = 'invite.html';
-        else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
-            $forum_url['Section'] = 'invite/';
+		if ($forum_config['o_sef'] == 'Default')
+			$forum_url['Section'] = 'misc.php?section=invitation';
+		else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
+			$forum_url['Section'] = 'invite.html';
+		else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
+			$forum_url['Section'] = 'invite/';
 		]]></hook>
 
 
 	<hook id="mi_new_action" ><![CDATA[
 		require FORUM_ROOT.'lang/'.$forum_user['language'].'/admin_common.php';
 		if($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1')
-                {
+		{
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 			require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 				else
