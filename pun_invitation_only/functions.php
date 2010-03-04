@@ -48,7 +48,7 @@ function send_invitation()
 		//Send mail
 		forum_mail($email, $mail_subject, $mail_message);
 
-		redirect(forum_link($forum_url['index']), $lang_inv_sys['Succesfully sent']);
+		message($lang_inv_sys['Succesfully sent']);
 	}
 
 
