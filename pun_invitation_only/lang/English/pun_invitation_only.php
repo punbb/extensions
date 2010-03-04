@@ -5,7 +5,7 @@ if (!defined('FORUM')) die();
 $lang_inv_sys= array(
 	//Administration->Settings->Features
 	'Title' => 'Invitation system',
-	'Enable inv title' =>'Enable invitation system.',
+	'Enable inv title' =>'Enable invitation system',
 	'Enable inv'=> 'Allow users to invite new members.',
 	//Administration->Users->Groups->Edit group
 	'Allow invite others' =>'Allow to invite new members.',
