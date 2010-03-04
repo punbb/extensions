@@ -134,7 +134,7 @@
 
 	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
 	<hook id="hd_visit_elements"><![CDATA[
-		if ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1')
+		if (($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1') && $forum_config['o_invite_system'])
 		{
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
