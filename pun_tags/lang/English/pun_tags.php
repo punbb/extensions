@@ -15,6 +15,7 @@ $lang_pun_tags = array(
 	'Pun Tags'						=>	'Pun Tags',
 	'Settings'						=>	'Pun Tags settings',
 	'Topic tags'					=>	'Topic tags',
+	'Tags warning'					=>	'You will be able to add tags after the topic is approved.',
 	'Enter tags' 					=>	'Enter a few words (called tags) separated by commas to help someone find your topic.',
 	'Show Pun Tags'					=>	'Show Pun Tags',
 	'Pun Tags notice'				=>	'Display list of tags at the pages',

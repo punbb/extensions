@@ -358,7 +358,18 @@
 		<hook id="po_pre_post_contents" priority = "1"><![CDATA[
 			if ($fid && $forum_user['g_pun_tags_allow'])
 			{
-
+				//if pun_approval is installed, we make adding of tags impossible when topic is being created.
+				//User can add tags to the topic after it is approved.
+				$query= array(
+				'SELECT'=>'id, disabled',
+				'FROM'=>'extensions',
+				'WHERE'=>'id=\'pun_approval\''
+				);
+				$result=$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$row = $forum_db->fetch_assoc($result);
+				$appr_disabled= $row['disabled'];
+				if(!$forum_db->num_rows($result) || $appr_disabled || $forum_user['g_id']== FORUM_ADMIN) //chek if pun_approval is installed and enabled
+			{
 				?>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required longtext">
@@ -366,8 +377,18 @@
 							<span class="fld-input"><input id="fld<?php echo $forum_page['fld_count'] ?>" type="text" name="pun_tags" value="<?php echo empty($_POST['pun_tags']) ? '' : forum_htmlencode($_POST['pun_tags']) ?>" size="80" maxlength="100"/></span>
 					</div>
 				</div>
-			<?php
-
+				<?php
+			}
+			else
+			{
+				?>
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box text required longtext">
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_tags['Topic tags']; ?></span><div class="fld-input"><?php echo $lang_pun_tags['Tags warning'] ?></div></label><br />
+					</div>
+				</div>
+				<?php
+			}
 			}
 		]]></hook>
 		<hook id="po_end_validation, mr_confirm_split_posts_form_submitted"><![CDATA[
