@@ -630,9 +630,10 @@
 			}
 		]]></hook>
 
-	<hook id="po_pre_redirect"><![CDATA[
+	<hook id="po_pre_redirect" priority="10" ><![CDATA[
 			if (isset($approve))
 			{
+
 				//if its new post do redirect to previous
 				if ($tid)
 				{
@@ -654,6 +655,7 @@
 	<hook id="po_pre_add_topic"><![CDATA[
 		if ($forum_user['g_id']!=FORUM_ADMIN && $cur_posting['post_approval'] == 1 && $forum_user['g_without_approval'] == 0)
 		{
+			$approve = true;
 			$query = array(
 				'INSERT'	=> 'poster, subject, posted, last_post, last_poster, forum_id',
 				'INTO'		=> 'topics',
@@ -755,7 +757,6 @@
 
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-			redirect(forum_link($forum_url['forum'], $res_posts['forum_id']),'Your topic will be approved (moderated)');
 		}
 	]]></hook>
 

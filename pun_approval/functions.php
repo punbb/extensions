@@ -345,8 +345,8 @@ function show_unapproved_posts()
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/common.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/misc.php';
 	require $ext_info['path'].'/post_app_url.php';
-        if (!defined('FORUM_PARSER_LOADED'))
-            require FORUM_ROOT.'include/parser.php';
+	if (!defined('FORUM_PARSER_LOADED'))
+		require FORUM_ROOT.'include/parser.php';
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
@@ -980,7 +980,19 @@ function delete_unapproved_post()
 
 	$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-	if ($forum_db->num_rows($result))
+	//ccheck if pun_attachment is installed
+	$query= array(
+		'SELECT'=>'id, disabled',
+		'FROM'=>'extensions',
+		'WHERE'=>'id=\'pun_attachment\''
+	);
+	$result=$forum_db->query_build($query) or error(__FILE__, __LINE__);
+	$row = $forum_db->fetch_assoc($result);
+	$attachment_disabled= $row['disabled'];
+	$attachment_installed=($forum_db->num_rows($result))? true: false;
+
+
+	if ($forum_db->num_rows($result)) //if we are deleting a first post of some topic, we should delete all posts with this topic_id.
 	{
 			$query_app = array(
 					'SELECT'	=> 'p.id, p.topic_id',
@@ -998,10 +1010,24 @@ function delete_unapproved_post()
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
+
+	//Check if pun_attachment is installed and remove binding of attachment to the topic.
+	if($attachment_installed && !$attachment_disabled)
+	{
+		$query_delete_attachment=array(
+			'UPDATE' => 'attach_files',
+			'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
+			'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
+		);
+		$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+	}
+
 			$query_app_post = array(
 					'DELETE'	=> 'post_approval_posts',
 					'WHERE'		=> 'id='.$row['id']
 			);
+
+                        
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
@@ -1012,7 +1038,7 @@ function delete_unapproved_post()
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 	}
-	else
+	else //if we are deleteing a single post
 	{
 			$query_app_post = array(
 					'SELECT'	=> 'topic_id',
@@ -1030,6 +1056,18 @@ function delete_unapproved_post()
 			);
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+	
+	//Check if pun_attachment is installed and remove binding of attachment to the topic.
+	if($attachment_installed && !$attachment_disabled)
+	{
+		$query_delete_attachment=array(
+		'UPDATE' => 'attach_files',
+		'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
+		'WHERE'=>'topic_id='.$top_id.' AND '.'post_id='.$pid
+		);
+		$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+	}
+
 
 			$query_app_post = array(
 					'SELECT'	=> 'id, posted, topic_id',
