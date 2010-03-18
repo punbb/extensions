@@ -1032,13 +1032,7 @@ function delete_unapproved_post()
 		message($lang_common['Bad request']);
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
-	$query_app = array(
-			'SELECT'	=> 'id',
-			'FROM'		=> 'post_approval_topics',
-			'WHERE'		=> 'first_post_id='.$pid
-	);
 
-	$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
 	//-----------attachment compatibility-------------------------
 	$att_query= array(
@@ -1050,8 +1044,17 @@ function delete_unapproved_post()
 	$db_row = $forum_db->fetch_assoc($att_result);
 	$attachment_disabled= $db_row['disabled'];
 	$attachment_installed=($forum_db->num_rows($att_result))? true: false;
-	//-----------attachment compatibility-------------------------
+	//-----------/attachment compatibility-------------------------
 
+
+
+	$query_app = array(
+			'SELECT'	=> 'id',
+			'FROM'		=> 'post_approval_topics',
+			'WHERE'		=> 'first_post_id='.$pid
+	);
+
+	$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 	if ($forum_db->num_rows($result)) //if we are deleting a first post of some topic, we should delete all posts with this topic_id.
 	{
 			$query_app = array(
@@ -1071,23 +1074,60 @@ function delete_unapproved_post()
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
 
-	//-----------attachment compatibility-------------------------
-	if($attachment_installed && !$attachment_disabled)
-	{
-		$query_delete_attachment=array(
-			'UPDATE' => 'attach_files',
-			'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
-			'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
-		);
-		$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
-	}
-	//-----------attachment compatibility-------------------------
+						//-----------attachment compatibility-------------------------
+						if($attachment_installed && !$attachment_disabled)
+						{
+							$query_delete_attachment=array(
+								'UPDATE' => 'attach_files',
+								'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
+								'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
+							);
+							$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+						}
+						//-----------attachment compatibility-------------------------
 
 
-			$query_app_post = array(
+
+						//-----------pun_poll compatibility-------------------------
+						//Wee need to delete a poll associated with the topic being approved only in case when first post of the topic (topic post) failed to get approval
+
+						$poll_query= array(
+							'SELECT'=>'id, disabled',
+							'FROM'=>'extensions',
+							'WHERE'=>'id=\'pun_poll\''
+						);
+						$poll_result=$forum_db->query_build($poll_query) or error(__FILE__, __LINE__);
+						$db_row = $forum_db->fetch_assoc($poll_result);
+						$poll_disabled= $db_row['disabled'];
+						$poll_installed=($forum_db->num_rows($poll_result))? true: false;
+
+						if($poll_installed && !$poll_disabled)
+						{
+							$query_delete_voting=array(
+								'DELETE' => 'voting',
+								'WHERE'=>'topic_id='.$row['topic_id']
+							);
+							$forum_db->query_build($query_delete_voting) or error(__FILE__, __LINE__);
+
+							$query_delete_answers=array(
+								'DELETE' => 'answers',
+								'WHERE'=>'topic_id='.$row['topic_id']
+							);
+							$forum_db->query_build($query_delete_answers) or error(__FILE__, __LINE__);
+
+							$query_delete_questions=array(
+								'DELETE' => 'questions',
+								'WHERE'=>'topic_id='.$row['topic_id']
+							);
+							$forum_db->query_build($query_delete_questions) or error(__FILE__, __LINE__);
+						}
+						//-----------/pun_poll compatibility-------------------------
+
+
+				$query_app_post = array(
 					'DELETE'	=> 'post_approval_posts',
 					'WHERE'		=> 'id='.$row['id']
-			);
+				);
 
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
@@ -1118,18 +1158,18 @@ function delete_unapproved_post()
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
-	//-----------attachment compatibility-------------------------
-	//Check if pun_attachment is installed and remove binding of attachment to the topic.
-	if($attachment_installed && !$attachment_disabled)
-	{
-		$query_delete_attachment=array(
-		'UPDATE' => 'attach_files',
-		'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
-		'WHERE'=>'topic_id='.$top_id.' AND '.'post_id='.$pid
-		);
-		$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
-	}
-	//-----------attachment compatibility-------------------------
+						//-----------attachment compatibility-------------------------
+						//Check if pun_attachment is installed and remove binding of attachment to the topic.
+						if($attachment_installed && !$attachment_disabled)
+						{
+							$query_delete_attachment=array(
+								'UPDATE' => 'attach_files',
+								'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
+								'WHERE'=>'topic_id='.$top_id.' AND '.'post_id='.$pid
+							);
+							$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+						}
+						//-----------/attachment compatibility-------------------------
 
 
 			$query_app_post = array(
