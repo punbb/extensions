@@ -779,21 +779,23 @@
 			$approve = true;
 			$new_pid = 0;
 
-			$new_app_pid = $forum_db->insert_id();
+			$new_pid = $forum_db->insert_id();
+
 
 			$query_app = array(
 				'SELECT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
 				'FROM'		=> 'posts',
-				'WHERE'		=> 'id='.$new_app_pid
+				'WHERE'		=> 'id='.$new_pid
 			);
 
 			$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 			$cur = $forum_db->fetch_assoc($result_app);
 
+
 			$query = array(
 				'INSERT'	=> 'id, poster, poster_id, poster_ip, poster_email, message, hide_smilies, posted, edited, edited_by, topic_id',
 				'INTO'		=> 'post_approval_posts',
-				'VALUES'	=> $new_app_pid.', \''.$forum_db->escape($cur['poster']).'\', '.$cur['poster_id'].', \''.$forum_db->escape($cur['poster_ip']).'\', \''.$forum_db->escape($cur['poster_email']).'\', \''.$forum_db->escape($cur['message']).'\', '.$cur['hide_smilies'].', '.$cur['posted'].', '.(($cur['edited'] == '') ? 'NULL' : $cur['edited']).', \''.$forum_db->escape($cur['edited_by']).'\', '.$cur['topic_id']
+				'VALUES'	=> $new_pid.', \''.$forum_db->escape($cur['poster']).'\', '.$cur['poster_id'].', \''.$forum_db->escape($cur['poster_ip']).'\', \''.$forum_db->escape($cur['poster_email']).'\', \''.$forum_db->escape($cur['message']).'\', '.$cur['hide_smilies'].', '.$cur['posted'].', '.(($cur['edited'] == '') ? 'NULL' : $cur['edited']).', \''.$forum_db->escape($cur['edited_by']).'\', '.$cur['topic_id']
 			);
 
 			$forum_db->query_build($query) or error(__FILE__, __LINE__);
@@ -804,7 +806,7 @@
 				'JOINS'		=> array(
 					array(
 						'INNER JOIN'	=> 'post_approval_posts AS p',
-						'ON'			=> '(p.id='.$new_app_pid.' AND p.topic_id=t.id)',
+						'ON'			=> '(p.id='.$new_pid.' AND p.topic_id=t.id)',
 						),
 						),
 					'WHERE'		=> 't.id='.$post_info['topic_id']
@@ -816,7 +818,7 @@
 				$line = $forum_db->fetch_assoc($resour);
 				$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'last_post_id='.$new_app_pid.', num_replies='.(intval($line['num_replies']) + 1).', last_post='.$line['posted'],
+					'SET'		=> 'last_post_id='.$new_pid.', num_replies='.(intval($line['num_replies']) + 1).', last_post='.$line['posted'],
 					'WHERE'		=> 'id='.$post_info['topic_id']
 				);
 
@@ -825,7 +827,7 @@
 
 				$query_app = array(
 					'DELETE'	=> 'posts',
-					'WHERE'		=> 'id='.$new_app_pid
+					'WHERE'		=> 'id='.$new_pid
 				);
 
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);

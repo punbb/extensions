@@ -329,7 +329,7 @@ function show_unapproved_users()
 function show_unapproved_posts()
 {
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
-		$base_url, $forum_page, $cur_forum, $ext_info, $smilies;
+		$base_url, $forum_page, $cur_forum, $ext_info, $smilies, $attach_url, $lang_attach;
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
 	$del = isset($_GET['del']) ? intval($_GET['del']) : 0;
@@ -345,6 +345,16 @@ function show_unapproved_posts()
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/common.php';
 	require FORUM_ROOT.'lang/'.$forum_user['language'].'/misc.php';
 	require $ext_info['path'].'/post_app_url.php';
+
+ 	//----attachment compatibility-------------------
+	if (file_exists(FORUM_ROOT.'extensions/pun_attachment/include/attach_func.php'))
+		require FORUM_ROOT.'extensions/pun_attachment/include/attach_func.php';
+	if (file_exists(FORUM_ROOT.'extensions/pun_attachment/url.php'))
+		require FORUM_ROOT.'extensions/pun_attachment/url.php';
+	if (file_exists(FORUM_ROOT.'extensions/pun_attachment/'.'lang/'.$forum_user['language'].'/pun_attachment.php'))
+		require FORUM_ROOT.'extensions/pun_attachment/'.'lang/'.$forum_user['language'].'/pun_attachment.php';
+	//----/attachment compatibility-------------------
+
 	if (!defined('FORUM_PARSER_LOADED'))
 		require FORUM_ROOT.'include/parser.php';
 
@@ -695,6 +705,22 @@ function show_unapproved_posts()
 						$start = $forum_page['start_from'];
 						$forum_page['item_count'] = 0;
 
+
+
+						//------------------attachment compatibility------------------------
+						//check if pun_attachment is installed
+						$att_query= array(
+							'SELECT'=>'id, disabled',
+							'FROM'=>'extensions',
+							'WHERE'=>'id=\'pun_attachment\''
+						);
+						$att_result=$forum_db->query_build($att_query) or error(__FILE__, __LINE__);
+						$db_row = $forum_db->fetch_assoc($att_result);
+						$attachment_disabled= $db_row['disabled'];
+						$attachment_installed=($forum_db->num_rows($att_result))? true: false;
+						//------------------/attachment compatibility------------------------
+
+
 						while ($cur_post = $forum_db->fetch_assoc($result))
 						{
 								$start++;
@@ -795,7 +821,7 @@ function show_unapproved_posts()
 												else
 												{
 														if ($cur_post['poster_email'] != '' && !$forum_user['is_guest'] && $forum_user['g_send_email'] == '1')
-                                                                $forum_page['post_contacts']['email'] = '<span class="user-email'.(empty($forum_page['post_contacts']) ? ' first-item' : '').'"><a href="mailto:'.forum_htmlencode($cur_post['poster_email']).'">'.$lang_topic['E-mail'].'<span>&#160;'.forum_htmlencode($cur_post['username']).'</span></a></span>';
+															$forum_page['post_contacts']['email'] = '<span class="user-email'.(empty($forum_page['post_contacts']) ? ' first-item' : '').'"><a href="mailto:'.forum_htmlencode($cur_post['poster_email']).'">'.$lang_topic['E-mail'].'<span>&#160;'.forum_htmlencode($cur_post['username']).'</span></a></span>';
 												}
 										}
 
@@ -842,6 +868,40 @@ function show_unapproved_posts()
 
 								// Perform the main parsing of the message (BBCode, smilies, censor words etc)
 								$forum_page['message']['message'] = parse_message($cur_post['message'], $cur_post['hide_smilies']);
+
+
+
+								//----------attachment compatibility--------
+								//check if pun_attachment is installed
+
+
+								if($attachment_installed)
+								{
+									if (!$forum_config['attach_disable_attach'])
+									{
+										$attach_query = array(
+											'SELECT'	=>	'id, post_id, filename, file_ext, file_mime_type, size, download_counter, uploaded_at, file_path',
+											'FROM'		=>	'attach_files',
+											'WHERE'		=>	'post_id = '.$cur_post['id'],
+											'ORDER BY'	=>	'filename'
+										);
+										$attach_result = $forum_db->query_build($attach_query) or error(__FILE__, __LINE__);
+										if($forum_db->num_rows($attach_result))
+										{
+											$attach_list = array();
+											while ($cur_attach = $forum_db->fetch_assoc($attach_result))
+											{
+												if (!isset($attach_list[$cur_attach['post_id']]))
+												$attach_list[$cur_attach['post_id']] = array();
+												$attach_list[$cur_attach['post_id']][] = $cur_attach;
+											}
+											$forum_page['message']['attachments'] = show_attachments_post($attach_list[$cur_post['id']], $cur_post['id'], $cur_topic);
+										}
+									}
+								}
+								 //-------------attachment compatibility-------
+
+
 
 								if ($cur_post['edited'] != '')
 										$forum_page['message']['edited'] = '<p class="lastedit"><em>'.sprintf($lang_topic['Last edited'], forum_htmlencode($cur_post['edited_by']), format_time($cur_post['edited'])).'</em></p>';
@@ -980,17 +1040,17 @@ function delete_unapproved_post()
 
 	$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
-	//ccheck if pun_attachment is installed
-	$query= array(
+	//-----------attachment compatibility-------------------------
+	$att_query= array(
 		'SELECT'=>'id, disabled',
 		'FROM'=>'extensions',
 		'WHERE'=>'id=\'pun_attachment\''
 	);
-	$result=$forum_db->query_build($query) or error(__FILE__, __LINE__);
-	$row = $forum_db->fetch_assoc($result);
-	$attachment_disabled= $row['disabled'];
-	$attachment_installed=($forum_db->num_rows($result))? true: false;
-
+	$att_result=$forum_db->query_build($att_query) or error(__FILE__, __LINE__);
+	$db_row = $forum_db->fetch_assoc($att_result);
+	$attachment_disabled= $db_row['disabled'];
+	$attachment_installed=($forum_db->num_rows($att_result))? true: false;
+	//-----------attachment compatibility-------------------------
 
 	if ($forum_db->num_rows($result)) //if we are deleting a first post of some topic, we should delete all posts with this topic_id.
 	{
@@ -1011,7 +1071,7 @@ function delete_unapproved_post()
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
 
-	//Check if pun_attachment is installed and remove binding of attachment to the topic.
+	//-----------attachment compatibility-------------------------
 	if($attachment_installed && !$attachment_disabled)
 	{
 		$query_delete_attachment=array(
@@ -1021,13 +1081,14 @@ function delete_unapproved_post()
 		);
 		$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
 	}
+	//-----------attachment compatibility-------------------------
+
 
 			$query_app_post = array(
 					'DELETE'	=> 'post_approval_posts',
 					'WHERE'		=> 'id='.$row['id']
 			);
 
-                        
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
@@ -1056,7 +1117,8 @@ function delete_unapproved_post()
 			);
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
-	
+
+	//-----------attachment compatibility-------------------------
 	//Check if pun_attachment is installed and remove binding of attachment to the topic.
 	if($attachment_installed && !$attachment_disabled)
 	{
@@ -1067,6 +1129,7 @@ function delete_unapproved_post()
 		);
 		$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
 	}
+	//-----------attachment compatibility-------------------------
 
 
 			$query_app_post = array(
