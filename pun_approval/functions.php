@@ -1131,15 +1131,18 @@ function delete_unapproved_post()
 								'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
 							);
 							$result_att_filepath=$forum_db->query_build($query_select_filepath);
-							$db_row=$forum_db->fetch_assoc($result_att_filepath);
-							$filepath=$db_row['file_path'];
-							unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$filepath);
+							if($forum_db->num_rows($result_att_filepath))
+							{
+								$db_row=$forum_db->fetch_assoc($result_att_filepath);
+								$filepath=$db_row['file_path'];
+								unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$filepath);
 
-							$query_delete_attachment=array(
-								'DELETE' => 'attach_files',
-								'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
-							);
-							$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+								$query_delete_attachment=array(
+									'DELETE' => 'attach_files',
+									'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
+								);
+								$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+ 							}
 						}
 						//-----------attachment compatibility-------------------------
 
