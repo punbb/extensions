@@ -355,6 +355,23 @@ function show_unapproved_posts()
 		require FORUM_ROOT.'extensions/pun_attachment/'.'lang/'.$forum_user['language'].'/pun_attachment.php';
 	//----/attachment compatibility-------------------
 
+
+	//------pun_attachment and pun_poll compatibility---------------------
+	//check whether extensions are installed and enabled
+	$installed_ext_query= array(
+		'SELECT'=>'id',
+		'FROM'=>'extensions',
+		'WHERE'=>'(id in (\'pun_poll\' , \'pun_attachment\')) AND disabled = 0 '
+	);
+	$result_installed_ext=$forum_db->query_build($installed_ext_query);
+	$installed_ext=array();
+	while($ext= $forum_db->fetch_assoc($result_installed_ext))
+	{
+		$installed_ext[]=$ext['id'];
+	}
+	//-------/pun_attachment and pun_poll compatibility------------------
+
+
 	if (!defined('FORUM_PARSER_LOADED'))
 		require FORUM_ROOT.'include/parser.php';
 
@@ -692,16 +709,7 @@ function show_unapproved_posts()
 						//check if pun_poll is installed
 					if(!$all_post && $aptid)
 					{
-						$poll_query= array(
-							'SELECT'=>'id, disabled',
-							'FROM'=>'extensions',
-							'WHERE'=>'id=\'pun_poll\''
-						);
-						$poll_result=$forum_db->query_build($poll_query) or error(__FILE__, __LINE__);
-						$db_row = $forum_db->fetch_assoc($poll_result);
-						$poll_disabled= $db_row['disabled'];
-						$poll_installed=($forum_db->num_rows($poll_result))? true: false;
-						if($poll_installed)
+						if(in_array('pun_poll', $installed_ext))//check if pun_pooll is installed
 						{
 							$poll_question_query = array(
 								'SELECT' =>'question',
@@ -756,21 +764,6 @@ function show_unapproved_posts()
 						<?php
 						$start = $forum_page['start_from'];
 						$forum_page['item_count'] = 0;
-
-
-
-						//------------------attachment compatibility------------------------
-						//check if pun_attachment is installed
-						$att_query= array(
-							'SELECT'=>'id, disabled',
-							'FROM'=>'extensions',
-							'WHERE'=>'id=\'pun_attachment\''
-						);
-						$att_result=$forum_db->query_build($att_query) or error(__FILE__, __LINE__);
-						$db_row = $forum_db->fetch_assoc($att_result);
-						$attachment_disabled= $db_row['disabled'];
-						$attachment_installed=($forum_db->num_rows($att_result))? true: false;
-						//------------------/attachment compatibility------------------------
 
 
 						while ($cur_post = $forum_db->fetch_assoc($result))
@@ -927,7 +920,7 @@ function show_unapproved_posts()
 								//check if pun_attachment is installed
 
 
-								if($attachment_installed)
+								if(in_array('pun_attachment', $installed_ext))
 								{
 									if (!$forum_config['attach_disable_attach'])
 									{
@@ -1086,17 +1079,20 @@ function delete_unapproved_post()
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
 
 
-	//-----------attachment compatibility-------------------------
-	$att_query= array(
-		'SELECT'=>'id, disabled',
+	//------pun_attachment and pun_poll compatibility---------------------
+	//check whether extensions are installed and enabled
+	$installed_ext_query= array(
+		'SELECT'=>'id',
 		'FROM'=>'extensions',
-		'WHERE'=>'id=\'pun_attachment\''
+		'WHERE'=>'(id in (\'pun_poll\' , \'pun_attachment\')) AND disabled = 0 '
 	);
-	$att_result=$forum_db->query_build($att_query) or error(__FILE__, __LINE__);
-	$db_row = $forum_db->fetch_assoc($att_result);
-	$attachment_disabled= $db_row['disabled'];
-	$attachment_installed=($forum_db->num_rows($att_result))? true: false;
-	//-----------/attachment compatibility-------------------------
+	$result_installed_ext=$forum_db->query_build($installed_ext_query);
+	$installed_ext=array();
+	while($ext= $forum_db->fetch_assoc($result_installed_ext))
+	{
+	$installed_ext[]=$ext['id'];
+	}
+	//-------/pun_attachment and pun_poll compatibility------------------
 
 
 
@@ -1127,7 +1123,7 @@ function delete_unapproved_post()
 
 
 						//-----------attachment compatibility-------------------------
-						if($attachment_installed && !$attachment_disabled)
+						if(in_array('pun_attachment', $installed_ext))
 						{
 							$query_select_filepath= array(
 								'SELECT'=>'file_path',
@@ -1152,17 +1148,7 @@ function delete_unapproved_post()
 						//-----------pun_poll compatibility-------------------------
 						//Wee need to delete a poll associated with the topic being approved only in case when first post of the topic (topic post) failed to get approval
 
-						$poll_query= array(
-							'SELECT'=>'id, disabled',
-							'FROM'=>'extensions',
-							'WHERE'=>'id=\'pun_poll\''
-						);
-						$poll_result=$forum_db->query_build($poll_query) or error(__FILE__, __LINE__);
-						$db_row = $forum_db->fetch_assoc($poll_result);
-						$poll_disabled= $db_row['disabled'];
-						$poll_installed=($forum_db->num_rows($poll_result))? true: false;
-
-						if($poll_installed && !$poll_disabled)
+						if(in_array('pun_poll', $installed_ext))
 						{
 							$query_delete_voting=array(
 								'DELETE' => 'voting',
@@ -1221,7 +1207,7 @@ function delete_unapproved_post()
 
 						//-----------attachment compatibility-------------------------
 						//Check if pun_attachment is installed and remove binding of attachment to the topic.
-						if($attachment_installed && !$attachment_disabled)
+						if(in_array('pun_attachment', $installed_ext))
 						{
 							$query_select_filepath= array(
 								'SELECT'=>'file_path',
@@ -1229,14 +1215,17 @@ function delete_unapproved_post()
 								'WHERE'=>'topic_id='.$aptid.' AND '.'post_id='.$pid
 							);
 							$result_att_filepath=$forum_db->query_build($query_select_filepath);
-							$db_row=$forum_db->fetch_assoc($result_att_filepath);
-							$filepath=$db_row['file_path'];
-							unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$filepath);
-							$query_delete_attachment=array(
+							if($forum_db->num_rows($result_att_filepath))
+							{
+								$db_row=$forum_db->fetch_assoc($result_att_filepath);
+								$filepath=$db_row['file_path'];
+								unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$filepath);
+								$query_delete_attachment=array(
 								'DELETE' => 'attach_files',
 								'WHERE'=>'topic_id='.$aptid.' AND '.'post_id='.$pid
-							);
-							$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+								);
+								$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
+							}
 						}
 						//-----------/attachment compatibility-------------------------
 
