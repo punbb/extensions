@@ -688,7 +688,55 @@ function show_unapproved_posts()
 				}
 				else
 				{
-						?>
+					//------------------pun_poll compatibility------------------------
+						//check if pun_poll is installed
+					if(!$all_post && $aptid)
+					{
+						$poll_query= array(
+							'SELECT'=>'id, disabled',
+							'FROM'=>'extensions',
+							'WHERE'=>'id=\'pun_poll\''
+						);
+						$poll_result=$forum_db->query_build($poll_query) or error(__FILE__, __LINE__);
+						$db_row = $forum_db->fetch_assoc($poll_result);
+						$poll_disabled= $db_row['disabled'];
+						$poll_installed=($forum_db->num_rows($poll_result))? true: false;
+						if($poll_installed)
+						{
+							$poll_question_query = array(
+								'SELECT' =>'question',
+								'FROM'=>'questions',
+								'WHERE'=>'topic_id = '.$aptid
+							);
+							$poll_question_result=$forum_db->query_build($poll_question_query) or error (__FILE__, __LINE__);
+							if($forum_db->num_rows($poll_question_result))
+							{
+								$db_row= $forum_db->fetch_assoc($poll_question_result);
+								$question=$db_row['question'];
+
+								?>
+
+								<div class="main-head" id="brd-voting"><h2 class="hn">Voting</h2></div>
+									<div class="main-content main-frm">
+										<form class="frm-form" action="'.$link.'" accept-charset="utf-8" method="post">
+											<fieldset class="frm-group group1">
+												<span><?php echo forum_htmlencode($question).'?' ?></span>
+											</fieldset>
+										</form>
+								</div>
+
+								<?php
+							}
+						}
+
+						
+					}
+					 //------------------/pun_poll compatibility------------------------
+					?>
+
+
+
+
 						<div class="main-head">
 						<?php
 								if (!empty($forum_page['main_head_options']))
@@ -696,6 +744,10 @@ function show_unapproved_posts()
 						?>
 								<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
 						</div>
+
+
+
+
 						<div class="main-content main-topic">
 								<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
 										<div class="hidden">
@@ -1024,7 +1076,7 @@ function delete_unapproved_user()
 }
 function delete_unapproved_post()
 {
-	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common;
+	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common, $forum_config;
 
 	require $ext_info['path'].'/post_app_url.php';	
 	$pid = isset($_GET['del']) ? intval($_GET['del']) : 0;
@@ -1077,9 +1129,18 @@ function delete_unapproved_post()
 						//-----------attachment compatibility-------------------------
 						if($attachment_installed && !$attachment_disabled)
 						{
+							$query_select_filepath= array(
+								'SELECT'=>'file_path',
+								'FROM'=>'attach_files',
+								'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
+							);
+							$result_att_filepath=$forum_db->query_build($query_select_filepath);
+							$db_row=$forum_db->fetch_assoc($result_att_filepath);
+							$filepath=$db_row['file_path'];
+							unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$filepath);
+
 							$query_delete_attachment=array(
-								'UPDATE' => 'attach_files',
-								'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
+								'DELETE' => 'attach_files',
 								'WHERE'=>'topic_id='.$row['topic_id'].' AND '.'post_id='.$row['id']
 							);
 							$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
@@ -1162,10 +1223,18 @@ function delete_unapproved_post()
 						//Check if pun_attachment is installed and remove binding of attachment to the topic.
 						if($attachment_installed && !$attachment_disabled)
 						{
+							$query_select_filepath= array(
+								'SELECT'=>'file_path',
+								'FROM'=>'attach_files',
+								'WHERE'=>'topic_id='.$aptid.' AND '.'post_id='.$pid
+							);
+							$result_att_filepath=$forum_db->query_build($query_select_filepath);
+							$db_row=$forum_db->fetch_assoc($result_att_filepath);
+							$filepath=$db_row['file_path'];
+							unlink(FORUM_ROOT.$forum_config['attach_basefolder'].$filepath);
 							$query_delete_attachment=array(
-								'UPDATE' => 'attach_files',
-								'SET'=>'owner_id=\'0\', topic_id=\'0\',  post_id=\'0\'',
-								'WHERE'=>'topic_id='.$top_id.' AND '.'post_id='.$pid
+								'DELETE' => 'attach_files',
+								'WHERE'=>'topic_id='.$aptid.' AND '.'post_id='.$pid
 							);
 							$forum_db->query_build($query_delete_attachment) or error(__FILE__, __LINE__);
 						}
@@ -1576,4 +1645,6 @@ function approve_post()
 
 	redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['approve succesfull']);
 }
+
+
 
