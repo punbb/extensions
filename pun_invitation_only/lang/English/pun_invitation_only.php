@@ -2,6 +2,7 @@
 
 if (!defined('FORUM')) die();
 //language definitions used for invitation system (inv_sys).
+
 $lang_inv_sys= array(
 	//Administration->Settings->Features
 	'Title' => 'Invitation system',
@@ -19,6 +20,7 @@ $lang_inv_sys= array(
 	'Email is wrong'=>'The specifyed email address is not the one to which we sent invitation letter.' ,
 	'Succesfully sent'=>'Invitation letter has been sent succesfully.',
 	'Invitee code used'=>'This invitee code has already been used.',
+        'Cancel redirect' =>'Operation cancelled. Redirecting...',
 );
 
 ?>

@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE extension SYSTEM "ext-1.0.dtd">
 
 <!--
@@ -33,6 +31,7 @@
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
+
 
 		<install><![CDATA[
 
@@ -237,7 +236,7 @@
 			<?php
 		]]></hook>
 
-		<!--Ini the very begining of registration we check if invitation syste mis on and allow user to contine only in case he came by using the link from invitation letter-->
+		<!--Ini the very begining of registration we check if invitation system is on and allow user to contine only in case he came by using the link from invitation letter-->
 		<hook id="rg_start" ><![CDATA[
 			//if invitation system is on
 			if($forum_config['o_invite_system'])
@@ -289,7 +288,7 @@
 				$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 				$result_row = $forum_db->fetch_assoc($result);
-				if($result_row['invitee_email']!=$user_info['email'])
+				if($result_row['invitee_email']!=strtolower($user_info['email']))
 					message($lang_inv_sys['Email is wrong']);
 
 				$used=time();
@@ -367,7 +366,7 @@
 			}	
 
 		}
-	]]>
+	]]></hook>
 
 
 </hooks>

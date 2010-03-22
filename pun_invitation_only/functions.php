@@ -4,10 +4,14 @@ function send_invitation()
 {
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $base_url, $forum_config, $base_url, $forum_page, $cur_forum, $ext_info,$inv_sys_url;
 	require_once FORUM_ROOT.'include/email.php';
+
+	if (isset($_POST['cancel']))
+		redirect(forum_link($forum_url['index']), $lang_inv_sys['Cancel redirect']);
+
 	$invite = isset($_GET['invite']) ? intval($_GET['invite']) : 0;
 	if($invite)
 	{
-		$email = forum_trim($_POST['req_email']);
+		$email = strtolower(forum_trim($_POST['req_email']));
 
 		//Check if we've already sent invitation letter to this email
 		$query=array(
