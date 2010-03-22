@@ -20,7 +20,7 @@ $lang_inv_sys= array(
 	'Email is wrong'=>'The specifyed email address is not the one to which we sent invitation letter.' ,
 	'Succesfully sent'=>'Invitation letter has been sent succesfully.',
 	'Invitee code used'=>'This invitee code has already been used.',
-        'Cancel redirect' =>'Operation cancelled. Redirecting...',
+	'Cancel redirect' =>'Operation cancelled. Redirecting...',
 );
 
 ?>
