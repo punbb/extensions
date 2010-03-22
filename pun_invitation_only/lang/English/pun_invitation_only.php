@@ -21,6 +21,7 @@ $lang_inv_sys= array(
 	'Succesfully sent'=>'Invitation letter has been sent succesfully.',
 	'Invitee code used'=>'This invitee code has already been used.',
 	'Cancel redirect' =>'Operation cancelled. Redirecting...',
+	'Invite new user' =>  'Invite new user'
 );
 
 ?>

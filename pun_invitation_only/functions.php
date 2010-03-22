@@ -1,5 +1,6 @@
 <?php
 
+
 function send_invitation()
 {
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $base_url, $forum_config, $base_url, $forum_page, $cur_forum, $ext_info,$inv_sys_url;
@@ -64,7 +65,7 @@ function show_invitation_form()
 
 	$forum_page['form_action'] = $base_url.'/'.$inv_sys_url['Invite'];
 	$forum_page['group_count'] =  $forum_page['item_count'] = $forum_page['fld_count']= 0;
-	$forum_page['main_head'] = 'Invite new user';
+	$forum_page['main_head'] = $lang_inv_sys['Invite new user'];
 	$forum_page['hidden_fields'] = array(
 	'csrf_token'	=> '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />',
 	);
