@@ -1015,6 +1015,27 @@
 
 	]]></hook>
 
+
+	<hook id = "rg_register_end_validation"><![CDATA[
+		$query_dupe_username_being_approved=array(
+			'SELECT'	=> 'u.username',
+			'FROM'		=> 'post_approval_users AS u',
+			'WHERE'		=> '(UPPER(username)=UPPER(\''.$forum_db->escape($username).'\') OR UPPER(username)=UPPER(\''.$forum_db->escape(preg_replace('/[^\w]/u', '', $username)).'\')) AND id>1'
+		);
+		$result_dupe_username=$forum_db->query_build($query_dupe_username_being_approved) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($result_dupe_username) && empty($errors))
+			$errors[] = sprintf($lang_profile['Username dupe'], $forum_db->result($result_dupe_username));
+	
+		$query_dupe_email_being_approved = array(
+			'SELECT'	=> 'u.username',
+			'FROM'		=> 'post_approval_users AS u',
+			'WHERE'		=> 'u.email=\''.$forum_db->escape($email1).'\''
+		);
+		$result_dupe_email = $forum_db->query_build($query_dupe_email_being_approved) or error(__FILE__, __LINE__);
+		if ($forum_db->num_rows($result_dupe_email) && empty($errors))
+			$errors[] = $lang_profile['Dupe e-mail'];
+	]]></hook>
+
 </hooks>
 
 </extension>
