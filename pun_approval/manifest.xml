@@ -325,6 +325,42 @@
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 		}
 
+		$query_app_post = array(
+			'SELECT'	=>	'1',
+			'FROM'		=>	'config',
+			'WHERE'		=>	'conf_name="o_send_rej_email"'
+		);
+		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+
+		if (!$forum_db->num_rows($result_app_post))
+		{
+			$query_app_post = array(
+				'INSERT'	=> 'conf_name, conf_value',
+				'INTO'		=> 'config',
+				'VALUES'	=> '"o_send_rej_email", "0"'
+			);
+
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+		}
+
+                $query_app_post = array(
+			'SELECT'	=>	'1',
+			'FROM'		=>	'config',
+			'WHERE'		=>	'conf_name="o_inform_admin"'
+		);
+		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+
+		if (!$forum_db->num_rows($result_app_post))
+		{
+			$query_app_post = array(
+				'INSERT'	=> 'conf_name, conf_value',
+				'INTO'		=> 'config',
+				'VALUES'	=> '"o_inform_admin", "0"'
+			);
+
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+		}
+
 	]]></install>
 
 	<uninstall><![CDATA[
@@ -340,7 +376,7 @@
 
 		$query_app_post = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="o_users_check"'
+			'WHERE'		=> 'conf_name="o_users_check" OR conf_name="o_send_rej_email" OR conf_name="o_inform_admin"'
 		);
 		$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 	]]></uninstall>
@@ -501,6 +537,9 @@
 	<hook id="aop_features_validation"><![CDATA[
 
 			if (!isset($form['users_check']) || $form['users_check'] != '1') $form['users_check'] = '0';
+			if (!isset($form['send_rej_email']) || $form['send_rej_email'] != '1') $form['send_rej_email'] = '0';
+			if (!isset($form['inform_admin']) || $form['inform_admin'] != '1') $form['inform_admin'] = '0';
+
 
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				include_once $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
@@ -520,6 +559,20 @@
 					<div class="sf-box checkbox">
 						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[users_check]" value="1"<?php if ($forum_config['o_users_check'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_app_post['users check name'] ?></span> <?php echo $lang_app_post['users check value'] ?></label>
+					</div>
+				</div>
+
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[send_rej_email]" value="1"<?php if ($forum_config['o_send_rej_email'] == '1') echo ' checked="checked"' ?> /></span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_app_post['rej email name'] ?></span> <?php echo $lang_app_post['rej email value'] ?></label>
+					</div>
+				</div>
+
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[inform_admin]" value="1"<?php if ($forum_config['o_inform_admin'] == '1') echo ' checked="checked"' ?> /></span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_app_post['admin inf email name'] ?></span> <?php echo $lang_app_post['admin inf email value'] ?></label>
 					</div>
 				</div>
 			</fieldset>

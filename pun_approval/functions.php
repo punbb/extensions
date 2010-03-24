@@ -1035,10 +1035,15 @@ function show_unapproved_posts()
 function delete_unapproved_user()
 {
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
-		$base_url, $forum_page, $cur_forum, $post_app_url,$ext_info;
+	$base_url, $forum_page, $cur_forum, $post_app_url,$ext_info;
 	require $ext_info['path'].'/post_app_url.php';
 	require_once FORUM_ROOT.'include/email.php';
+
+	
 	$uid = isset($_GET['del']) ? intval($_GET['del']) : 0;
+
+	if($forum_config['o_send_rej_email']=='0')
+	{
 		$query = array(
 		'SELECT'	=> 'username,email',
 		'FROM'		=> 'post_approval_users',
@@ -1059,6 +1064,7 @@ function delete_unapproved_user()
 		$mail_message = str_replace('<username>', $row['username'], $mail_message);
 		$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
 		forum_mail($row['email'], $mail_subject, $mail_message);
+	}
 
 	$query = array(
 	'DELETE'	=> 'post_approval_users',

@@ -57,6 +57,10 @@ $lang_app_post = array(
 //settings -> features
 	'users check name'			=> 'Allow registration approval',
 	'users check value'			=> 'Enable new registrations approval',
+	'rej email name'			=> 'Rejection email',
+	'rej email value'			=> 'Don\'t send an email informing user that his registration was rejected' ,
+	'admin inf email name'		=> 'Inform admnistrator',
+	'admin inf email value'		=> 'Send email to administrator if there are new registrations waiting for approval',
 //other page
 	'Reg e-mail'				=>'Your registration should be approved by the forum administrator. An e-mail message confirming or rejecting your registration will be sent to the specifyed e-mail address.',
 	'registration ip'			=>'Registration ip',
