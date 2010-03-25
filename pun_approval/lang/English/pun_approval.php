@@ -39,7 +39,7 @@ $lang_app_post = array(
 	'forum info'				=> 'This option will allow you to determine whether posts will be aproved or not.',
 	'name check'				=> 'Posts approval',
 //groups.php
-	'legend post approval'				=> 'Posts approval',
+	'legend post approval'				=> 'Post approval',
 	'allow without approval'			 => 'Allow posting without approval',
 	'allow post approval'				=> 'Allow post approval',
         'allow reg approval'			=>'Allow registration approval',
@@ -61,6 +61,7 @@ $lang_app_post = array(
 	'rej email value'			=> 'Don\'t send an email informing user that his registration was rejected' ,
 	'admin inf email name'		=> 'Inform admnistrator',
 	'admin inf email value'		=> 'Send email to administrator if there are new registrations waiting for approval',
+	'option group title'		=> 'Post and registration approval',
 //other page
 	'Reg e-mail'				=>'Your registration should be approved by the forum administrator. An e-mail message confirming or rejecting your registration will be sent to the specifyed e-mail address.',
 	'registration ip'			=>'Registration ip',
