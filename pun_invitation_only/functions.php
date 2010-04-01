@@ -6,13 +6,14 @@ function send_invitation()
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_inv_sys, $base_url, $forum_config, $base_url, $forum_page, $cur_forum, $ext_info,$inv_sys_url;
 	require_once FORUM_ROOT.'include/email.php';
 
-	if (isset($_POST['cancel']))
+        if (isset($_POST['cancel']))
 		redirect(forum_link($forum_url['index']), $lang_inv_sys['Cancel redirect']);
 
 	$invite = isset($_GET['invite']) ? intval($_GET['invite']) : 0;
 	if($invite)
 	{
 		$email = strtolower(forum_trim($_POST['req_email']));
+                $personal_message=forum_trim($_POST['inv_message']);
 
 		//Check if we've already sent invitation letter to this email
 		$query=array(
@@ -29,19 +30,35 @@ function send_invitation()
 		$invitee_code=random_key(8, true);
 		$created= time();
 		// Load the "invitation" template
-	$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/invitation.tpl'));
+                if($personal_message=='')
+                {
+                    $mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/invitation.tpl'));
 
+                    $first_crlf = strpos($mail_tpl, "\n");
+                    $mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
+                    $mail_message = forum_trim(substr($mail_tpl, $first_crlf));
+                    $mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
+                    $mail_message = str_replace('<board_title>', $forum_config['o_board_title'], $mail_message);
+                    $mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
+                    $mail_message = str_replace('<email>',$email,$mail_message);
+                    $mail_message = str_replace('<username>', $forum_user['username'], $mail_message);
+                    $mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], $invitee_code), $mail_message);
+                    $mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
+                }
+                else
+                {
+                    $mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/inv_personal.tpl'));
 
-	$first_crlf = strpos($mail_tpl, "\n");
-	$mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
-	$mail_message = forum_trim(substr($mail_tpl, $first_crlf));
-	$mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
-        $mail_message = str_replace('<board_title>', $forum_config['o_board_title'], $mail_message);
-	$mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
-	$mail_message = str_replace('<username>', $forum_user['username'], $mail_message);
-	$mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], $invitee_code), $mail_message);
-	$mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
-
+                    $first_crlf = strpos($mail_tpl, "\n");
+                    $mail_subject = forum_trim(substr($mail_tpl, 8, $first_crlf-8));
+                    $mail_message = forum_trim(substr($mail_tpl, $first_crlf));
+                    $mail_subject = str_replace('<board_title>', $forum_config['o_board_title'], $mail_subject);
+                    $mail_message = str_replace('<board_title>', $forum_config['o_board_title'], $mail_message);
+                    $mail_message = str_replace('<base_url>', $base_url.'/', $mail_message);
+                    $mail_message = str_replace('<text>', $personal_message, $mail_message);
+                    $mail_message = str_replace('<invitation_url>', forum_link($inv_sys_url['Registration link'], $invitee_code), $mail_message);
+                    $mail_message = str_replace('<board_mailer>', sprintf($lang_common['Forum mailer'], $forum_config['o_board_title']), $mail_message);
+                }
 		//Add information about this invitation to the table
 		$query = array(
 		'INSERT'	=> 'inviter_id, invitee_code, invitee_email, created',
@@ -84,9 +101,26 @@ function show_invitation_form()
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required longtext">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_inv_sys['Email'] ?>  <em><?php echo $lang_common['Required'] ?></em></span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="req_email" value="<?php echo(isset($_POST['req_email']) ? forum_htmlencode($_POST['req_email']) : '') ?>" size="35" maxlength="80" /></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="req_email" value="<?php echo(isset($_POST['req_email']) ? forum_htmlencode($_POST['req_email']) : '') ?>" size="75" maxlength="70" /></span>
 					</div>
 				</div>
+                                <div class="txt-set set<?php echo ++$forum_page['item_count']?>">
+                                    <div class="txt-box textarea required">
+                                        <label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_inv_sys['Inv message'] ?></span></label>
+                                        <div class="txt-input">
+                                            <span class="fld-input">
+                                                <textarea id="fld<?php echo $forum_page['fld_count'] ?>" cols="95" rows="14" name="inv_message">
+                                                </textarea>
+                                            </span>
+                                        </div>
+                                       
+                                    </div>
+                                </div>
+                                <div class="txt-set set<?php echo ++$forum_page['item_count']?>">
+                                      <label for="fld<?php echo $forum_page['fld_count'] ?>">
+                                           <small><p><?php echo $lang_inv_sys['Inv mes description'] ?></p></small>
+                                      </label>
+                                </div>
 			</fieldset>
 			<div class="frm-buttons">
 				<span class="submit"><input type="submit" name="submit" value="<?php echo $lang_common['Submit'] ?>" /></span>

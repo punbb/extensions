@@ -1,6 +1,6 @@
 Subject: Invitation to register on <board_title>.
 
-Hello!
+Hello <email>!
 User <username> invites you to register on "<board_title>" forums.
 To register vist this link: <invitation_url>
 --
