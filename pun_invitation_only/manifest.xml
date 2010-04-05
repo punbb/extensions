@@ -164,17 +164,58 @@
 
 
         <hook id="pf_view_details_pre_user_sig_info"><![CDATA[
-               echo $forum_page;
-               //select username from users where id = (Select inviter_id from pun_invitations_only where invitee_email= $users_email)
-               ?>
+
+              //query which gets the informertion about the person by whom current user was invited
+           $query_invited_by= array(
+           'SELECT' => 'u.username, u.id',
+           'FROM' =>'users as u',
+           'JOINS'		=> array(
+			array(
+				'LEFT JOIN'		=> 'pun_invitations_only AS p',
+				'ON'			=> 'p.inviter_id=u.id'
+			),
+		),
+           'WHERE' => 'p.invitee_email = \''.$forum_db->escape($user['email']).'\''
+           );
+           $res_invited_by = $forum_db->query_build($query_invited_by) or error(__FILE__, __LINE__);
+
+           $invited_by_row = $forum_db->fetch_assoc($res_invited_by);
+           $inviter_name = $invited_by_row['username'];
+           $inviter_id = $invited_by_row['id'];
+
+
+           $query_invited_users = array(
+           'SELECT' => 'u.username, u.id',
+           'FROM' => 'users as u',
+           'JOINS' => array(
+                array(
+                    'RIGHT JOIN'	=> 'pun_invitations_only AS p',
+                    'ON'                => 'p.invitee_email=u.email'
+                ),
+           ),
+           'WHERE' => 'p.inviter_id='.$user['id']
+           );
+           $res_invited_users = $forum_db->query_build($query_invited_users) or error(__FILE__, __LINE__);
+
+           $invited_users = array();
+
+           if($forum_db->num_rows($res_invited_users))
+           {
+                while($cur_user=$forum_db->fetch_assoc($res_invited_users))
+                {
+                    $invited_users[]='<a href='.forum_link($forum_url['user'], $cur_user['id']).'>'.forum_htmlencode($cur_user['username']).'</a>';
+                }
+           }
+
+           ?>
                 <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="ct-box data-box">
 					<h3 class="ct-legend hn"><span>Invited by</span></h3>
-					<div class="sig-demo">Vanya Ivanov</div>
+					<div class="sig-demo"><a href=<?php echo forum_link($forum_url['user'], $inviter_id) ?> "> <?php echo forum_htmlencode($inviter_name) ?> </a></div>
 				</div>
 			</div>
-                <?php
-                    $invited_users= array('john','jack','james','ritchy');
+                        <?php
+
                 ?>
                  <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
                         <div class="ct-box data-box">
@@ -182,7 +223,8 @@
 				<div class="sig-demo"><?php echo implode(', ', $invited_users)?></div>
 			</div>
 		</div>
-                <?php
+
+                         <?php
 
          ]]></hook>
 
