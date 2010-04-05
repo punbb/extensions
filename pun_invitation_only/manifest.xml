@@ -131,7 +131,7 @@
 	]]></hook>
 
 
-	<!--This hook is used to add a hyperlink "Show unapproved posts" to the right top corner (forum header) -->
+
 	<hook id="hd_visit_elements"><![CDATA[
 		if (($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1') && $forum_config['o_invite_system'])
 		{
@@ -147,7 +147,107 @@
 		}
 	]]></hook>
 
+        <hook id="fn_generate_navlinks_end"><![CDATA[
+                 if (($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_invite']=='1') && $forum_config['o_invite_system'])
+		{
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
+			require $ext_info['path'].'/inv_sys_url.php';
+
+			$links[] = '<span id="invite"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['Section']).'">'.$lang_inv_sys['Send new invitation'].' </a></span>';
+			//$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
+		}
+        ]]></hook>
+
+
+        <hook id="pf_view_details_pre_user_sig_info"><![CDATA[
+               echo $forum_page;
+               //select username from users where id = (Select inviter_id from pun_invitations_only where invitee_email= $users_email)
+               ?>
+                <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="ct-box data-box">
+					<h3 class="ct-legend hn"><span>Invited by</span></h3>
+					<div class="sig-demo">Vanya Ivanov</div>
+				</div>
+			</div>
+                <?php
+                    $invited_users= array('john','jack','james','ritchy');
+                ?>
+                 <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
+                        <div class="ct-box data-box">
+				<h3 class="ct-legend hn"><span>Invited users</span></h3>
+				<div class="sig-demo"><?php echo implode(', ', $invited_users)?></div>
+			</div>
+		</div>
+                <?php
+
+         ]]></hook>
+
+          <hook id="pf_change_details_about_pre_user_private_info"><![CDATA[
+           //query which gets the informertion about the person by whom current user was invited
+           $query_invited_by= array(
+           'SELECT' => 'u.username, u.id',
+           'FROM' =>'users as u',
+           'JOINS'		=> array(
+			array(
+				'LEFT JOIN'		=> 'pun_invitations_only AS p',
+				'ON'			=> 'p.inviter_id=u.id'
+			),
+		),
+           'WHERE' => 'p.invitee_email = \''.$forum_db->escape($user['email']).'\''
+           );
+           $res_invited_by = $forum_db->query_build($query_invited_by) or error(__FILE__, __LINE__);
+
+           $invited_by_row = $forum_db->fetch_assoc($res_invited_by);
+           $inviter_name = $invited_by_row['username'];
+           $inviter_id = $invited_by_row['id'];
+           
+
+           $query_invited_users = array(
+           'SELECT' => 'u.username, u.id',
+           'FROM' => 'users as u',
+           'JOINS' => array(
+                array(
+                    'RIGHT JOIN'	=> 'pun_invitations_only AS p',
+                    'ON'                => 'p.invitee_email=u.email'
+                ),
+           ),
+           'WHERE' => 'p.inviter_id='.$user['id']
+           );
+           $res_invited_users = $forum_db->query_build($query_invited_users) or error(__FILE__, __LINE__);
+           
+           $invited_users = array();
+
+           if($forum_db->num_rows($res_invited_users))
+           {
+                while($cur_user=$forum_db->fetch_assoc($res_invited_users))
+                {
+                    $invited_users[]='<a href='.forum_link($forum_url['user'], $cur_user['id']).'>'.forum_htmlencode($cur_user['username']).'</a>';
+                }
+           }
+
+           ?>
+                <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
+				<div class="ct-box data-box">
+					<h3 class="ct-legend hn"><span>Invited by</span></h3>
+					<div class="sig-demo"><a href=<?php echo forum_link($forum_url['user'], $inviter_id) ?> "> <?php echo forum_htmlencode($inviter_name) ?> </a></div>
+				</div>
+			</div>
+                        <?php
+                    
+                ?>
+                 <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
+                        <div class="ct-box data-box">
+				<h3 class="ct-legend hn"><span>Invited users</span></h3>
+				<div class="sig-demo"><?php echo implode(', ', $invited_users)?></div>
+			</div>
+		</div>
+
+                         <?php
+          ]]></hook>
 
 
 	<!--Adds information to the forum footer-->
