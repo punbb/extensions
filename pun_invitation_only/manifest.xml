@@ -165,7 +165,7 @@
 
         <hook id="pf_view_details_pre_user_sig_info"><![CDATA[
 
-              //query which gets the informertion about the person by whom current user was invited
+               //query which gets the informertion about the person by whom current user was invited
            $query_invited_by= array(
            'SELECT' => 'u.username, u.id',
            'FROM' =>'users as u',
@@ -199,14 +199,10 @@
 
            $invited_users = array();
 
-           if($forum_db->num_rows($res_invited_users))
-           {
-                while($cur_user=$forum_db->fetch_assoc($res_invited_users))
-                {
-                    $invited_users[]='<a href='.forum_link($forum_url['user'], $cur_user['id']).'>'.forum_htmlencode($cur_user['username']).'</a>';
-                }
-           }
 
+
+           if($forum_db->num_rows($res_invited_by))
+           {
            ?>
                 <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="ct-box data-box">
@@ -215,6 +211,15 @@
 				</div>
 			</div>
                         <?php
+            }
+
+            if($forum_db->num_rows($res_invited_users))
+           {
+                while($cur_user=$forum_db->fetch_assoc($res_invited_users))
+                {
+                    $invited_users[]='<a href='.forum_link($forum_url['user'], $cur_user['id']).'>'.forum_htmlencode($cur_user['username']).'</a>';
+                }
+
 
                 ?>
                  <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
@@ -225,6 +230,7 @@
 		</div>
 
                          <?php
+            }
 
          ]]></hook>
 
@@ -263,14 +269,10 @@
            
            $invited_users = array();
 
-           if($forum_db->num_rows($res_invited_users))
-           {
-                while($cur_user=$forum_db->fetch_assoc($res_invited_users))
-                {
-                    $invited_users[]='<a href='.forum_link($forum_url['user'], $cur_user['id']).'>'.forum_htmlencode($cur_user['username']).'</a>';
-                }
-           }
+           
 
+           if($forum_db->num_rows($res_invited_by))
+           {
            ?>
                 <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
 				<div class="ct-box data-box">
@@ -279,7 +281,16 @@
 				</div>
 			</div>
                         <?php
-                    
+            }
+
+            if($forum_db->num_rows($res_invited_users))
+           {
+                while($cur_user=$forum_db->fetch_assoc($res_invited_users))
+                {
+                    $invited_users[]='<a href='.forum_link($forum_url['user'], $cur_user['id']).'>'.forum_htmlencode($cur_user['username']).'</a>';
+                }
+
+
                 ?>
                  <div class="ct-set data-set set<?php echo ++$forum_page['item_count'] ?>">
                         <div class="ct-box data-box">
@@ -289,6 +300,7 @@
 		</div>
 
                          <?php
+            }
           ]]></hook>
 
 
