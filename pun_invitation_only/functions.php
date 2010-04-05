@@ -109,8 +109,7 @@ function show_invitation_form()
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_inv_sys['Inv message'] ?></span></label>
 							<div class="txt-input">
 								<span class="fld-input">
-									<textarea id="fld<?php echo $forum_page['fld_count'] ?>" cols="95" rows="7" name="inv_message">
-									</textarea>
+									<textarea id="fld<?php echo $forum_page['fld_count'] ?>" cols="95" rows="7" name="inv_message"></textarea>
 								</span>
 							</div>
 					</div>

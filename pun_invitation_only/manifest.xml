@@ -145,7 +145,6 @@
 			require $ext_info['path'].'/inv_sys_url.php';
 
 			$links[] = '<li id="invite"'.(empty($visit_links) ? ' class="first-item"' : '').'><a href="'.forum_link($forum_url['Section']).'">'.$lang_inv_sys['Send new invitation'].' </a></li>';
-			//$visit_elements['<!-- forum_visit -->'] = '<p id="visit-links" class="options">'.implode(' ', $visit_links).'</p>';
 		}
 	]]></hook>
 
