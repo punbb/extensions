@@ -93,28 +93,36 @@ function pun_bbcode_bar() {
 
 	}
 
+	if ($forum_config['o_smilies'])
+	{
+
 ?>
 
 	<div id="pun_bbcode_smilies">
 <?php
 
-	($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
+		($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
 
 
-	if (!$forum_config['p_message_bbcode'])
-		$pun_bbcode_tabindex = 1;
+		if (!$forum_config['p_message_bbcode'])
+			$pun_bbcode_tabindex = 1;
 
-	// Display the smiley set
-	foreach (array_unique($smilies) as $smile_text => $smile_file)
-	{
-		($hook = get_hook('pun_bbcode_smilies_output_loop_start')) ? eval($hook) : null;
+		// Display the smiley set
+		foreach (array_unique($smilies) as $smile_text => $smile_file)
+		{
+			($hook = get_hook('pun_bbcode_smilies_output_loop_start')) ? eval($hook) : null;
 
-		echo "\t\t".'<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\' '.$smile_text.' \', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
-	}
+			echo "\t\t".'<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\' '.$smile_text.' \', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
+		}
 
 
 ?>
 	</div>
+<?php
+
+	}
+
+?>
 </div>
 <?php
 

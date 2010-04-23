@@ -16,7 +16,7 @@
 <extension engine="1.0">
 	<id>pun_bbcode</id>
 	<title>BBCode buttons</title>
-	<version>1.3.5</version>
+	<version>1.3.6</version>
 	<description>Pretty buttons for easy BBCode formatting.</description>
 	<author>PunBB Development Team</author>
 
@@ -38,8 +38,8 @@ else
 	]]></install>
 
 	<uninstall><![CDATA[
-	$forum_db->drop_field('users', 'pun_bbcode_enabled');
-	$forum_db->drop_field('users', 'pun_bbcode_use_buttons');
+$forum_db->drop_field('users', 'pun_bbcode_enabled');
+$forum_db->drop_field('users', 'pun_bbcode_use_buttons');
 	]]></uninstall>
 
 	<hooks>
