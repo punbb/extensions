@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+<!--
+/**
+ * Allows users to send private messages
+ *
+ * @copyright (C) 2010 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_posts_feed
+ */
+-->
+
+<extension engine="1.0">
+	<id>pun_posts_feed</id>
+	<title>Posts RSS feed</title>
+	<version>0.1</version>
+	<description>Adds a posts RSS feed to forums.</description>
+	<author>PunBB Development Team</author>
+	<minversion>1.3</minversion>
+	<maxtestedon>1.3.4</maxtestedon>
+
+	<note type="install" timing="pre">Warning! This extension has been tested and optimized for MySQL database. Installing this extension on a forum running the other databases may lead to the performance decrease.</note>
+
+	<install><![CDATA[
+// Add the index for the post time
+if (!$forum_db->index_exists('posts', 'posted_idx'))
+	$forum_db->add_index('posts', 'posted_idx', array('posted'));
+	]]></install>
+
+	<hooks>
+
+		<hook id="ex_new_action"><![CDATA[
+?><?
+// Show recent discussions
+if ($action == 'posts_feed')
+{
+	// Determine what type of feed to output
+	$type = isset($_GET['type']) && in_array($_GET['type'], array('html', 'rss', 'atom', 'xml')) ? $_GET['type'] : 'html';
+
+	$show = isset($_GET['show']) ? intval($_GET['show']) : 15;
+	if ($show < 1 || $show > 50)
+		$show = 15;
+
+	($hook = get_hook('pun_posts_feed_set_syndication_type')) ? eval($hook) : null;
+
+	$pun_posts_feed_forum_name = '';
+
+	if (!defined('FORUM_PARSER_LOADED'))
+		require FORUM_ROOT.'include/parser.php';
+
+	// Were any forum ID's supplied?
+	if (isset($_GET['fid']) && is_scalar($_GET['fid']) && $_GET['fid'] != '')
+	{
+		$fids = explode(',', forum_trim($_GET['fid']));
+		$fids = array_map('intval', $fids);
+
+		if (!empty($fids))
+			$forum_sql = ' AND t.forum_id IN('.implode(',', $fids).')';
+
+		if (count($fids) == 1)
+		{
+			// Fetch forum name
+			$query = array(
+				'SELECT'	=> 'f.forum_name',
+				'FROM'		=> 'forums AS f',
+				'JOINS'		=> array(
+					array(
+						'LEFT JOIN'		=> 'forum_perms AS fp',
+						'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
+					)
+				),
+				'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND f.id='.$fids[0]
+			);
+
+			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+			if ($forum_db->num_rows($result))
+				$pun_posts_feed_forum_name = $lang_common['Title separator'].$forum_db->result($result);
+		}
+	}
+
+	// Any forum ID's to exclude?
+	if (isset($_GET['nfid']) && is_scalar($_GET['nfid']) && $_GET['nfid'] != '')
+	{
+		$nfids = explode(',', forum_trim($_GET['nfid']));
+		$nfids = array_map('intval', $nfids);
+
+		if (!empty($nfids))
+			$forum_sql = ' AND t.forum_id NOT IN('.implode(',', $nfids).')';
+	}
+
+	// Setup the feed
+	$feed = array(
+		'title' 		=>	$forum_config['o_board_title'].$pun_posts_feed_forum_name,
+		'link'			=>	forum_link($forum_url['index']),
+		'description'	=>	sprintf($lang_common['RSS description topic'], $forum_config['o_board_title']),
+		'items'			=>	array(),
+		'type'			=>	'posts'
+	);
+
+	// Fetch last $show posts
+	$query = array(
+		'SELECT'	=> '/*! STRAIGHT_JOIN */ p.id, p.poster, p.posted, p.poster_id, p.poster_email, t.subject, t.first_post_id, p.message, p.hide_smilies, u.email_setting, u.email',
+		'FROM'		=> 'posts AS p',
+		'JOINS'		=> array(
+			array(
+				'INNER JOIN'	=> 'topics AS t',
+				'ON'			=> 'p.topic_id = t.id'
+			),
+			array(
+				'INNER JOIN'	=> 'users AS u',
+				'ON'			=> 'u.id = p.poster_id'
+			),
+			array(
+				'LEFT JOIN'		=> 'forum_perms AS fp',
+				'ON'			=> '(fp.forum_id = t.forum_id AND fp.group_id = '.$forum_user['g_id'].')'
+			)
+		),
+		'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum = 1) AND t.moved_to IS NULL',
+		'ORDER BY'	=> 'p.posted DESC',
+		'LIMIT'		=> $show
+	);
+
+	if (isset($forum_sql))
+		$query['WHERE'] .= $forum_sql;
+
+	($hook = get_hook('pun_posts_feed_qr_get_topics')) ? eval($hook) : null;
+	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+
+	while ($cur_post = $forum_db->fetch_assoc($result))
+	{
+		if ($forum_config['o_censoring'] == '1')
+			$cur_post['message'] = censor_words($cur_post['message']);
+
+		$cur_post['message'] = parse_message($cur_post['message'], $cur_post['hide_smilies']);
+
+		$item = array(
+			'id'			=>	$cur_post['id'],
+			'title'			=>	$cur_post['first_post_id'] == $cur_post['id'] ? $cur_post['subject'] : $lang_common['RSS reply'].$cur_post['subject'],
+			'link'			=>	forum_link($forum_url['post'], $cur_post['id']),
+			'description'	=>	$cur_post['message'],
+			'author'		=>	array(
+				'name'			=> $cur_post['poster']
+			),
+			'pubdate'		=>	$cur_post['posted']
+		);
+
+		if ($cur_post['poster_id'] > 1)
+		{
+			if ($cur_post['email_setting'] == '0' && !$forum_user['is_guest'])
+				$item['author']['email'] = $cur_post['email'];
+
+			$item['author']['uri'] = forum_link($forum_url['user'], $cur_post['poster_id']);
+		}
+		else if ($cur_post['poster_email'] != '' && !$forum_user['is_guest'])
+			$item['author']['email'] = $cur_post['poster_email'];
+
+		$feed['items'][] = $item;
+
+		($hook = get_hook('pun_posts_feed_modify_forum_cur_post_item')) ? eval($hook) : null;
+	}
+
+
+	($hook = get_hook('pun_posts_feed_pre_forum_output')) ? eval($hook) : null;
+
+	$output_func = 'output_'.$type;
+	$output_func($feed);
+
+	exit;
+}
+		]]></hook>
+
+		<hook id="vf_main_output_start"><![CDATA[
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+$forum_page['main_head_options']['feed'] = '<span class="feed first-item"><a class="feed" href="'.forum_link($forum_url['forum_rss'], $id).'">'.$lang_pun_posts_feed['RSS topics feed'].'</a></span>';
+$forum_page['main_head_options']['posts feed'] = '<span class="feed"><a class="feed" href="'.forum_link($forum_url['pun_posts_feed_rss'], $id).'">'.$lang_pun_posts_feed['RSS posts feed'].'</a></span>';
+		]]></hook>
+
+		<hook id="vt_main_output_start"><![CDATA[
+if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+else
+	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+
+$forum_page['main_head_options']['rss'] = '<span class="feed first-item"><a class="feed" href="'.forum_link($forum_url['topic_rss'], $id).'">'.$lang_pun_posts_feed['RSS topic feed'].'</a></span>';
+		]]></hook>
+
+		<hook id="co_common"><![CDATA[
+$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
+		]]></hook>
+
+		<hook id="ft_about_end" priority="9"><![CDATA[
+if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
+{
+	define('PUN_EXTENSIONS_USED', 1);
+	if (count($pun_extensions_used) == 1)
+		echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2010 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+	else
+		echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2010 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
+}
+		]]></hook>
+
+		<hook id="co_modify_url_scheme"><![CDATA[
+if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
+	require $ext_info['path'].'/url/'.$forum_config['o_sef'].'.php';
+else
+	require $ext_info['path'].'/url/Default.php';
+		]]></hook>
+
+		<hook id="re_rewrite_rules"><![CDATA[
+$forum_rewrite_rules['/^posts_feed[\/_-]?(rss|atom)[\/_-]?forum[\/_-]?([0-9]+)[\/_-]?(\.xml?|\/)?$/i'] = 'extern.php?action=posts_feed&fid=$2&type=$1';
+		]]></hook>
+
+	</hooks>
+
+</extension>
