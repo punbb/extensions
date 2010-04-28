@@ -8,3 +8,6 @@
  */
 
 $forum_url['pun_posts_feed_rss'] = 'posts_feed-rss-forum$1.xml';
+$forum_url['pun_posts_feed_atom'] = 'posts_feed-atom-forum$1.xml';
+$forum_url['pun_posts_feed_index_rss'] = 'posts_feed-rss.xml';
+$forum_url['pun_posts_feed_index_atom'] = 'posts_feed-atom.xml';

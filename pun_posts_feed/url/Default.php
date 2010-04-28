@@ -8,3 +8,6 @@
  */
 
 $forum_url['pun_posts_feed_rss'] = 'extern.php?action=posts_feed&fid=$1&type=rss';
+$forum_url['pun_posts_feed_atom'] = 'extern.php?action=posts_feed&fid=$1&type=atom';
+$forum_url['pun_posts_feed_index_rss'] = 'extern.php?action=posts_feed&type=rss';
+$forum_url['pun_posts_feed_index_atom'] = 'extern.php?action=posts_feed&type=atom';

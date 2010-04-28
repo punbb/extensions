@@ -14,13 +14,13 @@
 <extension engine="1.0">
 	<id>pun_posts_feed</id>
 	<title>Posts RSS feed</title>
-	<version>0.1</version>
+	<version>1.0</version>
 	<description>Adds a posts RSS feed to forums.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
 	<maxtestedon>1.3.4</maxtestedon>
 
-	<note type="install" timing="pre">Warning! This extension has been tested and optimized for MySQL database. Installing this extension on a forum running the other databases may lead to the performance decrease.</note>
+	<note type="install" timing="pre">Warning! This extension has been tested and optimized for MySQL database. Installing this extension on a forum that uses PostgreSQL or SQLite may lead to performance descrease.</note>
 
 	<install><![CDATA[
 // Add the index for the post time
@@ -31,7 +31,6 @@ if (!$forum_db->index_exists('posts', 'posted_idx'))
 	<hooks>
 
 		<hook id="ex_new_action"><![CDATA[
-?><?
 // Show recent discussions
 if ($action == 'posts_feed')
 {
@@ -170,22 +169,46 @@ if ($action == 'posts_feed')
 }
 		]]></hook>
 
-		<hook id="vf_main_output_start"><![CDATA[
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+		<hook id="hd_head"><![CDATA[
+if (FORUM_PAGE == 'index')
+{
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	$forum_head['rss'] = '<link rel="alternate" type="application/rss+xml" href="'.forum_link($forum_url['index_rss']).'" title="'.$lang_pun_posts_feed['RSS topics feed'].'" />';
+	$forum_head['atom'] = '<link rel="alternate" type="application/atom+xml" href="'.forum_link($forum_url['index_atom']).'" title="'.$lang_pun_posts_feed['Atom topics feed'].'" />';
+	$forum_head['rss posts'] = '<link rel="alternate" type="application/rss+xml" href="'.forum_link($forum_url['pun_posts_feed_index_rss']).'" title="'.$lang_pun_posts_feed['RSS posts feed'].'" />';
+	$forum_head['atom posts'] = '<link rel="alternate" type="application/atom+xml" href="'.forum_link($forum_url['pun_posts_feed_index_atom']).'" title="'.$lang_pun_posts_feed['Atom posts feed'].'" />';
+}
+else if (FORUM_PAGE == 'viewforum')
+{
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	$forum_head['rss'] = '<link rel="alternate" type="application/rss+xml" href="'.forum_link($forum_url['forum_rss'], $id).'" title="'.$lang_pun_posts_feed['RSS topics feed'].'" />';
+	$forum_head['atom'] = '<link rel="alternate" type="application/atom+xml" href="'.forum_link($forum_url['forum_atom'], $id).'" title="'.$lang_pun_posts_feed['Atom topics feed'].'" />';
+	$forum_head['rss posts'] = '<link rel="alternate" type="application/rss+xml" href="'.forum_link($forum_url['pun_posts_feed_rss'], $id).'" title="'.$lang_pun_posts_feed['RSS posts feed'].'" />';
+	$forum_head['atom posts'] = '<link rel="alternate" type="application/atom+xml" href="'.forum_link($forum_url['pun_posts_feed_atom'], $id).'" title="'.$lang_pun_posts_feed['Atom posts feed'].'" />';
+}
+else if (FORUM_PAGE == 'viewtopic')
+{
+	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+	else
+		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+	$forum_head['rss'] = '<link rel="alternate" type="application/rss+xml" href="'.forum_link($forum_url['topic_rss'], $id).'" title="'.$lang_pun_posts_feed['RSS topic feed'].'" />';
+	$forum_head['atom'] =  '<link rel="alternate" type="application/atom+xml" href="'.forum_link($forum_url['topic_atom'], $id).'" title="'.$lang_pun_posts_feed['Atom topic feed'].'" />';
+}
+		]]></hook>
 
+		<hook id="vf_main_output_start"><![CDATA[
 $forum_page['main_head_options']['feed'] = '<span class="feed first-item"><a class="feed" href="'.forum_link($forum_url['forum_rss'], $id).'">'.$lang_pun_posts_feed['RSS topics feed'].'</a></span>';
 $forum_page['main_head_options']['posts feed'] = '<span class="feed"><a class="feed" href="'.forum_link($forum_url['pun_posts_feed_rss'], $id).'">'.$lang_pun_posts_feed['RSS posts feed'].'</a></span>';
 		]]></hook>
 
 		<hook id="vt_main_output_start"><![CDATA[
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-
 $forum_page['main_head_options']['rss'] = '<span class="feed first-item"><a class="feed" href="'.forum_link($forum_url['topic_rss'], $id).'">'.$lang_pun_posts_feed['RSS topic feed'].'</a></span>';
 		]]></hook>
 
@@ -213,6 +236,7 @@ else
 
 		<hook id="re_rewrite_rules"><![CDATA[
 $forum_rewrite_rules['/^posts_feed[\/_-]?(rss|atom)[\/_-]?forum[\/_-]?([0-9]+)[\/_-]?(\.xml?|\/)?$/i'] = 'extern.php?action=posts_feed&fid=$2&type=$1';
+$forum_rewrite_rules['/^posts_feed[\/_-]?(rss|atom)(\.xml?|\/)?$/i'] = 'extern.php?action=posts_feed&type=$1';
 		]]></hook>
 
 	</hooks>
