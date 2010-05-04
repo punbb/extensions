@@ -247,7 +247,7 @@ else
 			}
 			else if (!file_exists(FORUM_ROOT.'extensions/'.$entry.'/manifest.xml'))
 			{
-				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_ext['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_ext['Missing manifest'].'</p>'."\n\t\t\t".'</div>';
+				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_ext['Extension loading error'], forum_htmlencode($entry)).'</span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_ext['Missing manifest'].'</p>'."\n\t\t\t".'</div>';
 				++$num_failed;
 				continue;
 			}
@@ -256,7 +256,7 @@ else
 			$ext_data = is_readable(FORUM_ROOT.'extensions/'.$entry.'/manifest.xml') ? xml_to_array(file_get_contents(FORUM_ROOT.'extensions/'.$entry.'/manifest.xml')) : '';
 			if (empty($ext_data))
 			{
-				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_ext['Extension loading error'], forum_htmlencode($entry)).'<span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_ext['Failed parse manifest'].'</p>'."\n\t\t\t".'</div>';
+				$forum_page['ext_error'][] = '<div class="ext-error databox db'.++$forum_page['item_num'].'">'."\n\t\t\t\t".'<h3 class="legend"><span>'.sprintf($lang_admin_ext['Extension loading error'], forum_htmlencode($entry)).'</span></h3>'."\n\t\t\t\t".'<p>'.$lang_admin_ext['Failed parse manifest'].'</p>'."\n\t\t\t".'</div>';
 				++$num_failed;
 				continue;
 			}
@@ -351,7 +351,7 @@ else
 	<div class="main-subhead" id="ext_instal">
 		<h2 class="hn"><span><?php echo $lang_admin_ext['Installed extensions'] ?></span></h2>
 	</div>
-	<div class="main-content main-frm main-extensions" id="ext_instal">
+	<div class="main-content main-frm main-extensions">
 		<form method="post" accept-charset="utf-8" action="<?php echo $base_url ?>/admin/extensions.php?section=manage&amp;multy">
 	
 <?php
@@ -374,7 +374,7 @@ else
 		($hook = get_hook('aex_section_manage_pre_ext_actions')) ? eval($hook) : null;
 
 		if ($ext['disabled'] == '1')
-			$forum_page['ext_item'][] = '<div class="ct-box info-box extension disabled">'."\n\t\t".'<h3 class="ct-legend hn"><span>'.forum_htmlencode($ext['title']).' ( <span>'.$lang_admin_ext['Extension disabled'].'</span> )</span></h3>'."\n\t\t".'<p style="float: right"><label for="fld'.++$forum_page['fld_count'].'><span class="fld-label">'.$lang_pun_man_ext_improved['Select extension'].'</span><input type="checkbox" id="fld'.$forum_page['fld_count'].'" name="extens['.$id.']" value="1" '.((in_array($id, $sel_extens))?('checked = "checked"'):('')).' /></label></p><ul class="data-list">'."\n\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Extension by'], forum_htmlencode($ext['author'])).'</span></li>'."\n\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Version'], $ext['version']).'</span></li>'."\n\t\t\t".(($ext['description'] != '') ? '<li><span>'.forum_htmlencode($ext['description']).'</span></li>' : '')."\n\t\t\t".'</ul>'."\n\t\t".'<p class="options">'.implode(' ', $forum_page['ext_actions']).'</p>'."\n\t".'</div>';
+			$forum_page['ext_item'][] = '<div class="ct-box info-box extension disabled">'."\n\t\t".'<h3 class="ct-legend hn"><span>'.forum_htmlencode($ext['title']).' ( <span>'.$lang_admin_ext['Extension disabled'].'</span> )</span></h3>'."\n\t\t".'<p style="float: right"><label for="fld'.++$forum_page['fld_count'].'"><span class="fld-label">'.$lang_pun_man_ext_improved['Select extension'].'</span><input type="checkbox" id="fld'.$forum_page['fld_count'].'" name="extens['.$id.']" value="1" '.((in_array($id, $sel_extens))?('checked = "checked"'):('')).' /></label></p><ul class="data-list">'."\n\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Extension by'], forum_htmlencode($ext['author'])).'</span></li>'."\n\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Version'], $ext['version']).'</span></li>'."\n\t\t\t".(($ext['description'] != '') ? '<li><span>'.forum_htmlencode($ext['description']).'</span></li>' : '')."\n\t\t\t".'</ul>'."\n\t\t".'<p class="options">'.implode(' ', $forum_page['ext_actions']).'</p>'."\n\t".'</div>';
 		else
 			$forum_page['ext_item'][] = '<div class="ct-box info-box extension enabled">'."\n\t\t".'<h3 class="ct-legend hn"><span>'.forum_htmlencode($ext['title']).'</span></h3>'."\n\t\t".'<p style="float: right"><label for="fld'.++$forum_page['fld_count'].'"><span class="fld-label">'.$lang_pun_man_ext_improved['Select extension'].'</span><input type="checkbox" id="fld'.$forum_page['fld_count'].'" name="extens['.$id.']" value="1" '.((in_array($id, $sel_extens))?('checked = "checked"'):('')).' /></label></p><ul class="data-list">'."\n\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Extension by'], forum_htmlencode($ext['author'])).'</span></li>'."\n\t\t\t".'<li><span>'.sprintf($lang_admin_ext['Version'], $ext['version']).'</span></li>'."\n\t\t\t".(($ext['description'] != '') ? '<li><span>'.forum_htmlencode($ext['description']).'</span></li>' : '')."\n\t\t".'</ul>'."\n\t\t".'<p class="options">'.implode(' ', $forum_page['ext_actions']).'</p>'."\n\t".'</div>';
 
@@ -436,7 +436,6 @@ else
 
 ?>
 
-	</div>
 	<div class="main-subhead">
 		<h2 class="hn"><span><?php echo $lang_pun_man_ext_improved['Extension title'] ?></span></h2>
 	</div>

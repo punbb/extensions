@@ -143,7 +143,7 @@ if (isset($_GET['reinstall']))
 		include $ext_info['path'].'/continue.php';
 	}
 	if (!empty($errors))
-		message(isset($_GET['install']) ? $lang_common['Bad request'] : $lang_admin_common['Hotfix download failed']);
+		message(isset($_GET['install']) ? $lang_common['Bad request'] : $lang_admin_ext['Hotfix download failed']);
 
 	// Is there some uninstall code to store in the db?
 	$uninstall_code = (isset($ext_data['extension']['uninstall']) && trim($ext_data['extension']['uninstall']) != '') ? '\''.$forum_db->escape(trim($ext_data['extension']['uninstall'])).'\'' : 'NULL';
