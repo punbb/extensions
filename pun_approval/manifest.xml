@@ -27,7 +27,7 @@
 
 <extension engine="1.0">
 	<id>pun_approval</id>
-	<title>Post approval</title>
+	<title>Post and registration approval</title>
 	<version>1.3.0</version>
 	<description>Allows to control all new posts and approve them</description>
 	<author>PunBB Development Team</author>

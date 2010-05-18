@@ -1607,28 +1607,27 @@ function approve_post()
 
 			send_subscriptions($post_info, $new_pid);
 
-			// Increment user's post count & last post time
-			if (isset($post_info['update_user']))
+			//--Increment user's post count & last post time------------------
+			
+			if ($post_info['is_guest'])
 			{
-					if ($post_info['is_guest'])
-					{
-							$query = array(
-									'UPDATE'	=> 'online',
-									'SET'		=> 'last_post='.$post_info['posted'],
-									'WHERE'		=> 'ident=\''.$forum_db->escape(get_remote_address()).'\''
-							);
-					}
-					else
-					{
-							$query = array(
-									'UPDATE'	=> 'users',
-									'SET'		=> 'num_posts=num_posts+1, last_post='.$post_info['posted'],
-									'WHERE'		=> 'id='.$post_info['poster_id']
-							);
-					}
-
-					$forum_db->query_build($query) or error(__FILE__, __LINE__);
+				$query = array(
+					'UPDATE'	=> 'online',
+					'SET'		=> 'last_post='.$post_info['posted'],
+					'WHERE'		=> 'ident=\''.$forum_db->escape(get_remote_address()).'\''
+				);
 			}
+			else
+			{
+				$query = array(
+					'UPDATE'	=> 'users',
+					'SET'		=> 'num_posts=num_posts+1, last_post='.$post_info['posted'],
+					'WHERE'		=> 'id='.$post_info['poster_id']
+				);
+			}
+
+			$forum_db->query_build($query) or error(__FILE__, __LINE__);
+			//--------------End increment users post coount---------------------
 
 			// If the posting user is logged in update his/her unread indicator
 			if (!$post_info['is_guest'] && isset($post_info['update_unread']) && $post_info['update_unread'])
