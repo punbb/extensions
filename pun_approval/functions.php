@@ -1207,7 +1207,7 @@ function delete_unapproved_post()
 		message($lang_common['Bad request']);
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
-
+	$confirmation_required = isset($_GET['confirmation_required']) ? intval($_GET['confirmation_required']) : 0;
 	//------pun_attachment and pun_poll compatibility---------------------
 	//check whether extensions are installed and enabled
 	$installed_ext_query= array(
