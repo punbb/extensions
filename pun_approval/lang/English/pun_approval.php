@@ -62,6 +62,8 @@ $lang_app_post = array(
 	'admin inf email name'		=> 'Inform admnistrator',
 	'admin inf email value'		=> 'Send email to administrator if there are new registrations waiting for approval',
 	'option group title'		=> 'Post and registration approval',
+	'option confirm removal title'  => 'Post removal confirmation',
+	'option confirm removal'        => 'Ask for confirmation when a post waiting for approval is being deleted',
 //other page
 	'Reg e-mail'				=>'Your registration should be approved by the forum administrator. An e-mail message confirming or rejecting your registration will be sent to the specifyed e-mail address.',
 	'registration ip'			=>'Registration ip',
@@ -151,4 +153,11 @@ $lang_app_post = array(
 	'No db result from posts'	=>	'There are no unapproved posts.',
 	'Error app topic'			=>	'Error in the table "post_approval_topics". There are no topics. Please reinstall extension.',
 	'Post errors'				=>	'Warnings:',
+//post removal confirmation page
+	'Delete topic' => 'Delete topic',
+	'Delete post' => 'Delete post',
+	'Delete topic info'		=>	'Created by %1$s %2$s.',
+	'Topic byline'			=>	'<span>Topic by </span>%s',
+	'Reply byline'			=>	'<span>Reply by </span>%s',
+	'Delete post info'		=>	'Post by %1$s %2$s',
 );

@@ -880,7 +880,10 @@ function show_unapproved_posts()
 
 								// Generate actions of post
 								$forum_page['post_actions']['approve'] = '<span class="approve-post"><a href="'.forum_link($post_app_url['approval'], $cur_post['id']).'">'.$lang_app_post['Approve'].'</a></span>';
-								$forum_page['post_actions']['delete'] = '<span class="delete-post"><a href="'.forum_link($post_app_url['delete'], $cur_post['id']).'">'.$lang_app_post['Remove'].'</a></span>';
+								if($forum_config['o_confirm_removal']=='1')
+									$forum_page['post_actions']['delete'] = '<span class="delete-post"><a href="'.forum_link($post_app_url['delete_conf'], $cur_post['id']).'">'.$lang_app_post['Remove'].'</a></span>';
+								else
+									$forum_page['post_actions']['delete'] = '<span class="delete-post"><a href="'.forum_link($post_app_url['delete'], $cur_post['id']).'">'.$lang_app_post['Remove'].'</a></span>';
 
 								if (!empty($forum_page['post_actions']))
 										$forum_page['post_options']['actions'] = '<p class="post-actions">'.implode(' ', $forum_page['post_actions']).'</p>';
@@ -1032,6 +1035,127 @@ function show_unapproved_posts()
 		}
 }
 
+function show_confirmation_window()
+{
+	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
+		$base_url, $forum_page, $cur_forum, $ext_info, $smilies, $attach_url, $lang_attach, $post_app_url;
+
+$deleted_post = isset($_GET['del']) ? intval($_GET['del']) : 0;
+// Fetch some info about the post, the topic and the forum
+$query = array(
+	'SELECT'	=> 'f.id AS fid, f.forum_name, f.moderators, f.redirect_url, fp.post_replies, fp.post_topics, t.id AS tid, t.subject, t.first_post_id, t.closed, p.poster, p.poster_id, p.message, p.hide_smilies, p.posted',
+	'FROM'		=> 'post_approval_posts AS p',
+	'JOINS'		=> array(
+		array(
+			'INNER JOIN'	=> 'post_approval_topics AS t',
+			'ON'			=> 't.id=p.topic_id'
+		),
+		array(
+			'INNER JOIN'	=> 'forums AS f',
+			'ON'			=> 'f.id=t.forum_id'
+		),
+		array(
+			'LEFT JOIN'		=> 'forum_perms AS fp',
+			'ON'			=> '(fp.forum_id=f.id AND fp.group_id='.$forum_user['g_id'].')'
+		)
+	),
+	'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND p.id='.$deleted_post
+);
+
+$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
+if (!$forum_db->num_rows($result))
+	message($lang_common['Bad request']);
+
+$cur_post = $forum_db->fetch_assoc($result);
+
+$cur_post['is_topic'] = ($deleted_post == $cur_post['first_post_id']) ? true : false;
+
+
+// Run the post through the parser
+if (!defined('FORUM_PARSER_LOADED'))
+	require FORUM_ROOT.'include/parser.php';
+
+$cur_post['message'] = parse_message($cur_post['message'], $cur_post['hide_smilies']);
+
+// Setup form
+$forum_page['group_count'] = $forum_page['item_count'] = $forum_page['fld_count'] = 0;
+$forum_page['form_action'] = forum_link($post_app_url['delete'], $deleted_post);
+
+$forum_page['hidden_fields'] = array(
+	'form_sent'		=> '<input type="hidden" name="form_sent" value="1" />',
+	'csrf_token'	=> '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />'
+);
+
+// Setup form information
+$forum_page['frm_info'] = array(
+	'<li><span>'.'Forum'.':<strong> '.forum_htmlencode($cur_post['forum_name']).'</strong></span></li>',
+	'<li><span>'.'Topic'.':<strong> '.forum_htmlencode($cur_post['subject']).'</strong></span></li>',
+	'<li><span>'.sprintf((($cur_post['is_topic']) ? $lang_app_post['Delete topic info'] : $lang_app_post['Delete post info']), forum_htmlencode($cur_post['poster']), format_time($cur_post['posted'])).'</span></li>'
+);
+
+// Generate the post heading
+$forum_page['post_ident'] = array();
+$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['is_topic']) ? $lang_app_post['Topic byline'] : $lang_app_post['Reply byline']), '<strong>'.forum_htmlencode($cur_post['poster']).'</strong>').'</span>';
+$forum_page['post_ident']['link'] = '<span class="post-link"><a class="permalink" href="'.forum_link($forum_url['post'], $cur_post['tid']).'">'.format_time($cur_post['posted']).'</a></span>';
+
+// Generate the post title
+if ($cur_post['is_topic'])
+	$forum_page['item_subject'] = sprintf('Topic title', 'Subject');
+else
+	$forum_page['item_subject'] = sprintf('Reply title', 'subject');
+
+$forum_page['item_subject'] = forum_htmlencode('item_subject');
+
+// Setup breadcrumbs
+$forum_page['crumbs'] = array(
+	array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+	array($cur_post['forum_name'], forum_link($forum_url['forum'], array($cur_post['fid'], sef_friendly($cur_post['forum_name'])))),
+	array($cur_post['subject'], forum_link($forum_url['topic'], array($cur_post['tid'], sef_friendly($cur_post['subject'])))),
+	(($cur_post['is_topic']) ? 'Delete topic' : 'Delete post')
+);
+?>
+<div class="main-content main-frm">
+		<div class="ct-box info-box">
+			<ul class="info-list">
+				<?php echo implode("\n\t\t\t\t", $forum_page['frm_info'])."\n" ?>
+			</ul>
+		</div>
+
+		<div class="post singlepost">
+			<div class="posthead">
+				<h3 class="hn post-ident"><?php echo implode(' ', $forum_page['post_ident']) ?></h3>
+
+			</div>
+			<div class="postbody">
+				<div class="post-entry">
+					<h4 class="entry-title hn"><?php echo $forum_page['item_subject'] ?></h4>
+					<div class="entry-content">
+						<?php echo $cur_post['message']."\n" ?>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<form class="frm-form" method="post" accept-charset="utf-8" action="<?php echo $forum_page['form_action'] ?>">
+			<div class="hidden">
+				<?php echo implode("\n\t\t\t\t", $forum_page['hidden_fields'])."\n" ?>
+			</div>
+
+			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+				<legend class="group-legend"><strong><?php echo ($cur_post['is_topic']) ? $lang_delete['Delete topic'] : $lang_delete['Delete post'] ?></strong></legend>
+			</fieldset>
+
+			<div class="frm-buttons">
+				<span class="submit"><input type="submit" name="delete" value="<?php echo ($cur_post['is_topic']) ? $lang_app_post['Delete topic'] : $lang_app_post['Delete post'] ?>" /></span>
+				<span class="cancel"><input type="submit" name="cancel" value="<?php echo $lang_common['Cancel'] ?>" /></span>
+			</div>
+		</form>
+	</div>
+	<?php
+}
+
+
+
 function delete_unapproved_user()
 {
 	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
@@ -1084,7 +1208,6 @@ function delete_unapproved_post()
 
 	$aptid = isset($_GET['aptid']) ? intval($_GET['aptid']) : 0;
 
-
 	//------pun_attachment and pun_poll compatibility---------------------
 	//check whether extensions are installed and enabled
 	$installed_ext_query= array(
@@ -1102,6 +1225,11 @@ function delete_unapproved_post()
 
 
 
+if (isset($_POST['cancel']))
+	redirect($post_app_url['Topics section'], $lang_common['Cancel redirect']);
+
+if (!$confirmation_required)
+{
 	$query_app = array(
 			'SELECT'	=> 'id',
 			'FROM'		=> 'post_approval_topics',
@@ -1275,6 +1403,7 @@ function delete_unapproved_post()
 	}
 
 	redirect(forum_link($post_app_url['Permalink topic'], $aptid), $lang_app_post['delete succesfull']);
+}
 
 }
 

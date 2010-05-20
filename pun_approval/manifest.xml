@@ -361,6 +361,25 @@
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 		}
 
+
+		$query_app_post = array(
+			'SELECT'	=>	'1',
+			'FROM'		=>	'config',
+			'WHERE'		=>	'conf_name="o_confirm_removal"'
+		);
+		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+
+		if (!$forum_db->num_rows($result_app_post))
+		{
+			$query_app_post = array(
+				'INSERT'	=> 'conf_name, conf_value',
+				'INTO'		=> 'config',
+				'VALUES'	=> '"o_confirm_removal", "0"'
+			);
+
+			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
+		}
+
 	]]></install>
 
 	<uninstall><![CDATA[
@@ -539,6 +558,7 @@
 			if (!isset($form['users_check']) || $form['users_check'] != '1') $form['users_check'] = '0';
 			if (!isset($form['send_rej_email']) || $form['send_rej_email'] != '1') $form['send_rej_email'] = '0';
 			if (!isset($form['inform_admin']) || $form['inform_admin'] != '1') $form['inform_admin'] = '0';
+			if (!isset($form['confirm_removal']) || $form['confirm_removal'] != '1') $form['confirm_removal'] = '0';
 
 
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
@@ -573,6 +593,13 @@
 					<div class="sf-box checkbox">
 						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[inform_admin]" value="1"<?php if ($forum_config['o_inform_admin'] == '1') echo ' checked="checked"' ?> /></span>
 						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_app_post['admin inf email name'] ?></span> <?php echo $lang_app_post['admin inf email value'] ?></label>
+					</div>
+				</div>
+
+				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<div class="sf-box checkbox">
+						<span class="fld-input"><input type="checkbox" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[confirm_removal]" value="1"<?php if ($forum_config['o_confirm_removal'] == '1') echo ' checked="checked"' ?> /></span>
+						<label for="fld<?php echo $forum_page['fld_count'] ?>"><span><?php echo $lang_app_post['option confirm removal title'] ?></span> <?php echo $lang_app_post['option confirm removal'] ?></label>
 					</div>
 				</div>
 			</fieldset>
@@ -1003,6 +1030,7 @@
 			$p_cr = isset($_GET['p']) ? intval($_GET['p']) : 0;
 			$topics = isset($_GET['topics']) ? intval($_GET['topics']) : 0;
 			$all_post = isset($_GET['all_post']) ? intval($_GET['all_post']) : 0;
+			$confirmation_required = isset($_GET['confirmation_required']) ? intval($_GET['confirmation_required']) : 0;
 
 			// Setup breadcrumbs
 			$forum_page['crumbs'] = array(
@@ -1042,7 +1070,10 @@
 
 			ob_start();
 
-			show_unapproved_posts();
+			if($confirmation_required)
+				show_confirmation_window();
+			else
+				show_unapproved_posts();
 			$tpl_app_post = trim(ob_get_contents());
 			$tpl_main = str_replace('<!-- forum_main -->', $tpl_app_post, $tpl_main);
 
