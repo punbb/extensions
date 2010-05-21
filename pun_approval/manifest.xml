@@ -395,7 +395,7 @@
 
 		$query_app_post = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="o_users_check" OR conf_name="o_send_rej_email" OR conf_name="o_inform_admin"'
+			'WHERE'		=> 'conf_name="o_users_check" OR conf_name="o_send_rej_email" OR conf_name="o_inform_admin" OR conf_name="o_confirm_removal"'
 		);
 		$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 	]]></uninstall>
