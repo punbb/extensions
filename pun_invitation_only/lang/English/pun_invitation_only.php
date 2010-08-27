@@ -25,7 +25,8 @@ $lang_inv_sys= array(
 	'Inv message'=>'Message',
 	'Inv mes description'=>'You can add your own message instead of standart invitation template',
 	'Inv users' =>'Invited users',
-	'Inv by' =>'Invited by'
+	'Inv by' =>'Invited by',
+	'Required warn'	=>'All fields labeled %s must be completed before the form is submitted.'
 );
 
 ?>

@@ -102,7 +102,7 @@ function show_invitation_form()
 
 
 			<div id="req-msg" class="req-warn ct-box error-box">
-				<p class="important"><?php printf($lang_common['Required warn'], '<em>'.$lang_common['Required'].'</em>') ?></p>
+				<p class="important"><?php printf($lang_inv_sys['Required warn'], '<em>'.$lang_common['Required'].'</em>') ?></p>
 			</div>
  
 			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
