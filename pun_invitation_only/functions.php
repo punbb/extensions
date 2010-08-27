@@ -13,6 +13,7 @@ function send_invitation()
 	if($invite)
 	{
 		$email = strtolower(forum_trim($_POST['req_email']));
+
 		$personal_message=forum_trim($_POST['inv_message']);
 
 		//Check if we've already sent invitation letter to this email
@@ -71,6 +72,7 @@ function send_invitation()
 		forum_mail($email, $mail_subject, $mail_message);
 
 		message($lang_inv_sys['Succesfully sent']);
+
 	}
 
 
@@ -97,6 +99,12 @@ function show_invitation_form()
 			<div class="hidden">
 				<?php echo implode("\n\t\t\t\t", $forum_page['hidden_fields'])."\n" ?>
 			</div>
+
+
+			<div id="req-msg" class="req-warn ct-box error-box">
+				<p class="important"><?php printf($lang_common['Required warn'], '<em>'.$lang_common['Required'].'</em>') ?></p>
+			</div>
+ 
 			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required longtext">
