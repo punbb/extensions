@@ -688,7 +688,6 @@ if ($fid && ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_poll_add']
 						'SELECT'	=>	'id, answer',
 						'FROM'		=>	'answers',
 						'WHERE'		=>	'topic_id = '.$id,
-						'GROUP BY'	=>	'id',
 						'ORDER BY'	=>	'id ASC'
 					);
 					$result_pun_poll = $forum_db->query_build($query_pun_poll) or error(__FILE__, __LINE__);
