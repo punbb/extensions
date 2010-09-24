@@ -310,7 +310,7 @@
 		$query_app_post = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name="o_users_check"'
+			'WHERE'		=>	'conf_name=\'o_users_check\''
 		);
 		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
@@ -319,7 +319,7 @@
 			$query_app_post = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"o_users_check", "0"'
+				'VALUES'	=> '\'o_users_check\', \'0\''
 			);
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
@@ -328,7 +328,7 @@
 		$query_app_post = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name="o_send_rej_email"'
+			'WHERE'		=>	'conf_name=\'o_send_rej_email\''
 		);
 		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
@@ -337,7 +337,7 @@
 			$query_app_post = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"o_send_rej_email", "0"'
+				'VALUES'	=> '\'o_send_rej_email\', \'0\''
 			);
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
@@ -346,7 +346,7 @@
                 $query_app_post = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name="o_inform_admin"'
+			'WHERE'		=>	'conf_name=\'o_inform_admin\''
 		);
 		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
@@ -355,7 +355,7 @@
 			$query_app_post = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"o_inform_admin", "0"'
+				'VALUES'	=> '\'o_inform_admin\', \'0\''
 			);
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
@@ -365,7 +365,7 @@
 		$query_app_post = array(
 			'SELECT'	=>	'1',
 			'FROM'		=>	'config',
-			'WHERE'		=>	'conf_name="o_confirm_removal"'
+			'WHERE'		=>	'conf_name=\'o_confirm_removal\''
 		);
 		$result_app_post = $forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 
@@ -374,7 +374,7 @@
 			$query_app_post = array(
 				'INSERT'	=> 'conf_name, conf_value',
 				'INTO'		=> 'config',
-				'VALUES'	=> '"o_confirm_removal", "0"'
+				'VALUES'	=> '\'o_confirm_removal\', \'0\''
 			);
 
 			$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
@@ -395,7 +395,7 @@
 
 		$query_app_post = array(
 			'DELETE'	=> 'config',
-			'WHERE'		=> 'conf_name="o_users_check" OR conf_name="o_send_rej_email" OR conf_name="o_inform_admin" OR conf_name="o_confirm_removal"'
+			'WHERE'		=> 'conf_name=\'o_users_check\' OR conf_name=\'o_send_rej_email\' OR conf_name=\'o_inform_admin\' OR conf_name=\'o_confirm_removal\''
 		);
 		$forum_db->query_build($query_app_post) or error(__FILE__, __LINE__);
 	]]></uninstall>
