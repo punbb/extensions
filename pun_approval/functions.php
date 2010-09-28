@@ -1431,17 +1431,17 @@ function approve_user()
 		$activate_key=random_key(8, true);
 		$group_id=0;
 		$query = array(
-		'INSERT'	=> 'group_id,username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
+		'INSERT'	=> 'group_id,username,password,salt,email,email_setting,timezone,dst,language, style, registered, registration_ip, last_visit, activate_key',
 		'INTO'		=> 'users',
-		'VALUES'	=> '\''.$group_id.'\',\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
+		'VALUES'	=> '\''.$group_id.'\',\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['email_setting'].'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['language'].'\',\''.$row['style'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
 		);
 	}
 	else
 	{
 		$query = array(
-		'INSERT'	=> 'username,password,salt,email,timezone,dst,registered, registration_ip, last_visit, activate_key',
+		'INSERT'	=> 'group_id,username,password,salt,email, email_setting,timezone,dst, language, style,registered, registration_ip, last_visit, activate_key',
 		'INTO'		=> 'users',
-		'VALUES'	=> '\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
+		'VALUES'	=>  '\''.$row['group_id'].'\',\''.$row['username'].'\',\''.$row['password'].'\',\''.$forum_db->escape($row['salt']).'\',\''.$forum_db->escape($row['email']).'\',\''.$row['email_setting'].'\',\''.$row['timezone'].'\',\''.$row['dst'].'\',\''.$row['language'].'\',\''.$row['style'].'\',\''.$row['registered'].'\',\''.$row['registration_ip'].'\',\''.$row['last_visit'].'\',\''.$forum_db->escape($activate_key).'\''
 		);
 	}
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);

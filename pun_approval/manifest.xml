@@ -862,6 +862,17 @@
 			$forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
 		}
+
+	]]></hook>
+
+
+	<hook id="fn_add_topic_end"><![CDATA[
+		$query = array(
+			'INSERT'	=> 'id, poster, subject, posted, forum_id',
+			'INTO'		=> 'post_approval_topics',
+			'VALUES'	=> $new_tid.', \''.$forum_db->escape($post_info['poster']).'\', \''.$forum_db->escape($post_info['subject']).'\', '.$post_info['posted'].', '.$post_info['forum_id']
+		);
+		$forum_db->query_build($query) or error(__FILE__, __LINE__);
 	]]></hook>
 
 	<hook id="po_pre_add_post"><![CDATA[
