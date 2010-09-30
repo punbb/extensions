@@ -1619,6 +1619,7 @@ function approve_post()
 					'is_guest'		=> ($row['id'] == 1) ? (true) : (false),
 					'poster'		=> $row['poster'],
 					'poster_id'		=> $row['poster_id'],
+					'poster_ip'		=> $row['poster_ip'],
 					'poster_email'	=> $row['poster_email'],
 					'message'		=> $row['message'],
 					'hide_smilies'	=> $row['hide_smilies'],
@@ -1640,7 +1641,7 @@ function approve_post()
 			$query = array(
 					'INSERT'	=> 'id, poster, poster_id, poster_ip, message, hide_smilies, posted, topic_id',
 					'INTO'		=> 'posts',
-					'VALUES'	=> intval($row['id']).', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape(get_remote_address()).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
+					'VALUES'	=> intval($row['id']).', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['poster_ip']).'\', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['topic_id']
 			);
 
 			// If it's a guest post, there might be an e-mail address we need to include
