@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_tags</id>
 	<title>Pun tags</title>
-	<version>1.4</version>
+	<version>1.5.1</version>
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
@@ -496,11 +496,11 @@
 							pun_tags_add_existing_tag($tag_id, $cur_post['tid']);
 						$update_cache = TRUE;
 					}
-					if (!empty($update_cache))
-					{
-						pun_tags_remove_orphans();
-						pun_tags_generate_cache();
-					}
+				}
+				if (!empty($update_cache))
+				{
+					pun_tags_remove_orphans();
+					pun_tags_generate_cache();
 				}
 			}
 		]]></hook>
