@@ -377,8 +377,8 @@ function show_unapproved_posts()
 
 	if (($aptid < 0) || ($del < 0) || ($app < 0) || ($appid < 0))
 		$errors[] = $lang_app_post['Bad address argument'];
-	
-	
+
+
 	if (!$aptid && !$appid && !$all_post)
 	{
 		$forum_page['num_pages'] = ceil($cur_forum['num_topics'] / $forum_user['disp_topics']);
@@ -416,7 +416,7 @@ function show_unapproved_posts()
 
 		?>
 
-		
+
 		<div class="main-content main-forum">
 
 		<?php
@@ -737,7 +737,7 @@ function show_unapproved_posts()
 							}
 						}
 
-						
+
 					}
 					 //------------------/pun_poll compatibility------------------------
 					?>
@@ -872,8 +872,16 @@ function show_unapproved_posts()
 
 										if (!empty($forum_page['post_contacts']))
 										{
+											// Fix ban paging bug for > 1.3.4
+											if (version_compare(clean_version($forum_config['o_cur_version']), '1.3.4', '>'))
+											{
+												$forum_page['post_contacts']['ban'] = '<span class="user-url"><a href="'.forum_link($forum_url['admin_bans']).'&amp;add_ban='.$cur_post['poster_id'].'">'.$lang_profile['Ban user'].'</a></span>';
+											}
+											else
+											{
 												$forum_page['post_contacts']['ban'] = '<span class="user-url"><a href="'.forum_link($forum_url['admin_bans']).'?add_ban='.$cur_post['poster_id'].'">'.$lang_profile['Ban user'].'</a></span>';
-												$forum_page['post_options']['contacts'] = '<p class="post-contacts">'.implode(' ', $forum_page['post_contacts']).'</p>';
+											}
+											$forum_page['post_options']['contacts'] = '<p class="post-contacts">'.implode(' ', $forum_page['post_contacts']).'</p>';
 										}
 								}
 
@@ -974,7 +982,16 @@ function show_unapproved_posts()
 
 								}
 
-								$forum_page['user_info']['ban'] = '<li><span><a href="'.forum_link($forum_url['admin_bans']).'?add_ban='.$cur_post['poster_id'].'">'.$lang_profile['Ban user'].'</a></span></li>';
+								// Fix ban paging bug for > 1.3.4
+								if (version_compare(clean_version($forum_config['o_cur_version']), '1.3.4', '>'))
+								{
+									$forum_page['user_info']['ban'] = '<li><span><a href="'.forum_link($forum_url['admin_bans']).'&amp;add_ban='.$cur_post['poster_id'].'">'.$lang_profile['Ban user'].'</a></span></li>';
+								}
+								else
+								{
+									$forum_page['user_info']['ban'] = '<li><span><a href="'.forum_link($forum_url['admin_bans']).'?add_ban='.$cur_post['poster_id'].'">'.$lang_profile['Ban user'].'</a></span></li>';
+								}
+
 								$forum_page['user_info']['email'] = '<li><a href="mailto:'.$cur_post['email'].'"><span>'.$lang_topic['E-mail'].'<span>&#160;'.forum_htmlencode($cur_post['username']).'</span></span></a></li>';
 
 								$forum_page['item_ident'] = array(
@@ -1163,7 +1180,7 @@ function delete_unapproved_user()
 	require $ext_info['path'].'/post_app_url.php';
 	require_once FORUM_ROOT.'include/email.php';
 
-	
+
 	$uid = isset($_GET['del']) ? intval($_GET['del']) : 0;
 
 	if($forum_config['o_send_rej_email']=='0')
@@ -1201,7 +1218,7 @@ function delete_unapproved_post()
 {
 	global $forum_db,$lang_app_post,$forum_user,$ext_info, $lang_common, $forum_config;
 
-	require $ext_info['path'].'/post_app_url.php';	
+	require $ext_info['path'].'/post_app_url.php';
 	$pid = isset($_GET['del']) ? intval($_GET['del']) : 0;
 	if ($pid < 1)
 		message($lang_common['Bad request']);
@@ -1409,7 +1426,7 @@ if (!$confirmation_required)
 
 function approve_user()
 {
-    global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic, 
+    global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
 		$base_url, $forum_page, $cur_forum, $post_app_url,$ext_info;
 
 	require $ext_info['path'].'/post_app_url.php';
@@ -1680,7 +1697,7 @@ function approve_post()
 
 			$num_replies = app_count_tid($post_info['topic_id']);
 
-			// Update topic 
+			// Update topic
 			$query = array(
 					'UPDATE'	=> 'topics',
 					'SET'		=> 'num_replies='.$num_replies.', last_post='.$post_info['posted'].', last_post_id='.$new_pid.', last_poster=\''.$forum_db->escape($post_info['poster']).'\'',
@@ -1738,7 +1755,7 @@ function approve_post()
 			send_subscriptions($post_info, $new_pid);
 
 			//--Increment user's post count & last post time------------------
-			
+
 			if ($post_info['is_guest'])
 			{
 				$query = array(

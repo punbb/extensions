@@ -28,7 +28,7 @@
 <extension engine="1.0">
 	<id>pun_approval</id>
 	<title>Post and registration approval</title>
-	<version>1.4.2</version>
+	<version>1.4.3</version>
 	<description>Allows to control all new posts and registrations and approve them</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
@@ -503,7 +503,7 @@
 		]]></hook>
 
 	<!-- Adds checkboxes to administration/Groups in order to allow certain groups posting without approval, approving posts of others and so on-->
-	<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[ 
+	<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
 			?>
 				<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<legend><span><?php echo $lang_app_post['legend post approval'] ?></span></legend>
@@ -619,7 +619,7 @@
 		</div>
 				<?php
 				}
-				
+
 		]]></hook>
 
 
@@ -691,7 +691,7 @@
 	{
 
 		?>
-	
+
 		<div class="txt-set set3">
 			<label for="fld1">
 				<small><p><?php echo $lang_app_post['warning'] ?></p></small>
@@ -708,7 +708,7 @@
 	<hook id="vt_qr_get_posts"><![CDATA[
 			$query['SELECT'] .= ', g_without_approval';
 		]]></hook>
-	
+
 	<!--Adds information about post_approval (needed or not)to the query-->
 	<hook id="po_qr_get_forum_info"><![CDATA[
 			$query['SELECT'] .= ', f.post_approval';
@@ -993,7 +993,7 @@
 		if ((FORUM_PAGE_SECTION == 'unapp_posts') && ($forum_user['g_id'] == FORUM_ADMIN || $forum_user['g_allow_post_approval']=='1')&&(!isset($_GET['users'])))
 		{
 			$forum_page['admin_submenu']['unapp_topics'] = '<li'.((!isset($_GET['aptid'])&& isset($_GET['topics']) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Topics section']).'">'.$lang_app_post['Unp topics'].'</a></li>';
-			$forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';	
+			$forum_page['admin_submenu']['unapp_posts'] = '<li'.(((isset($_GET['all_post'])||isset($_GET['aptid'])) && (FORUM_PAGE == 'admin-unapp_posts-approvalpost')) ? ' class="active"' : ' class="normal"').'><a href="'.forum_link($post_app_url['Posts section']).'">'.$lang_app_post['Unp posts'].'</a></li>';
 		}
 
 	]]></hook>
@@ -1144,7 +1144,7 @@
 		$result_dupe_username=$forum_db->query_build($query_dupe_username_being_approved) or error(__FILE__, __LINE__);
 		if ($forum_db->num_rows($result_dupe_username) && empty($errors))
 			$errors[] = sprintf($lang_profile['Username dupe'], $forum_db->result($result_dupe_username));
-	
+
 		$query_dupe_email_being_approved = array(
 			'SELECT'	=> 'u.username',
 			'FROM'		=> 'post_approval_users AS u',
