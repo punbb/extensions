@@ -6,53 +6,70 @@
  * @package pun_pm
  */
 
-function add_handler (event, handler) {
-	if (document.addEventListener)
-		document.addEventListener(event, handler, false);
-	else if (document.attachEvent)
-		document.attachEvent('on' + event, handler);
-	else
-		return false;
+(function(global){
+	// Setup variables
+	var ua = navigator.userAgent.toLowerCase(),
+		isIE = (ua.indexOf("msie") != -1 && ua.indexOf("opera") == -1),
+		isSafari = ua.indexOf("safari") != -1,
+		isGecko = (ua.indexOf("gecko") != -1 && !isSafari);
 
-	return true;
-}
 
-function key_handler (e) {
-
-	e = e || window.event;
-	var key = e.keyCode || e.which;
-
-	if (e.ctrlKey && (isGecko && key == 115 || !isGecko && key == 83)) {
-		if (e.preventDefault)
-			e.preventDefault();
-		e.returnValue = false;
-
-		document.forms.pun_pm_sendform.send_action.value = 'draft';
-		document.forms.pun_pm_sendform.submit();
-
-		return false;
+	function pun_pm_addLoadEvent(fn) {
+		var x = window.onload;
+		window.onload = (x && typeof x=='function') ? function(){x();fn()} : fn;
 	}
 
-	if (e.ctrlKey && (key == 13 || key == 10)) {
-		if (e.preventDefault)
-			e.preventDefault();
-		e.returnValue = false;
 
-		document.forms.pun_pm_sendform.send_action.value = 'send';
-		document.forms.pun_pm_sendform.submit();
+	function add_handler(event, handler) {
+		if (document.addEventListener)
+			document.addEventListener(event, handler, false);
+		else if (document.attachEvent)
+			document.attachEvent('on' + event, handler);
+		else
+			return false;
 
-		return false;
+		return true;
 	}
-}
 
-var ua = navigator.userAgent.toLowerCase();
-var isIE = (ua.indexOf("msie") != -1 && ua.indexOf("opera") == -1);
-var isSafari = ua.indexOf("safari") != -1;
-var isGecko = (ua.indexOf("gecko") != -1 && !isSafari);
 
-var result = isIE || isSafari ? add_handler("keydown", key_handler) : add_handler("keypress", key_handler);
+	function key_handler(e) {
+		e = e || window.event;
+		var key = e.keyCode || e.which;
 
-if (result) {
-	setTimeout("document.forms.pun_pm_sendform.pm_send.title = 'Ctrl + Enter'", 500);
-	setTimeout("document.forms.pun_pm_sendform.pm_draft.title = 'Ctrl + S'", 500);
-}
+		if (e.ctrlKey && (isGecko && key == 115 || !isGecko && key == 83)) {
+			if (e.preventDefault)
+				e.preventDefault();
+			e.returnValue = false;
+
+			document.forms.pun_pm_sendform.send_action.value = 'draft';
+			document.forms.pun_pm_sendform.submit();
+
+			return false;
+		}
+
+		if (e.ctrlKey && (key == 13 || key == 10)) {
+			if (e.preventDefault)
+				e.preventDefault();
+			e.returnValue = false;
+
+			document.forms.pun_pm_sendform.send_action.value = 'send';
+			document.forms.pun_pm_sendform.submit();
+
+			return false;
+		}
+	}
+
+
+	function pun_pm_onload() {
+		var result = isIE || isSafari ? add_handler("keydown", key_handler) : add_handler("keypress", key_handler);
+
+		if (result) {
+			setTimeout("document.forms.pun_pm_sendform.pm_send.title = 'Ctrl + Enter'", 500);
+			setTimeout("document.forms.pun_pm_sendform.pm_draft.title = 'Ctrl + S'", 500);
+		}
+	}
+
+
+	// Run on page load
+	pun_pm_addLoadEvent(pun_pm_onload);
+})(window);
