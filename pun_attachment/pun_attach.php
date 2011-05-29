@@ -163,13 +163,11 @@ ob_start();
 			}
 
 ?>
-				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
-					<div class="sf-box text">
-						<span class="fld-input">
-							<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_icon" size="10" maxlength="10" />
-							<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_file" size="10" maxlength="10" />
-						</span>
-					</div>
+				<div class="sf-box text">
+					<span class="fld-input">
+						<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_icon" size="10" maxlength="10" />
+						<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_file" size="10" maxlength="10" />
+					</span>
 				</div>
 			</fieldset>
 			<div class="frm-buttons">
