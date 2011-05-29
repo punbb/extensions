@@ -21,7 +21,7 @@ $attach_url = array(
 	'admin_attach_rename'		=>	'admin/settings.php?section=list_attach&amp;action=rename&amp;id=$1&amp;csrf_token=$2',
 	'admin_options_attach'		=>	'admin/settings.php?section=pun_attach',
 	'admin_attachment_edit'		=>	'admin/settings.php?section=pun_list_attach&amp;id=$1',
-	'misc_admin'				=>	'misc.php?item=$1',
+	'misc_admin'				=>	'misc.php?action=pun_attachment&amp;item=$1',
 	'misc_download'				=>	'misc.php?action=pun_attachment&amp;item=$1&amp;download=1',
 	'misc_view'					=>	'misc.php?action=pun_attachment&amp;item=$1&amp;download=0',
 	'misc_preview'				=>	'misc.php?action=pun_attachment&amp;item=$1&amp;preview',
