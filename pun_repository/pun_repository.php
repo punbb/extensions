@@ -32,7 +32,7 @@ function pun_repository_generate_cache(&$error)
 
 	$info = xml_to_array($remote_file['content']);
 
-	if (empty($info) || !is_array($info['extensions']['extension']))
+	if (empty($info) || !isset($info['extensions']['extension']) || !is_array($info['extensions']['extension']))
 	{
 		$error = $lang_pun_repository['Can\'t access repository'];
 		return false;
