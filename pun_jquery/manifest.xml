@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE extension SYSTEM "ext-1.0.dtd">
+
+
+<extension engine="1.0">
+	<id>pun_jquery</id>
+	<title>jQuery</title>
+	<description>A PunBB extension that provide jQuery lib (version 1.6.2)</description>
+	<author>dimka.linux@gmail.com</author>
+	<version>1.0</version>
+
+
+	<!-- -->
+	<minversion>1.4b2</minversion>
+	<maxtestedon>1.4b2</maxtestedon>
+
+
+	<install><![CDATA[
+		forum_config_add('o_pun_jquery_include_method', 0);
+	]]></install>
+
+	<uninstall><![CDATA[
+		forum_config_remove('o_pun_jquery_include_method');
+	]]></uninstall>
+
+	<!-- -->
+	<hooks>
+
+		<!-- -->
+		<hook id="es_essentials"><![CDATA[
+			define('PUN_JQUERY_INCLUDE_METHOD_LOCAL', 0);
+			define('PUN_JQUERY_INCLUDE_METHOD_GOOGLE_CDN', 1);
+			define('PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN', 2);
+			define('PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN', 3);
+
+			define('PUN_JQUERY_VERSION', '1.6.2');
+		]]></hook>
+
+
+		<hook id="aop_features_gzip_fieldset_end"><![CDATA[
+			if (!isset($lang_pun_jquery)) {
+				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/lang.php')) {
+					require $ext_info['path'].'/lang/'.$forum_user['language'].'/lang.php';
+				} else {
+					require $ext_info['path'].'/lang/English/lang.php';
+				}
+			}
+
+			// Reset counter
+			$forum_page['group_count'] = $forum_page['item_count'] = 0;
+?>
+			<div class="content-head">
+				<h2 class="hn"><span><?php echo sprintf($lang_pun_jquery['Setup jquery'], PUN_JQUERY_VERSION) ?></span></h2>
+			</div>
+
+			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
+				<legend class="group-legend"><strong><?php echo sprintf($lang_pun_jquery['Setup jquery legend'], PUN_JQUERY_VERSION) ?></strong></legend>
+				<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
+					<legend><span><?php echo $lang_pun_jquery['Include method'] ?></span></legend>
+					<div class="mf-box">
+						<div class="mf-item">
+							<span class="fld-input"><input type="radio" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_jquery_include_method]" value="<?php echo PUN_JQUERY_INCLUDE_METHOD_LOCAL; ?>"<?php if ($forum_config['o_pun_jquery_include_method'] == PUN_JQUERY_INCLUDE_METHOD_LOCAL) echo ' checked="checked"' ?> /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_jquery['Include method local label'] ?></label>
+						</div>
+						<div class="mf-item">
+							<span class="fld-input"><input type="radio" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_jquery_include_method]" value="<?php echo PUN_JQUERY_INCLUDE_METHOD_GOOGLE_CDN; ?>"<?php if ($forum_config['o_pun_jquery_include_method'] == PUN_JQUERY_INCLUDE_METHOD_GOOGLE_CDN) echo ' checked="checked"' ?> /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_jquery['Include method google label'] ?></label>
+						</div>
+						<div class="mf-item">
+							<span class="fld-input"><input type="radio" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_jquery_include_method]" value="<?php echo PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN; ?>"<?php if ($forum_config['o_pun_jquery_include_method'] == PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN) echo ' checked="checked"' ?> /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_jquery['Include method microsoft label'] ?></label>
+						</div>
+						<div class="mf-item">
+							<span class="fld-input"><input type="radio" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="form[pun_jquery_include_method]" value="<?php echo PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN; ?>"<?php if ($forum_config['o_pun_jquery_include_method'] == PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN) echo ' checked="checked"' ?> /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_jquery['Include method jquery label'] ?></label>
+						</div>
+					</div>
+				</fieldset>
+			</fieldset>
+
+<?php
+		]]></hook>
+
+
+		<!-- -->
+		<hook id="aop_features_validation"><![CDATA[
+			if (isset($form['pun_jquery_include_method']))
+			{
+				$form['pun_jquery_include_method'] = intval($form['pun_jquery_include_method'], 10);
+				if (($form['pun_jquery_include_method'] < PUN_JQUERY_INCLUDE_METHOD_LOCAL) || ($form['pun_jquery_include_method'] > PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN))
+				{
+					$form['pun_jquery_include_method'] = PUN_JQUERY_INCLUDE_METHOD_LOCAL;
+				}
+			}
+			else
+			{
+				$form['pun_jquery_include_method'] = PUN_JQUERY_INCLUDE_METHOD_LOCAL;
+			}
+		]]></hook>
+
+
+		<!-- load js from url -->
+		<hook id="ft_js_include" priority="4"><![CDATA[
+			switch ($forum_config['o_pun_jquery_include_method'])
+			{
+				case PUN_JQUERY_INCLUDE_METHOD_GOOGLE_CDN:
+					$ext_pun_jquery_url = '//ajax.googleapis.com/ajax/libs/jquery/'.PUN_JQUERY_VERSION.'/jquery.min.js';
+					break;
+
+				case PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN:
+					$ext_pun_jquery_url = '//ajax.aspnetcdn.com/ajax/jQuery/jquery-'.PUN_JQUERY_VERSION.'.min.js';
+					break;
+
+				case PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN:
+					$ext_pun_jquery_url = '//code.jquery.com/jquery-'.PUN_JQUERY_VERSION.'.min.js';
+					break;
+
+				case PUN_JQUERY_INCLUDE_METHOD_LOCAL:
+				default:
+					$ext_pun_jquery_url = $ext_info['url'].'/js/jquery-'.PUN_JQUERY_VERSION.'.min.js';
+					break;
+			}
+
+			$forum_loader->add_js($ext_pun_jquery_url, array('async' => false, 'weight' => 75));
+		]]></hook>
+
+	</hooks>
+</extension>
