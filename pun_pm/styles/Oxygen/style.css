@@ -2,74 +2,89 @@
 
 /* Message list styles */
 
-.brd .main-content table.pun_pm_list {
+.pun_pm_list {
 	width: 100%;
 	border-collapse: collapse;
-	margin-bottom: 1em;
-	}
+}
 
-.brd .main-content table.pun_pm_list tr td,
-.brd .main-content table.pun_pm_list tr th {
+.pun_pm_list td,
+.pun_pm_list th {
 	height: auto;
 	width: auto;
 	margin: 0;
 	padding: 0.3em 1em;
-	}
-.brd .main-content table.pun_pm_list tr td {
-	border-width: 1px;
-	border-style: solid;
-	}
-.brd .main-content table.pun_pm_list tr.pm_new td {
+}
+
+.pun_pm_list .pm_new td {
 	font-weight: bold;
-	}
-.brd .main-content table.pun_pm_list tr .td1,
-.brd .main-content table.pun_pm_list tr .td2 {
+}
+
+.pun_pm_list .td1,
+.pun_pm_list .td2 {
 	width: 2.3em;
 	text-align: center;
 	padding-left: 0;
 	padding-right: 0;
 	vertical-align: middle;
-	}
+}
 
-.brd .main-content table.pun_pm_list tr .td5,
-.brd .main-content table.pun_pm_list tr .td3 {
+.pun_pm_list .td5,
+.pun_pm_list .td3 {
 	width: 14em;
-	}
+}
 
-.brd .main-content table.pun_pm_list tr .td4 span {
+.pun_pm_list td.td3 {
+	border-style: solid none none solid;
+}
+
+.pun_pm_list td.td4 {
+	border-style: solid none none none;
+}
+
+.pun_pm_list td.td5 {
+	border-style: solid none none none;
+}
+
+
+.pun_pm_list .td4 span {
 	overflow: hidden;
 	display: block;
 	height: 1.3em;
-	}
+}
 
-.brd .main-content table.pun_pm_list tr .td4 a.mess {
+.pun_pm_list .td4 a.mess {
 	text-decoration: none;
 	color: #999;
-	}
+}
+
+.pun_pm_list .selected td {
+	background: #FFFFCC;
+}
+
 
 /* Message styles */
-
-div.pun_pm_msg table tr td {
+.pun_pm_msg table td {
 	width: auto;
 	border-width: 0;
 	padding: 0.3em 0;
-	}
+}
 
-div.pun_pm_msg .td1 {
+.pun_pm_msg .td1 {
 	font-weight: bold;
 	width: 17.7em;
 	padding-right: 1em;
 	text-align: right;
 	vertical-align: top;
-	}
+}
 
-div.pun_pm_msg .post-entry  {
+.pun_pm_msg .post-entry  {
 	margin: 0;
 	padding: 0;
 	margin-bottom: 1.5em;
-	}
+}
 
-div.pun_pm_msg, div.pun_pm_msg .post-entry .entry-content {
+.pun_pm_msg,
+.pun_pm_msg .post-entry .entry-content {
 	margin: 1em 0.7em;
 	width: auto !important;
-	}
+}

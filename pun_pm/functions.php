@@ -119,19 +119,19 @@ function pun_pm_deliver_messages()
 
 			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
+			$ids = array();
+			while ($row = $forum_db->fetch_assoc($result))
+				$ids[] = intval($row['id']);
+
 			// We have to deliver some messages
-			if ($forum_db->num_rows($result))
+			if (!empty($ids))
 			{
-				$ids = '';
-				while ($row = $forum_db->fetch_assoc($result))
-					$ids .= $row['id'].', ';
- 
 				// There is some free space in the Inbox
 				// Deliver some messages that were sent
 				$query = array(
 					'UPDATE'	=> 'pun_pm_messages',
 					'SET'		=> 'status = \'delivered\'',
-					'WHERE'		=> 'id IN ('.substr($ids, 0, -2).')',
+					'WHERE'		=> 'id IN ('.implode(',', $ids).')',
 				);
 
 				($hook = get_hook('pun_pm_fn_deliver_messages_limited_pre_deliver_query')) ? eval($hook) : null;
@@ -210,10 +210,11 @@ function pun_pm_get_receiver_id($username, &$errors)
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-		if ($forum_db->num_rows($result))
-			list($receiver_id) = $forum_db->fetch_row($result);
-		else
+		$row = $forum_db->fetch_assoc($result);
+		if (!$row)
 			$errors[] = sprintf($lang_pun_pm['Non-existent username'], forum_htmlencode($username));
+		else
+			$receiver_id = intval($row['id']);
 
 		if ($forum_user['id'] == $receiver_id)
 			$errors[] = $lang_pun_pm['Message to yourself'];
@@ -238,8 +239,10 @@ function pun_pm_get_username($id)
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	if ($forum_db->num_rows($result))
-		list($username) = $forum_db->fetch_row($result);
+
+	$row = $forum_db->fetch_assoc($result);
+	if ($row)
+		$username = $row['username'];
 	else
 		$username = '';
 
@@ -360,7 +363,7 @@ function pun_pm_outbox_enough_space($userid, $ratio = 1, $count = false)
 
 function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 {
-	global $lang_pun_pm, $forum_user, $forum_db, $forum_url, $forum_config;
+	global $lang_pun_pm, $forum_user, $forum_db, $forum_url, $forum_config, $forum_flash;
 
 	if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== generate_form_token(forum_link($forum_url['pun_pm_send'])))
 		csrf_confirm_form();
@@ -380,7 +383,7 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 		$errors[] = $lang_pun_pm['Empty body'];
 	elseif (strlen($body) > FORUM_MAX_POSTSIZE_BYTES)
 		$errors[] = sprintf($lang_pun_pm['Too long message'], forum_number_format(strlen($body)), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
-	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_user['is_admmod'])
+	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_page['is_admmod'])
 		$body = utf8_ucwords(utf8_strtolower($body));
 
 	// Validate BBCode syntax
@@ -444,6 +447,8 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 
 	pun_pm_clear_cache($receiver_id); // Clear cached 'New messages' in the user table
 
+	$forum_flash->add_info($lang_pun_pm['Message sent']);
+
 	($hook = get_hook('pun_pm_fn_send_message_pre_redirect')) ? eval($hook) : null;
 
 	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message sent']);
@@ -451,7 +456,7 @@ function pun_pm_send_message($body, $subject, $receiver_username, &$message_id)
 
 function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 {
-	global $lang_pun_pm, $forum_user, $forum_db, $forum_url, $forum_config;
+	global $lang_pun_pm, $forum_user, $forum_db, $forum_url, $forum_config, $forum_flash;
 
 	if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== generate_form_token(forum_link($forum_url['pun_pm_send'])))
 		csrf_confirm_form();
@@ -467,7 +472,7 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 
 	if (strlen($body) > FORUM_MAX_POSTSIZE_BYTES)
 		$errors[] = sprintf($lang_pun_pm['Too long message'], forum_number_format(strlen($body)), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
-	else if ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_user['is_admmod'])
+	else if ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_page['is_admmod'])
 		$body = utf8_ucwords(utf8_strtolower($body));
 
 	// Validate BBCode syntax
@@ -534,6 +539,8 @@ function pun_pm_save_message($body, $subject, $receiver_username, &$message_id)
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	}
 
+	$forum_flash->add_info($lang_pun_pm['Message saved']);
+
 	($hook = get_hook('pun_pm_fn_save_message_pre_redirect')) ? eval($hook) : null;
 
 	redirect(forum_link($forum_url['pun_pm_outbox']), $lang_pun_pm['Message saved']);
@@ -564,9 +571,9 @@ function pun_pm_edit_message()
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	if ($forum_db->num_rows($result) != 0)
+	$row = $forum_db->fetch_assoc($result);
+	if ($row)
 	{
-		$row = $forum_db->fetch_assoc($result);
 		if ($row['status'] == 'sent')
 		{
 			$now = time();
@@ -614,7 +621,7 @@ function pun_pm_preview($receiver, $subject, $body, &$errors)
 		$errors[] = $lang_pun_pm['Empty body'];
 	elseif (strlen($body) > FORUM_MAX_POSTSIZE_BYTES)
 		$errors[] = sprintf($lang_pun_pm['Too long message'], forum_number_format(strlen($body)), forum_number_format(FORUM_MAX_POSTSIZE_BYTES));
-	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_user['is_admmod'])
+	elseif ($forum_config['p_message_all_caps'] == '0' && utf8_strtoupper($body) == $body && !$forum_page['is_admmod'])
 		$body = utf8_ucwords(utf8_strtolower($body));
 
 	// Validate BBCode syntax
@@ -787,10 +794,9 @@ function pun_pm_get_message($id, $type)
 
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	if ($forum_db->num_rows($result) != 1)
-		return false;
-
 	$message = $forum_db->fetch_assoc($result);
+	if (!$message)
+		return false;
 
 	// Update the status of an read message
 	if ($type == 'inbox' && $message['status'] == 'delivered')
@@ -880,11 +886,13 @@ function pun_pm_delete_from_outbox ($ids)
 
 function pun_pm_delete_message($ids)
 {
-	global $forum_user, $forum_url, $lang_pun_pm;
+	global $forum_user, $forum_url, $lang_pun_pm, $forum_flash;
 
 	if (isset($_POST['pm_delete_inbox']))
 	{
 		pun_pm_delete_from_inbox($ids);
+
+		$forum_flash->add_info($lang_pun_pm['Message deleted']);
 
 		($hook = get_hook('pun_pm_fn_delete_message_inbox_pre_redirect')) ? eval($hook) : null;
 
@@ -893,6 +901,8 @@ function pun_pm_delete_message($ids)
 	elseif (isset($_POST['pm_delete_outbox']))
 	{
 		pun_pm_delete_from_outbox($ids);
+
+		$forum_flash->add_info($lang_pun_pm['Message deleted']);
 
 		($hook = get_hook('pun_pm_fn_delete_message_outbox_pre_redirect')) ? eval($hook) : null;
 
@@ -975,7 +985,7 @@ function pun_pm_get_page(&$page)
 
 function pun_pm_box($forum_page)
 {
-	global $lang_pun_pm, $forum_url, $forum_user, $ext_info, $lang_common;
+	global $lang_pun_pm, $forum_url, $forum_user, $ext_info, $lang_common, $forum_loader;
 
 	if (file_exists($ext_info['path'].'/styles/'.$forum_user['style'].'/icons/'))
 		$icons_path = $ext_info['url'].'/styles/'.$forum_user['style'].'/icons';
@@ -986,6 +996,89 @@ function pun_pm_box($forum_page)
 	$forum_page['form_action'] = forum_link($forum_url['pun_pm_write']);
 
 	$forum_page['hidden_fields']['csrf_token'] = '<input type="hidden" name="csrf_token" value="'.generate_form_token($forum_page['form_action']).'" />';
+
+	$pun_pm_delete_confirm_code = <<<EOL
+	(function(global){
+		function pun_pm_confirm_delete () {
+			var a = document.all && !window.opera ? document.all : document.getElementsByTagName("*"); // in opera 9 document.all produces type mismatch error
+			var count = 0;
+
+			for (var i = a.length; i--; ) {
+				if (a[i].tagName.toLowerCase() == 'input' && a[i].getAttribute("type") == "checkbox" && a[i].getAttribute("name") == "pm_delete[]" && a[i].checked) {
+					count++;
+				}
+			}
+
+			if (!count) {
+				alert("{$lang_pun_pm['Not selected']}");
+				return false;
+			}
+
+			return confirm('{$lang_pun_pm['Selected messages']} '+ count +'\\n{$lang_pun_pm['Delete confirmation']}');
+		}
+
+		function pun_pm_select_all (all_checked) {
+			var a = document.all && !window.opera ? document.all : document.getElementsByTagName("*");
+
+			for (var i = a.length; i--; ) {
+				if (a[i].tagName.toLowerCase() == 'input' && a[i].getAttribute("type") == "checkbox" && a[i].getAttribute("name") == "pm_delete[]") {
+					a[i].checked = all_checked;
+					pun_pm_onchange_checkbox(a[i]);
+				}
+			}
+
+			return true;
+		}
+
+
+		function pun_pm_onchange_checkbox(checkbox) {
+			var checkbox = checkbox || this,
+				tr = checkbox.parentNode.parentNode;
+
+			if (checkbox.checked) {
+				PUNBB.common.addClass(tr, 'selected');
+			} else {
+				PUNBB.common.removeClass(tr, 'selected');
+			}
+		}
+
+		function pun_pm_init_delete_handler() {
+			var del_submit = document.getElementById("pun_pm_delete_submit");
+			if (del_submit) {
+				del_submit.onclick = function () {
+					return pun_pm_confirm_delete();
+				};
+
+				PUNBB.common.removeClass(del_submit, 'visual-hidden');
+			}
+
+			var select_all = document.getElementById("pun_pm_delete_all");
+			if (select_all) {
+				select_all.onclick = function () {
+					return pun_pm_select_all(this.checked);
+				};
+
+				PUNBB.common.removeClass(select_all, 'visual-hidden');
+			}
+
+			//
+			var all_el = document.all && !window.opera ? document.all : document.getElementsByTagName("*");
+
+			for (var i = all_el.length; i--; ) {
+				if (all_el[i].tagName.toLowerCase() == 'input' && all_el[i].getAttribute("type") == "checkbox" && all_el[i].getAttribute("name") == "pm_delete[]") {
+					all_el[i].onchange = function () {
+						pun_pm_onchange_checkbox(this);
+					}
+				}
+			}
+		}
+
+		// Run on page load
+		PUNBB.common.addDOMReadyEvent(pun_pm_init_delete_handler);
+	})(window);
+EOL;
+
+	$forum_loader->add_js($pun_pm_delete_confirm_code, array('type' => 'inline'));
 
 	($hook = get_hook('pun_pm_fn_box_pre_output')) ? eval($hook) : null;
 
@@ -1021,13 +1114,9 @@ function pun_pm_box($forum_page)
 			</div>
 <?php
 	}
-?>
-			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
-				<legend class="group-legend"><span><?php echo $forum_page['heading'] ?></span></legend>
-<?php
 	if (count($forum_page['list']))
 	{
-		echo "\t\t\t\t", '<table class="pun_pm_list">', "\n\t\t\t\t\t", '<thead><tr><th class="td1"><input onclick="return pun_pm_select_all(this.checked);" type="checkbox" name="pm_delete_all" value="" /></th><th class="td2"><img src="', $icons_path, '/sent.png" height="16" width="16" alt="Status" title="Status"/></th><th class="td3">', $forum_page['user_role'], '</th><th class="td4">', $lang_pun_pm['Subject'], '</th><th class="td5">', $lang_pun_pm['Edit date'], '</th></tr></thead>', "\n\t\t\t\t\t", '<tbody>', "\n";
+		echo "\t\t\t\t", '<div class="ct-group"><table class="pun_pm_list">', "\n\t\t\t\t\t", '<thead><tr><th class="td1"><input id="pun_pm_delete_all" type="checkbox" name="pm_delete_all" value="" class="visual-hidden" /></th><th class="td2"><img src="', $icons_path, '/sent.png" height="16" width="16" alt="Status" title="Status"/></th><th class="td3">', $forum_page['user_role'], '</th><th class="td4">', $lang_pun_pm['Subject'], '</th><th class="td5">', $lang_pun_pm['Edit date'], '</th></tr></thead>', "\n\t\t\t\t\t", '<tbody>', "\n";
 
 		foreach($forum_page['list'] as $message)
 		{
@@ -1049,13 +1138,9 @@ function pun_pm_box($forum_page)
 			echo "\t\t\t\t\t", '</tr>', "\n";
 		}
 
-		echo "\t\t\t\t\t", '</tbody>', "\n\t\t\t\t", '</table>', "\n";
-		echo "\t\t\t\t", '<p style="float: left;"><input type="submit" name="pm_delete_', $forum_page['type'], '" value="', $lang_pun_pm['Delete selected'], '" onclick="return pun_pm_confirm_delete();"/></p>', "\n";
+		echo "\t\t\t\t\t", '</tbody>', "\n\t\t\t\t", '</table></div>', "\n";
+		echo "\t\t\t\t", '<div style="margin: 1.417em;"><input class="visual-hidden" type="submit" name="pm_delete_', $forum_page['type'], '" value="', $lang_pun_pm['Delete selected'], '" id="pun_pm_delete_submit"/></div>', "\n";
 	}
-
-?>
-			</fieldset>
-<?php
 	if ($forum_page['num_pages'] > 1) {
 ?>
 			<fieldset class="frm-group group<?php echo ++$forum_page['group_count'] ?>">
@@ -1066,35 +1151,6 @@ function pun_pm_box($forum_page)
 ?>
 		</form>
 	</div>
-
-<script type="text/javascript">
-
-function pun_pm_confirm_delete () {
-	var a = document.all && !window.opera ? document.all : document.getElementsByTagName("*"); // in opera 9 document.all produces type mismatch error
-	var count = 0;
-
-	for (var i = a.length; i--; )
-		if (a[i].tagName.toLowerCase() == 'input' && a[i].getAttribute("type") == "checkbox" && a[i].getAttribute("name") == "pm_delete[]" && a[i].checked)
-			count++;
-
-	if (!count) {
-		alert("<?php echo $lang_pun_pm['Not selected']?>");
-		return false;
-	}
-
-	return confirm("<?php echo $lang_pun_pm['Selected messages']?> " + count + "\n<?php echo $lang_pun_pm['Delete confirmation']?>");
-}
-
-function pun_pm_select_all (all_checked) {
-	var a = document.all && !window.opera ? document.all : document.getElementsByTagName("*");
-
-	for (var i = a.length; i--; )
-		if (a[i].tagName.toLowerCase() == 'input' && a[i].getAttribute("type") == "checkbox" && a[i].getAttribute("name") == "pm_delete[]")
-			a[i].checked = all_checked;
-
-	return true;
-}
-</script>
 <?php
 
 	$result = ob_get_contents();
@@ -1203,19 +1259,13 @@ function pun_pm_message($message, $type)
 <?php
 		if ($type == 'outbox' && ($message['status'] == 'draft' || $message['status'] == 'sent'))
 		{
-?>				<span class="submit"><input type="submit" name="pm_edit" value="<?php echo $lang_pun_pm['Edit message']; ?>" /></span>
+?>				<span class="submit primary"><input type="submit" name="pm_edit" value="<?php echo $lang_pun_pm['Edit message']; ?>" /></span>
 <?php
 		}
 
 		if ($type != 'outbox' || $message['status'] != 'sent')
 		{
 ?>				<span class="submit"><input type="submit" name="pm_delete_<?php echo $type ?>" value="<?php echo $lang_pun_pm['Delete message'] ?>" onclick="return confirm('<?php echo $lang_pun_pm['Delete confirmation 1'] ?>');" /></span>
-<?php
-		}
-		else
-		{
-?>
-				<span class="fld-help"><?php echo $lang_pun_pm['Sent -> draft note']; ?></span>
 <?php
 		}
 ?>
@@ -1269,10 +1319,10 @@ function pun_pm_edit_message_errors($errors)
 
 function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id = false, $reply_form = false, $notice = false, $preview = false)
 {
-	global $forum_config, $forum_url, $lang_common, $lang_pun_pm, $forum_user, $pun_pm_errors, $ext_info, $forum_head;
+	global $forum_config, $forum_url, $lang_common, $lang_pun_pm, $forum_user, $pun_pm_errors, $ext_info, $forum_head, $forum_loader;
 
 	// need JS
-	$forum_head['pun_pm_js_shortcuts'] = '<script type="text/javascript" src="'.$ext_info['url'].'/shortcut.js"></script>';
+	$forum_loader->add_js($ext_info['url'].'/shortcut.js', array('type' => 'url'));
 
 	$username = forum_htmlencode($username);
 	$subject = forum_htmlencode($subject);
@@ -1354,8 +1404,8 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 ?>
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['To'].' <em>'.$lang_common['Required'].'</em>' ?></span> <small><?php echo $lang_pun_pm['Receiver\'s username']; ?></small></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="50" maxlength="255" /><?php if ($username == '') echo pun_pm_get_last_senders(); ?></span>
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['To'] ?></span></label><br />
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="70" maxlength="255" /><?php if ($username == '') echo pun_pm_get_last_senders(); ?></span>
 					</div>
 				</div>
 <?php
@@ -1370,7 +1420,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 <?php ($hook = get_hook('pun_pm_fn_send_form_pre_textarea_output')) ? eval($hook) : null; ?>
 				<div class="txt-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="txt-box textarea required">
-						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['Message'].' <em>'.$lang_common['Required'].'</em>' ?></span></label>
+						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['Message'] ?></span></label>
 						<div class="txt-input"><span class="fld-input"><textarea id="fld<?php echo $forum_page['fld_count'] ?>" name="req_message" rows="14" cols="95"><?php echo $body; ?></textarea></span></div>
 					</div>
 				</div>
@@ -1386,7 +1436,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 	}
 	($hook = get_hook('pun_pm_fn_send_form_pre_buttons_output')) ? eval($hook) : null;
 ?>
-				<span class="submit"><input type="submit" name="pm_send" value="<?php echo $lang_pun_pm['Send button'] ?>" /></span>
+				<span class="submit primary"><input type="submit" name="pm_send" value="<?php echo $lang_pun_pm['Send button'] ?>" /></span>
 				<span class="submit"><input type="submit" name="pm_preview" value="<?php echo $lang_pun_pm['Preview'] ?>" style="padding-left: 2em; padding-right: 2em;"/></span>
 				<span class="submit"><input type="submit" name="pm_draft" value="<?php echo $lang_pun_pm['Save draft'] ?>" /></span>
 			</div>

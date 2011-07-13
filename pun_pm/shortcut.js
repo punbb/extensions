@@ -14,12 +14,6 @@
 		isGecko = (ua.indexOf("gecko") != -1 && !isSafari);
 
 
-	function pun_pm_addLoadEvent(fn) {
-		var x = window.onload;
-		window.onload = (x && typeof x=='function') ? function(){x();fn()} : fn;
-	}
-
-
 	function add_handler(event, handler) {
 		if (document.addEventListener)
 			document.addEventListener(event, handler, false);
@@ -71,5 +65,5 @@
 
 
 	// Run on page load
-	pun_pm_addLoadEvent(pun_pm_onload);
+	PUNBB.common.addDOMReadyEvent(pun_pm_onload);
 })(window);

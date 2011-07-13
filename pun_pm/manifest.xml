@@ -5,7 +5,7 @@
 /**
  * Allows users to send private messages
  *
- * @copyright (C) 2008-2009 PunBB
+ * @copyright (C) 2008-2011 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_pm
  */
@@ -14,154 +14,143 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>1.2.10</version>
-	<description>Allows users to send private messages. This is the first simple version with minimum functions.</description>
+	<version>2.1</version>
+	<description>Allows users to send and receive private messages.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3</minversion>
-	<maxtestedon>1.3.5</maxtestedon>
+	<minversion>1.4rc1</minversion>
+	<maxtestedon>1.4rc1</maxtestedon>
 
-	<note type="uninstall" timing="pre">WARNING! All users' messages will be removed during the uninstall process. It is strongly recommended you to disable 'Private Messages' extension instead or to upgrade it without uninstalling.</note>
+	<note type="uninstall" timing="pre">WARNING! All users messages will be removed during the uninstall process. It is strongly recommended you to disable "Private Messages" extension instead or to upgrade it without uninstalling.</note>
+
 
 	<install><![CDATA[
+		// Setup main table
+		if (!$forum_db->table_exists('pun_pm_messages'))
+		{
+			$schema = array(
+				'FIELDS'			=> array(
+					'id'				=> array(
+						'datatype'		=> 'SERIAL',
+						'allow_null'	=> false
+					),
+					'sender_id'			=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'receiver_id'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> true
+					),
+					'lastedited_at'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'read_at'			=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'subject'			=> array(
+						'datatype'		=> 'VARCHAR(255)',
+						'allow_null'	=> false,
+						'default'		=> '\'\''
+					),
+					'body'				=> array(
+						'datatype'		=> 'TEXT',
+						'allow_null'	=> false
+					),
+					'status'			=> array(
+						'datatype'		=> 'VARCHAR(9)',
+						'allow_null'	=> false,
+						'default'		=> '\'draft\'',
+					),
+					'deleted_by_sender'	=> array(
+						'datatype'		=> 'TINYINT(1)',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'deleted_by_receiver'=> array(
+						'datatype'		=> 'TINYINT(1)',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					)
+				),
+				'PRIMARY KEY'	=> array('id'),
+				'INDEXES'		=> array(
+					'sender_id_idx'		=> array('sender_id'),
+					'receiver_id_idx'	=> array('receiver_id'),
+				)
+			);
 
-// Setup main table
-if (!$forum_db->table_exists('pun_pm_messages'))
-{
-	$schema = array(
-		'FIELDS'			=> array(
-			'id'				=> array(
-				'datatype'		=> 'SERIAL',
-				'allow_null'	=> false
-			),
-			'sender_id'			=> array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			),
-			'receiver_id'		=> array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> true
-			),
-			'lastedited_at'		=> array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			),
-			'read_at'			=> array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			),
-			'subject'			=> array(
-				'datatype'		=> 'VARCHAR(255)',
-				'allow_null'	=> false,
-				'default'		=> '\'\''
-			),
-			'body'				=> array(
-				'datatype'		=> 'TEXT',
-				'allow_null'	=> false
-			),
-			'status'			=> array(
-				'datatype'		=> 'VARCHAR(9)',
-				'allow_null'	=> false,
-				'default'		=> '\'draft\'',
-			),
-			'deleted_by_sender'	=> array(
-				'datatype'		=> 'TINYINT(1)',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			),
-			'deleted_by_receiver'=> array(
-				'datatype'		=> 'TINYINT(1)',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			)
-		),
-		'PRIMARY KEY'	=> array('id'),
-		'INDEXES'		=> array(
-			'sender_id_idx'		=> array('sender_id'),
-			'receiver_id_idx'	=> array('receiver_id'),
-		)
-	);
+			$forum_db->create_table('pun_pm_messages', $schema);
+		} else if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.1b2', '<')) {
+			$forum_db->add_field('pun_pm_messages', 'lastedited_at_new', 'INT(10) UNSIGNED', false, '0');
+			$forum_db->add_field('pun_pm_messages', 'read_at_new', 'INT(10) UNSIGNED', false, '0');
 
-	$forum_db->create_table('pun_pm_messages', $schema);
-}
-else if (defined('EXT_CUR_VERSION') && version_compare(EXT_CUR_VERSION, '1.1b2', '<')) {
-	$forum_db->add_field('pun_pm_messages', 'lastedited_at_new', 'INT(10) UNSIGNED', false, '0');
-	$forum_db->add_field('pun_pm_messages', 'read_at_new', 'INT(10) UNSIGNED', false, '0');
+			$forum_db->query('UPDATE '.$forum_db->prefix.'pun_pm_messages SET lastedited_at_new = UNIX_TIMESTAMP(lastedited_at)');
+			$forum_db->query('UPDATE '.$forum_db->prefix.'pun_pm_messages SET read_at_new = UNIX_TIMESTAMP(read_at)');
 
-	$forum_db->query('UPDATE '.$forum_db->prefix.'pun_pm_messages SET lastedited_at_new = UNIX_TIMESTAMP(lastedited_at)');
-	$forum_db->query('UPDATE '.$forum_db->prefix.'pun_pm_messages SET read_at_new = UNIX_TIMESTAMP(read_at)');
+			$forum_db->drop_field('pun_pm_messages', 'lastedited_at');
+			$forum_db->drop_field('pun_pm_messages', 'read_at');
 
-	$forum_db->drop_field('pun_pm_messages', 'lastedited_at');
-	$forum_db->drop_field('pun_pm_messages', 'read_at');
+			$forum_db->query('ALTER TABLE '.$forum_db->prefix.'pun_pm_messages
+				CHANGE lastedited_at_new lastedited_at INT(10) UNSIGNED NOT NULL DEFAULT 0,
+				CHANGE read_at_new read_at INT(10) UNSIGNED NOT NULL DEFAULT 0,
+				MODIFY status VARCHAR(9) NOT NULL DEFAULT \'draft\'') or error(__FILE__, __LINE__);
+		}
 
-	$forum_db->query('ALTER TABLE '.$forum_db->prefix.'pun_pm_messages
-		CHANGE lastedited_at_new lastedited_at INT(10) UNSIGNED NOT NULL DEFAULT 0,
-		CHANGE read_at_new read_at INT(10) UNSIGNED NOT NULL DEFAULT 0,
-		MODIFY status VARCHAR(9) NOT NULL DEFAULT \'draft\'') or error(__FILE__, __LINE__);
-}
-
-// Add extension options to the config table
-$pun_pm_config = array(
-	'o_pun_pm_inbox_size'		=> '100',
-	'o_pun_pm_outbox_size'		=> '100',
-	'o_pun_pm_show_new_count'	=> '1',
-	'o_pun_pm_show_global_link'	=> '0',
-);
-foreach ($pun_pm_config as $conf_name => $conf_value)
-{
-	if(!array_key_exists($conf_name, $forum_config))
-	{
-		$query = array(
-			'INSERT'	=> 'conf_name, conf_value',
-			'INTO'		=> 'config',
-			'VALUES'	=> '\''.$conf_name.'\', \''.$conf_value.'\''
+		// Add extension options to the config table
+		$pun_pm_config = array(
+			'o_pun_pm_inbox_size'		=> '100',
+			'o_pun_pm_outbox_size'		=> '100',
+			'o_pun_pm_show_new_count'	=> '1',
+			'o_pun_pm_show_global_link'	=> '0',
 		);
 
-		$forum_db->query_build($query) or error(__FILE__, __LINE__);
-	}
-}
+		foreach ($pun_pm_config as $conf_name => $conf_value)
+		{
+			forum_config_add($conf_name, $conf_value);
+		}
 
-// Field for cache
-if (!$forum_db->field_exists('users', 'pun_pm_new_messages'))
-	$forum_db->add_field('users', 'pun_pm_new_messages', 'INT(10)', true);
+		// Field for cache
+		if (!$forum_db->field_exists('users', 'pun_pm_new_messages'))
+			$forum_db->add_field('users', 'pun_pm_new_messages', 'INT(10)', true);
 
-// User options
-if (!$forum_db->field_exists('users', 'pun_pm_long_subject'))
-	$forum_db->add_field('users', 'pun_pm_long_subject', 'TINYINT(1)', false, 1);
-
+		// User options
+		if (!$forum_db->field_exists('users', 'pun_pm_long_subject'))
+			$forum_db->add_field('users', 'pun_pm_long_subject', 'TINYINT(1)', false, 1);
 	]]></install>
 
+
 	<uninstall><![CDATA[
+		// Delete extension options from the config
+		forum_config_remove(array(
+			'o_pun_pm_outbox_size',
+			'o_pun_pm_inbox_size',
+			'o_pun_pm_show_new_count',
+			'o_pun_pm_show_global_link'));
 
-// Delete extension options from the config
-$query = array(
-	'DELETE'	=> 'config',
-	'WHERE'		=> 'conf_name in (\'o_pun_pm_outbox_size\', \'o_pun_pm_inbox_size\', \'o_pun_pm_show_new_count\', \'o_pun_pm_show_global_link\')',
-);
-$forum_db->query_build($query) or error(__FILE__, __LINE__);
+		$forum_db->drop_table('pun_pm_messages');
 
-$forum_db->drop_table('pun_pm_messages');
-
-$forum_db->drop_field('users', 'pun_pm_new_messages');
-$forum_db->drop_field('users', 'pun_pm_long_subject');
-
+		$forum_db->drop_field('users', 'pun_pm_new_messages');
+		$forum_db->drop_field('users', 'pun_pm_long_subject');
 	]]></uninstall>
+
 
 	<hooks>
 
 		<hook id="pf_change_details_settings_validation"><![CDATA[
-
-// Validate option 'quote beginning of message'
-if (!isset($_POST['form']['pun_pm_long_subject']) || $_POST['form']['pun_pm_long_subject'] != '1')
-	$form['pun_pm_long_subject'] = '0';
-else
-	$form['pun_pm_long_subject'] = '1';
+			// Validate option 'quote beginning of message'
+			if (!isset($_POST['form']['pun_pm_long_subject']) || $_POST['form']['pun_pm_long_subject'] != '1')
+				$form['pun_pm_long_subject'] = '0';
+			else
+				$form['pun_pm_long_subject'] = '1';
 		]]></hook>
 
-		<hook id="pf_change_details_settings_email_fieldset_end"><![CDATA[
 
+		<hook id="pf_change_details_settings_email_fieldset_end"><![CDATA[
 // Per-user option 'quote beginning of message'
 if ($forum_config['p_message_bbcode'] == '1')
 {
@@ -196,35 +185,20 @@ else
 
 		]]></hook>
 
-		<hook id="co_common"><![CDATA[
-$pun_extensions_used = array_merge(isset($pun_extensions_used) ? $pun_extensions_used : array(), array($ext_info['id']));
-		]]></hook>
-
-		<hook id="ft_about_end" priority="9"><![CDATA[
-if (!defined('PUN_EXTENSIONS_USED') && !empty($pun_extensions_used))
-{
-	define('PUN_EXTENSIONS_USED', 1);
-	if (count($pun_extensions_used) == 1)
-		echo '<p style="clear: both; ">The '.$pun_extensions_used[0].' official extension is installed. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
-	else
-		echo '<p style="clear: both; ">Currently installed <span id="extensions-used" title="'.implode(', ', $pun_extensions_used).'.">'.count($pun_extensions_used).' official extensions</span>. Copyright &copy; 2003&ndash;2009 <a href="http://punbb.informer.com/">PunBB</a>.</p>';
-}
-		]]></hook>
 
 		<hook id="hd_head"><![CDATA[
-
-// Incuding styles for pun_pm
-if (defined('FORUM_PAGE') && 'pun_pm' == substr(FORUM_PAGE, 0, 6))
-{
-	if (file_exists($ext_info['path'].'/styles/'.$forum_user['style'].'/'))
-		$forum_head['style_pun_pm'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles/'.$forum_user['style'].'/style.css" />';
-	else
-		$forum_head['style_pun_pm'] = '<link rel="stylesheet" type="text/css" media="screen" href="'.$ext_info['url'].'/styles/Oxygen/style.css" />';
-}
+			// Incuding styles for pun_pm
+			if (defined('FORUM_PAGE') && 'pun_pm' == substr(FORUM_PAGE, 0, 6))
+			{
+				if (file_exists($ext_info['path'].'/styles/'.$forum_user['style'].'/'))
+					$forum_loader->add_css($ext_info['url'].'/styles/'.$forum_user['style'].'/style.css', array('type' => 'url', 'media' => 'screen'));
+				else
+					$forum_loader->add_css($ext_info['url'].'/styles/Oxygen/style.css', array('type' => 'url', 'media' => 'screen'));
+			}
 		]]></hook>
 
-		<hook id="mi_new_action"><![CDATA[
 
+		<hook id="mi_new_action"><![CDATA[
 if ($action == 'pun_pm_send' && !$forum_user['is_guest'])
 {
 	if(!defined('PUN_PM_FUNCTIONS_LOADED'))
@@ -389,6 +363,7 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 }
 		]]></hook>
 
+
 		<hook id="aop_features_avatars_fieldset_end"><![CDATA[
 
 // Admin options
@@ -439,155 +414,162 @@ $forum_page['group_count'] = $forum_page['item_count'] = 0;
 
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="aop_features_validation"><![CDATA[
+			$form['pun_pm_inbox_size'] = (!isset($form['pun_pm_inbox_size']) || (int) $form['pun_pm_inbox_size'] <= 0) ? '0' : (string)(int) $form['pun_pm_inbox_size'];
+			$form['pun_pm_outbox_size'] = (!isset($form['pun_pm_outbox_size']) || (int) $form['pun_pm_outbox_size'] <= 0) ? '0' : (string)(int) $form['pun_pm_outbox_size'];
 
-$form['pun_pm_inbox_size'] = (!isset($form['pun_pm_inbox_size']) || (int) $form['pun_pm_inbox_size'] <= 0) ? '0' : (string)(int) $form['pun_pm_inbox_size'];
-$form['pun_pm_outbox_size'] = (!isset($form['pun_pm_outbox_size']) || (int) $form['pun_pm_outbox_size'] <= 0) ? '0' : (string)(int) $form['pun_pm_outbox_size'];
-if (!isset($form['pun_pm_show_new_count']) || $form['pun_pm_show_new_count'] != '1')
-	$form['pun_pm_show_new_count'] = '0';
-if (!isset($form['pun_pm_show_global_link']) || $form['pun_pm_show_global_link'] != '1')
-	$form['pun_pm_show_global_link'] = '0';
+			if (!isset($form['pun_pm_show_new_count']) || $form['pun_pm_show_new_count'] != '1')
+				$form['pun_pm_show_new_count'] = '0';
 
-($hook = get_hook('pun_pm_aop_features_validation_end')) ? eval($hook) : null;
+			if (!isset($form['pun_pm_show_global_link']) || $form['pun_pm_show_global_link'] != '1')
+				$form['pun_pm_show_global_link'] = '0';
 
+			($hook = get_hook('pun_pm_aop_features_validation_end')) ? eval($hook) : null;
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="fn_delete_user_end"><![CDATA[
+			$query = array(
+				'DELETE'	=> 'pun_pm_messages',
+				'WHERE'		=> 'receiver_id = '.$user_id.' AND deleted_by_sender = 1'
+			);
+			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-$query = array(
-	'DELETE'	=> 'pun_pm_messages',
-	'WHERE'		=> 'receiver_id = '.$user_id.' AND deleted_by_sender = 1'
-);
-$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
-$query = array(
-	'UPDATE'	=> 'pun_pm_messages',
-	'SET'		=> 'deleted_by_receiver = 1',
-	'WHERE'		=> 'receiver_id = '.$user_id
-);
-$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-
+			$query = array(
+				'UPDATE'	=> 'pun_pm_messages',
+				'SET'		=> 'deleted_by_receiver = 1',
+				'WHERE'		=> 'receiver_id = '.$user_id
+			);
+			$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="hd_visit_elements"><![CDATA[
+			// 'New messages (N)' link
+			if (!$forum_user['is_guest'] && $forum_config['o_pun_pm_show_new_count'])
+			{
+				global $lang_pun_pm;
 
-// 'New messages (N)' link
-if (!$forum_user['is_guest'] && $forum_config['o_pun_pm_show_new_count'])
-{
-	global $lang_pun_pm;
+				if (!isset($lang_pun_pm))
+				{
+					if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+						include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+					else
+						include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+				}
 
-	if (!isset($lang_pun_pm))
-	{
-		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-		else
-			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-	}
+				// TODO: Do not include all functions, divide them into 2 files
+				if(!defined('PUN_PM_FUNCTIONS_LOADED'))
+					require $ext_info['path'].'/functions.php';
 
-	// TODO: Do not include all functions, divide them into 2 files
-	if(!defined('PUN_PM_FUNCTIONS_LOADED'))
-		require $ext_info['path'].'/functions.php';
+				($hook = get_hook('pun_pm_hd_visit_elements_pre_change')) ? eval($hook) : null;
 
-	($hook = get_hook('pun_pm_hd_visit_elements_pre_change')) ? eval($hook) : null;
+				//$visit_elements['<!-- forum_visit -->'] = preg_replace('#(<p id="visit-links" class="options">.*?)(</p>)#', '$1 <span><a href="'.forum_link($forum_url['pun_pm_inbox']).'">'.pun_pm_unread_messages().'</a></span>$2', $visit_elements['<!-- forum_visit -->']);
+				if ($forum_user['g_read_board'] == '1' && $forum_user['g_search'] == '1')
+				{
+					$visit_links['pun_pm'] = '<span id="visit-pun_pm"><a href="'.forum_link($forum_url['pun_pm_inbox']).'">'.pun_pm_unread_messages().'</a></span>';
+				}
 
-	$visit_elements['<!-- forum_visit -->'] = preg_replace('#(<p id="visit-links" class="options">.*?)(</p>)#', '$1 <span><a href="'.forum_link($forum_url['pun_pm_inbox']).'">'.pun_pm_unread_messages().'</a></span>$2', $visit_elements['<!-- forum_visit -->']);
-
-	($hook = get_hook('pun_pm_hd_visit_elements_after_change')) ? eval($hook) : null;
-}
+				($hook = get_hook('pun_pm_hd_visit_elements_after_change')) ? eval($hook) : null;
+			}
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="vt_row_pre_post_contacts_merge"><![CDATA[
+			global $lang_pun_pm;
 
-global $lang_pun_pm;
+			if (!isset($lang_pun_pm))
+			{
+				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+					include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+				else
+					include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			}
 
-if (!isset($lang_pun_pm))
-{
-	if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-		include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-	else
-		include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-}
+			($hook = get_hook('pun_pm_pre_post_contacts_add')) ? eval($hook) : null;
 
-($hook = get_hook('pun_pm_pre_post_contacts_add')) ? eval($hook) : null;
+			// Links 'Send PM' near posts
+			if (!$forum_user['is_guest'] && $cur_post['poster_id'] > 1 && $forum_user['id'] != $cur_post['poster_id'])
+				$forum_page['post_contacts']['PM'] = '<a class="contact" title="'.$lang_pun_pm['Send PM'].'" href="'.forum_link($forum_url['pun_pm_post_link'], $cur_post['poster_id']).'">'.$lang_pun_pm['PM'].'</a>';
 
-// Links 'Send PM' near posts
-if (!$forum_user['is_guest'] && $cur_post['poster_id'] > 1 && $forum_user['id'] != $cur_post['poster_id'])
-	$forum_page['post_contacts']['PM'] = '<a class="contact" title="'.$lang_pun_pm['Send PM'].'" href="'.forum_link($forum_url['pun_pm_post_link'], $cur_post['poster_id']).'">'.$lang_pun_pm['PM'].'</a>';
-
-($hook = get_hook('pun_pm_after_post_contacts_add')) ? eval($hook) : null;
-
+			($hook = get_hook('pun_pm_after_post_contacts_add')) ? eval($hook) : null;
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="fn_generate_navlinks_end"><![CDATA[
+			// Link 'PM' in the main nav menu
+			if (isset($links['profile']) && $forum_config['o_pun_pm_show_global_link'])
+			{
+				global $lang_pun_pm;
 
-// Link 'PM' in the main nav menu
-if (isset($links['profile']) && $forum_config['o_pun_pm_show_global_link'])
-{
-	global $lang_pun_pm;
+				if (!isset($lang_pun_pm))
+				{
+					if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+						include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+					else
+						include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+				}
 
-	if (!isset($lang_pun_pm))
-	{
-		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-		else
-			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-	}
+				if ('pun_pm' == substr(FORUM_PAGE, 0, 6))
+					$links['profile'] = str_replace(' class="isactive"', '', $links['profile']);
 
-	if ('pun_pm' == substr(FORUM_PAGE, 0, 6))
-		$links['profile'] = str_replace(' class="isactive"', '', $links['profile']);
+				($hook = get_hook('pun_pm_pre_main_navlinks_add')) ? eval($hook) : null;
 
-	($hook = get_hook('pun_pm_pre_main_navlinks_add')) ? eval($hook) : null;
+				$links['profile'] .= "\n\t\t".'<li id="nav_pun_pm"'.('pun_pm' == substr(FORUM_PAGE, 0, 6) ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_pm']).'"><span>'.$lang_pun_pm['Private messages'].'</span></a></li>';
 
-	$links['profile'] .= "\n\t\t".'<li id="nav_pun_pm"'.('pun_pm' == substr(FORUM_PAGE, 0, 6) ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_pm']).'"><span>'.$lang_pun_pm['Private messages'].'</span></a></li>';
-
-	($hook = get_hook('pun_pm_after_main_navlinks_add')) ? eval($hook) : null;
-}
-
+				($hook = get_hook('pun_pm_after_main_navlinks_add')) ? eval($hook) : null;
+			}
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="pf_view_details_pre_header_load,pf_change_details_about_pre_header_load"><![CDATA[
+			// Link in the profile
+			if (!$forum_user['is_guest'] && $forum_user['id'] != $user['id'])
+			{
+				if (!isset($lang_pun_pm))
+				{
+					if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+						include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+					else
+						include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+				}
 
-// Link in the profile
-if (!$forum_user['is_guest'] && $forum_user['id'] != $user['id'])
-{
-	if (!isset($lang_pun_pm))
-	{
-		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-			include $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-		else
-			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
-	}
+				($hook = get_hook('pun_pm_pre_profile_user_contact_add')) ? eval($hook) : null;
 
-	($hook = get_hook('pun_pm_pre_profile_user_contact_add')) ? eval($hook) : null;
+				$forum_page['user_contact']['PM'] = '<li><span>'.$lang_pun_pm['PM'].': <a href="'.forum_link($forum_url['pun_pm_post_link'], $id).'">'.$lang_pun_pm['Send PM'].'</a></span></li>';
 
-	$forum_page['user_contact']['PM'] = '<li><span>'.$lang_pun_pm['PM'].': <a href="'.forum_link($forum_url['pun_pm_post_link'], $id).'">'.$lang_pun_pm['Send PM'].'</a></span></li>';
-
-	($hook = get_hook('pun_pm_after_profile_user_contact_add')) ? eval($hook) : null;
-}
+				($hook = get_hook('pun_pm_after_profile_user_contact_add')) ? eval($hook) : null;
+			}
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="co_modify_url_scheme"><![CDATA[
-
-if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
-	require $ext_info['path'].'/url/'.$forum_config['o_sef'].'.php';
-else
-	require $ext_info['path'].'/url/Default.php';
-
+			if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
+				require $ext_info['path'].'/url/'.$forum_config['o_sef'].'.php';
+			else
+				require $ext_info['path'].'/url/Default.php';
 		]]></hook>
 
+
+		<!-- -->
 		<hook id="re_rewrite_rules"><![CDATA[
+			$forum_rewrite_rules['/^pun_pm[\/_-]?send(\.html?|\/)?$/i'] = 'misc.php?action=pun_pm_send';
+			$forum_rewrite_rules['/^pun_pm[\/_-]?compose[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=compose&receiver_id=$1';
+			$forum_rewrite_rules['/^pun_pm(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm';
+			$forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1';
+			$forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)[\/_-]?(p|page\/)([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1&p=$3';
+			$forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1&message_id=$2';
 
-$forum_rewrite_rules['/^pun_pm[\/_-]?send(\.html?|\/)?$/i'] = 'misc.php?action=pun_pm_send';
-$forum_rewrite_rules['/^pun_pm[\/_-]?compose[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=compose&receiver_id=$1';
-$forum_rewrite_rules['/^pun_pm(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm';
-$forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1';
-$forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)[\/_-]?(p|page\/)([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1&p=$3';
-$forum_rewrite_rules['/^pun_pm[\/_-]?([0-9a-z]+)[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'misc.php?section=pun_pm&pmpage=$1&message_id=$2';
-
-($hook = get_hook('pun_pm_after_rewrite_rules_set')) ? eval($hook) : null;
-
+			($hook = get_hook('pun_pm_after_rewrite_rules_set')) ? eval($hook) : null;
 		]]></hook>
 
 	</hooks>
-
 </extension>
