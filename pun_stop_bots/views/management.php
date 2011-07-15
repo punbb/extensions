@@ -3,7 +3,7 @@
 /**
  * pun_stop_bots view of questions management page
  *
- * @copyright (C) 2008-2009 PunBB
+ * @copyright (C) 2008-2011 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_stop_bots
  */
