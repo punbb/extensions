@@ -11,126 +11,210 @@
 if (!defined('FORUM'))
 	die();
 
-function pun_bbcode_bar() {
-	global $forum_config, $forum_user, $ext_info, $smilies, $base_url;
 
-	ob_start();
+class Pun_bbcode {
+	private $buttons;
 
-	// NOTE: I couldn't find how to remove sf-set from here.
+
+	//
+	public function __construct() {
+		$this->buttons = array();
+	}
+
+
+	//
+	public function add_button($button = NULL) {
+		if (is_null($button) || !is_array($button))
+		{
+			return false;
+		}
+
+		// Default button
+		$default_button = array(
+			//
+			'name'		=> array(
+				'default'	=> null,
+			),
+
+			// Default as name
+			'title'		=> array(
+				'default'	=> null,
+			),
+
+			// Default as name
+			'tag'		=> array(
+				'default'	=> null,
+			),
+
+			// without_attr, with_attr
+			'type'		=> array(
+				'default'	=> 'without_attr',
+			),
+
+			// default weight is 100
+			'weight'		=> array(
+				'default'	=> 100,
+			),
+
+			//
+			'onclick'		=> array(
+				'default'	=> null,
+			),
+
+			// boolean
+			'image'		=> array(
+				'default'	=> false,
+			),
+
+			//
+			'group'		=> array(
+				'default'	=> 'default',
+			)
+		);
+
+		$length = count($default_button);
+		$keys = array_keys($default_button);
+
+		for ($i = 0; $i < $length; $i++)
+		{
+			$key = $keys[$i];
+			if (!isset($button[$key]))
+			{
+				$default_button[$keys[$i]] = $default_button[$keys[$i]]['default'];
+				continue;
+			}
+
+			$default_button[$keys[$i]] = $button[$key];
+		}
+
+		// Do not add button without name
+		if (is_null($default_button['name'])) {
+			return false;
+		}
+
+		// Title
+		if (is_null($default_button['title'])) {
+			$default_button['title'] = forum_trim($default_button['name']);
+		}
+
+		// Tag
+		if (is_null($default_button['tag'])) {
+			$default_button['tag'] = forum_trim($default_button['name']);
+		}
+
+		// Tweak weight
+		$default_button['weight'] += count($this->buttons) / 1000;
+
+		$this->buttons[$default_button['name']] = $default_button;
+
+		return $this->buttons;
+	}
+
+
+	public function render() {
+		global $forum_config, $forum_user, $ext_info, $smilies, $base_url;
+
+		ob_start();
 ?>
-<div id="pun_bbcode_wrapper"<?php echo $forum_user['pun_bbcode_use_buttons'] && $forum_config['p_message_bbcode'] ? ' class="graphical"' : '' ?>>
+		<div class="sf-set visual-hidden" id="pun_bbcode_bar">
+			<div id="pun_bbcode_wrapper"<?php echo $forum_user['pun_bbcode_use_buttons'] && $forum_config['p_message_bbcode'] ? ' class="graphical"' : '' ?>>
 <?php
-
-	if ($forum_config['p_message_bbcode'])
-	{
-
+		if ($forum_config['p_message_bbcode'])
+		{
 ?>
-	<div id="pun_bbcode_buttons">
+			<div id="pun_bbcode_buttons">
 <?php
+			$this->add_button(array('name'	=> 'b', 'group' => 'text-decoration', 'weight' => 30, 'image' => true));
+			$this->add_button(array('name'	=> 'i', 'group' => 'text-decoration', 'weight' => 32, 'image' => true));
+			$this->add_button(array('name'	=> 'u', 'group' => 'text-decoration', 'weight' => 34, 'image' => true));
 
-	// List of tags, which may have attribute
-	$tags_without_attr = array('b', 'i', 'u', 'email', 'list', 'li' => '*', 'quote', 'code', 'url');
+			$this->add_button(array('name'	=> 'list', 'group' => 'lists', 'weight' => 40, 'image' => true));
+			$this->add_button(array('name'	=> 'list item', 'title' => '*', 'tag' => '*', 'group' => 'lists', 'weight' => 42, 'image' => true));
 
-	if ($forum_config['p_message_img_tag'])
-		$tags_without_attr[] = 'img';
+			$this->add_button(array('name'	=> 'quote', 'weight' => 50, 'image' => true));
+			$this->add_button(array('name'	=> 'code', 'weight' => 52, 'image' => true));
+			$this->add_button(array('name'	=> 'email', 'weight' => 54, 'image' => true));
+			$this->add_button(array('name'	=> 'url', 'weight' => 56, 'image' => true));
+			$this->add_button(array('name'	=> 'img', 'weight' => 58, 'image' => true));
+			$this->add_button(array('name'	=> 'color', 'type' => 'with_attr', 'weight' => 60, 'image' => true));
 
-	// List of tags, which may not to have attribute
-	if ($forum_user['pun_bbcode_use_buttons'])
-		$tags_with_attr = array('color');
-	else
-		$tags_with_attr = array('quote', 'color', 'url', 'email', 'img', 'list');
+			($hook = get_hook('pun_bbcode_pre_buttons_output')) ? eval($hook) : null;
 
-	if (!$forum_user['pun_bbcode_use_buttons'] && $forum_config['p_message_img_tag'])
-		$tags_with_attr[] = 'img';
+			// Sort buttons
+			uasort($this->buttons, array('Pun_bbcode', 'sort_buttons'));
 
-	($hook = get_hook('pun_bbcode_pre_tags_merge')) ? eval($hook) : null;
+			if (!empty($this->buttons))
+			{
+				$current_group = '';
+				$pun_bbcode_tabindex = 1;
+				foreach ($this->buttons as $name => $button)
+				{
+					($hook = get_hook('pun_bbcode_buttons_output_loop_start')) ? eval($hook) : null;
 
-	// Let's get the list of all tags
-	$tags = array_unique(array_merge($tags_without_attr, $tags_with_attr));
+					// Group class
+					$button_class = '';
+					if ($current_group != '' && $current_group != $button['group']) {
+						$button_class .= ' group_start';
+					}
 
-	if ($forum_user['pun_bbcode_use_buttons'])
+					// JS handler
+					if (!is_null($button['onclick'])) {
+						$onclick_handler = $button['onclick'];
+					} else {
+						if ($button['type'] == 'without_attr') {
+							$onclick_handler = 'PUNBB.pun_bbcode.insert_text(\'['.$button['tag'].']\',\'[/'.$button['tag'].']\')';
+						} else {
+							$onclick_handler = 'PUNBB.pun_bbcode.insert_text(\'['.$button['tag'].'=]\',\'[/'.$button['tag'].']\')';
+						}
+					}
+
+					// Graphical?
+					$title = '';
+					if ($forum_user['pun_bbcode_use_buttons'] && $button['image']) {
+						$button_class .= ' image';
+						$title = $button['title'];
+						$button['title'] = '';
+					}
+
+					// Element ID attr can not content space — thats why we replace space in NAME with underscore
+					echo '<input type="button" title="'.$title.'" class="'.$button_class.'" data-tag="'.$button['tag'].'" id="pun_bbcode_button_'.str_replace(' ', '_', $button['name']).'" value="'.$button['title'].'" name="'.$button['name'].'" onclick="'.$onclick_handler.'" tabindex="'.$pun_bbcode_tabindex.'" />';
+
+					$pun_bbcode_tabindex++;
+					$current_group = $button['group'];
+				}
+			}
+?>
+			</div>
+<?php
+		}
+?>
+		</div>
+	</div>
+<?php
+		$bbar_text = ob_get_contents();
+		ob_end_clean();
+
+		echo $bbar_text;
+	}
+
+
+	// Sort libs
+	private static function sort_buttons($a, $b)
 	{
-		if (file_exists($ext_info['path'].'/buttons/'.$forum_user['style'].'/'))
-			$buttons_path = $ext_info['url'].'/buttons/'.$forum_user['style'];
+		// 1. Sort by weight
+		if ($a['weight'] < $b['weight'])
+		{
+			return -1;
+		}
+		elseif ($a['weight'] > $b['weight'])
+		{
+		    return 1;
+		}
 		else
-			$buttons_path = $ext_info['url'].'/buttons/Oxygen';
-	}
-
-	$pun_bbcode_tabindex = 1;
-
-	($hook = get_hook('pun_bbcode_pre_buttons_output')) ? eval($hook) : null;
-
-	foreach ($tags as $filename => $tag)
-	{
-		($hook = get_hook('pun_bbcode_buttons_output_loop_start')) ? eval($hook) : null;
-
-		if (in_array($tag, $tags_without_attr))
 		{
-			if ($forum_user['pun_bbcode_use_buttons'])
-				echo "\t\t".'<img src="'.$buttons_path.'/'.(is_numeric($filename) ? $tag : $filename).'.png" alt="['.$tag.']" title="'.$tag.'"';
-			else
-				echo "\t\t".'<input type="button" value="'.ucfirst($tag).'" name="'.$tag.'"';
-
-			echo ' onclick="insert_text(\'['.$tag.']\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'"/>'."\n";
+			return 0;
 		}
-
-		if (in_array($tag, $tags_with_attr))
-		{
-			if ($forum_user['pun_bbcode_use_buttons'])
-				echo "\t\t".'<img src="'.$buttons_path.'/'.(is_numeric($filename) ? $tag : $filename).'.png" alt="['.$tag.'=]" title="'.$tag.'="';
-			else
-				echo "\t\t".'<input type="button" value="'.ucfirst($tag).'=" name="'.$tag.'"';
-
-			echo ' onclick="insert_text(\'['.$tag.'=]\',\'[/'.$tag.']\')" tabindex="'.$pun_bbcode_tabindex.'" />'."\n";
-		}
-
-		$pun_bbcode_tabindex++;
 	}
-
-?>
-	</div>
-<?php
-
-	}
-
-	if ($forum_config['o_smilies'])
-	{
-
-?>
-
-	<div id="pun_bbcode_smilies">
-<?php
-
-		($hook = get_hook('pun_bbcode_pre_smilies_output')) ? eval($hook) : null;
-
-
-		if (!$forum_config['p_message_bbcode'])
-			$pun_bbcode_tabindex = 1;
-
-		// Display the smiley set
-		foreach (array_unique($smilies) as $smile_text => $smile_file)
-		{
-			($hook = get_hook('pun_bbcode_smilies_output_loop_start')) ? eval($hook) : null;
-
-			echo "\t\t".'<img src="'.$base_url.'/img/smilies/'.$smile_file.'" width="15" height="15" alt="'.$smile_text.'" onclick="insert_text(\' '.$smile_text.' \', \'\');" tabindex="'.($pun_bbcode_tabindex++).'" />'."\n";
-		}
-
-
-?>
-	</div>
-<?php
-
-	}
-
-?>
-</div>
-<?php
-
-	$bbar_text = ob_get_contents();
-	$bbar_text = str_replace(array('"', "\n"), array('\"', "\\\n"), $bbar_text);
-
-	ob_end_clean();
-
-	return $bbar_text;
 }
 
+?>

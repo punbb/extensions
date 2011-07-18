@@ -1,0 +1,128 @@
+/* Styles for pun_bbcode extension */
+
+#pun_bbcode_bar {
+	margin: .35em 0 -.1em 1em;
+	position: relative;
+}
+
+#pun_bbcode_bar input[type="button"] {
+	background: #F3F3F3;
+	background: -moz-linear-gradient(top, #fff, #F3F3F3);
+	background: -o-linear-gradient(top, #fff, #F3F3F3);
+	background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#F3F3F3));
+	background: -webkit-linear-gradient(top, #fff, #F3F3F3);
+	background: -ms-linear-gradient(top, #fff, #F3F3F3);
+	background: linear-gradient(top, #fff, #F3F3F3);
+	border-radius: 1px;
+	border-color: #ddd;
+	padding: .45em .5em;
+	margin-right: 1px;
+	margin-bottom: -1.5px;
+}
+
+#pun_bbcode_bar input[type="button"]:active {
+	position: relative;
+	top: 1px;
+}
+
+#pun_bbcode_bar input[type="button"]:hover
+#pun_bbcode_bar input[type="button"]:focus {
+	-moz-box-shadow: 0 1px 2px rgba(0,0,0, .1);
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0, .1);
+	box-shadow: 0 1px 2px rgba(0,0,0, .1);
+}
+
+#pun_bbcode_bar input.image {
+	width: 26px;
+	height: 26px;
+	border-color: #eee;
+}
+
+#pun_bbcode_bar input[type="button"]:hover {
+	border-color: #84BCE4;
+}
+
+#pun_bbcode_bar input[type="button"]:first-child {
+	margin-left: 0;
+}
+
+#pun_bbcode_bar input.group_start {
+	margin-left: 2px;
+}
+
+#pun_bbcode_button_b {
+	font-weight: bold;
+}
+
+#pun_bbcode_button_i {
+	font-style: italic;
+}
+
+#pun_bbcode_button_u {
+	text-decoration: underline;
+}
+
+#pun_bbcode_bar #pun_bbcode_wrapper {
+	width: 95%;
+	position: relative;
+}
+
+
+#pun_bbcode_bar input[name="b"].image,
+#pun_bbcode_bar input[name="i"].image,
+#pun_bbcode_bar input[name="u"].image,
+#pun_bbcode_bar input[name="list"].image,
+#pun_bbcode_bar input[name="list item"].image,
+#pun_bbcode_bar input[name="color"].image,
+#pun_bbcode_bar input[name="code"].image,
+#pun_bbcode_bar input[name="quote"].image,
+#pun_bbcode_bar input[name="img"].image,
+#pun_bbcode_bar input[name="url"].image,
+#pun_bbcode_bar input[name="email"].image {
+	background: url(img/sprite.png) 0 0 no-repeat;
+}
+
+
+#pun_bbcode_bar input[name="i"].image {
+	background-position: -132px 0;
+}
+
+#pun_bbcode_bar input[name="b"].image {
+	background-position: 0 0;
+}
+
+#pun_bbcode_bar input[name="u"].image {
+	background-position: -261px 0;
+}
+
+#pun_bbcode_bar input[name="list"].image {
+	background-position: -183px 0;
+}
+
+#pun_bbcode_bar input[name="list item"].image {
+	background-position: -157px 0;
+}
+
+#pun_bbcode_bar input[name="color"].image {
+	background-position: -53px 0;
+}
+
+#pun_bbcode_bar input[name="code"].image {
+	background-position: -27px 0;
+}
+
+#pun_bbcode_bar input[name="quote"].image {
+	background-position: -209px 0;
+}
+
+#pun_bbcode_bar input[name="img"].image {
+	background-position: -105px 0;
+}
+
+#pun_bbcode_bar input[name="url"].image {
+	background-position: -286px 0;
+}
+
+#pun_bbcode_bar input[name="email"].image {
+	background-position: -79px 0;
+}
