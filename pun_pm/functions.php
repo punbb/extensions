@@ -1405,7 +1405,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div class="sf-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="sf-box text required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['To'] ?></span></label><br />
-						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="70" maxlength="255" /><?php if ($username == '') echo pun_pm_get_last_senders(); ?></span>
+						<span class="fld-input"><input type="text" id="fld<?php echo $forum_page['fld_count'] ?>" name="pm_receiver" value="<?php echo $username; ?>" size="70" maxlength="255" required /><?php if ($username == '') echo pun_pm_get_last_senders(); ?></span>
 					</div>
 				</div>
 <?php
@@ -1421,7 +1421,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 				<div class="txt-set set<?php echo ++$forum_page['item_count'] ?>">
 					<div class="txt-box textarea required">
 						<label for="fld<?php echo ++$forum_page['fld_count'] ?>"><span><?php echo $lang_pun_pm['Message'] ?></span></label>
-						<div class="txt-input"><span class="fld-input"><textarea id="fld<?php echo $forum_page['fld_count'] ?>" name="req_message" rows="14" cols="95"><?php echo $body; ?></textarea></span></div>
+						<div class="txt-input"><span class="fld-input"><textarea id="fld<?php echo $forum_page['fld_count'] ?>" name="req_message" rows="14" cols="95" required><?php echo $body; ?></textarea></span></div>
 					</div>
 				</div>
 <?php ($hook = get_hook('pun_pm_fn_send_form_pre_fieldset_end')) ? eval($hook) : null; ?>
@@ -1437,7 +1437,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 	($hook = get_hook('pun_pm_fn_send_form_pre_buttons_output')) ? eval($hook) : null;
 ?>
 				<span class="submit primary"><input type="submit" name="pm_send" value="<?php echo $lang_pun_pm['Send button'] ?>" /></span>
-				<span class="submit"><input type="submit" name="pm_preview" value="<?php echo $lang_pun_pm['Preview'] ?>" style="padding-left: 2em; padding-right: 2em;"/></span>
+				<span class="submit"><input type="submit" name="pm_preview" value="<?php echo $lang_pun_pm['Preview'] ?>" /></span>
 				<span class="submit"><input type="submit" name="pm_draft" value="<?php echo $lang_pun_pm['Save draft'] ?>" /></span>
 			</div>
 		</form>
