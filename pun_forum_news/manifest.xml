@@ -3,9 +3,9 @@
 
 <!--
 /**
- * >Allow users to mark topics or posts as "news".
+ * Allow users to mark topics or posts as "news".
  *
- * @copyright (C) 2010 PunBB
+ * @copyright (C) 2010-2011 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_forum_news
  */
@@ -14,532 +14,579 @@
 <extension engine="1.0">
 	<id>pun_forum_news</id>
 	<title>Forum news</title>
-	<version>1.0.0</version>
-	<description>Allow users to mark topics or posts as "news". News is shown on a speical page.</description>
+	<version>1.1</version>
+	<description>Allow users to mark topics or posts as "news". News is shown on a special page.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.3</minversion>
-	<maxtestedon>1.3.4</maxtestedon>
+	<minversion>1.4rc1</minversion>
+	<maxtestedon>1.4rc1</maxtestedon>
 
 	<install><![CDATA[
-if (!$forum_db->table_exists('pun_forum_news'))
-{
-	$schema = array(
-		'FIELDS'	=> array(
-			'post_id'	=>	array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false
-			),
-			'forum_id'	=>	array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false
-			),
-			'poster'	=>	array(
-				'datatype'		=> 'VARCHAR(200)',
-				'allow_null'	=> false
-			),
-			'poster_id'	=>	array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false
-			),
-			'message' => array(
-				'datatype'		=> 'TEXT',
-				'allow_null'	=> false
-			),
-			'hide_smilies'	=>	array(
-				'datatype'		=> 'TINYINT(1)',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			),
-			'posted'		=> array(
-				'datatype'		=> 'INT(10) UNSIGNED',
-				'allow_null'	=> false,
-				'default'		=> '0'
-			),
-		),
-		'UNIQUE KEYS'	=> array(
-			'post_id_ident_idx'	=> array('post_id')
-		),
-	);
-	$forum_db->create_table('pun_forum_news', $schema);
-}
+		if (!$forum_db->table_exists('pun_forum_news'))
+		{
+			$schema = array(
+				'FIELDS'	=> array(
+					'post_id'	=>	array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'forum_id'	=>	array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'poster'	=>	array(
+						'datatype'		=> 'VARCHAR(200)',
+						'allow_null'	=> false
+					),
+					'poster_id'	=>	array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false
+					),
+					'message' => array(
+						'datatype'		=> 'TEXT',
+						'allow_null'	=> false
+					),
+					'hide_smilies'	=>	array(
+						'datatype'		=> 'TINYINT(1)',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+					'posted'		=> array(
+						'datatype'		=> 'INT(10) UNSIGNED',
+						'allow_null'	=> false,
+						'default'		=> '0'
+					),
+				),
+				'UNIQUE KEYS'	=> array(
+					'post_id_ident_idx'	=> array('post_id')
+				),
+			);
+			$forum_db->create_table('pun_forum_news', $schema);
+		}
 
-$forum_db->add_field('posts', 'forum_news', 'tinyint(1)', TRUE);
-$forum_db->add_field('groups', 'g_add_forum_news', 'tinyint(1)', TRUE);
+		$forum_db->add_field('posts', 'forum_news', 'tinyint(1)', TRUE);
+		$forum_db->add_field('groups', 'g_add_forum_news', 'tinyint(1)', TRUE);
 	]]></install>
 
+
 	<uninstall><![CDATA[
-$forum_db->drop_table('pun_forum_news');
-$forum_db->drop_field('posts', 'forum_news');
-$forum_db->drop_field('groups', 'g_add_forum_news');
+		$forum_db->drop_table('pun_forum_news');
+		$forum_db->drop_field('posts', 'forum_news');
+		$forum_db->drop_field('groups', 'g_add_forum_news');
 	]]></uninstall>
 
+
 	<hooks>
+
 		<hook id="agr_add_edit_end_validation"><![CDATA[
-$pun_forum_news_add_news = isset($_POST['add_forum_news']) ? intval($_POST['add_forum_news']) : '0';
+			$pun_forum_news_add_news = isset($_POST['add_forum_news']) ? intval($_POST['add_forum_news']) : '0';
 		]]></hook>
+
+
 		<hook id="agr_add_end_qr_add_group"><![CDATA[
-$query['INSERT'] .= ', g_add_forum_news';
-$query['VALUES'] .= ', '.$pun_forum_news_add_news;
+			$query['INSERT'] .= ', g_add_forum_news';
+			$query['VALUES'] .= ', '.$pun_forum_news_add_news;
 		]]></hook>
+
+
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
-$query['SET'] .= ', g_add_forum_news = '.$pun_forum_news_add_news;
+			$query['SET'] .= ', g_add_forum_news = '.$pun_forum_news_add_news;
 		]]></hook>
+
+
 		<hook id="co_common"><![CDATA[
-if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
-	require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
-else
-	require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
+			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
+				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
+			else
+				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 		]]></hook>
+
+
 		<hook id="agr_add_edit_group_user_permissions_fieldset_end"><![CDATA[
-
-?>
-<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
-	<legend><span><?php echo $lang_pun_forum_news['Permission legend'] ?></span></legend>
-		<div class="mf-box">
-			<div class="mf-item">
-				<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="add_forum_news" value="1" <?php if ($group['g_add_forum_news'] == 1) echo ' checked="checked"' ?>  /></span>
-				<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_forum_news['Permission text'] ?></label>
-			</div>
-		</div>
-</fieldset>
-<?php
-
+			?>
+			<fieldset class="mf-set set<?php echo ++$forum_page['item_count'] ?>">
+				<legend><span><?php echo $lang_pun_forum_news['Permission legend'] ?></span></legend>
+					<div class="mf-box">
+						<div class="mf-item">
+							<span class="fld-input"><input type="checkbox" id="fld<?php echo $forum_page['fld_count'] ?>" name="add_forum_news" value="1" <?php if ($group['g_add_forum_news'] == 1) echo ' checked="checked"' ?>  /></span>
+							<label for="fld<?php echo $forum_page['fld_count'] ?>"><?php echo $lang_pun_forum_news['Permission text'] ?></label>
+						</div>
+					</div>
+			</fieldset>
+			<?php
 		]]></hook>
+
+
 		<hook id="po_end_validation, ed_end_validation"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-	$pun_forum_news = isset($_POST['pun_forum_news']) ? 1 : 0;
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+				$pun_forum_news = isset($_POST['pun_forum_news']) ? 1 : 0;
 		]]></hook>
+
+
 		<hook id="po_pre_add_post, po_pre_add_topic"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-	$post_info['forum_news'] = $pun_forum_news;
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+				$post_info['forum_news'] = $pun_forum_news;
 		]]></hook>
+
+
 		<hook id="po_pre_optional_fieldset"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-	$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.(isset($_POST['pun_forum_news']) ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+				$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.(isset($_POST['pun_forum_news']) ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
 		]]></hook>
+
+
 		<hook id="fn_add_topic_qr_add_topic_post, fn_add_post_qr_add_post"><![CDATA[
-global $forum_user;
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-{
-	$query['INSERT'] .= ', forum_news';
-	$query['VALUES'] .= ', '.$post_info['forum_news'];
-}
-		]]></hook>
-		<hook id="fn_add_topic_end"><![CDATA[
-if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $post_info['forum_news'])
-{
-	$pun_forum_news_query = array(
-		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
-		'INTO'		=>	'pun_forum_news',
-		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['forum_id']
-	);
-	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-}
-		]]></hook>
-		<hook id="fn_add_post_end"><![CDATA[
-if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $post_info['forum_news'])
-{
-	$pun_forum_news_query = array(
-		'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
-		'INTO'		=>	'pun_forum_news',
-		'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['forum_id']
-	);
-	$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-}
-		]]></hook>
-		<hook id="ed_qr_get_post_info"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-	$query['SELECT'] .= ', p.forum_news';
-		]]></hook>
-		<hook id="ed_qr_update_post"><![CDATA[
-if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $pun_forum_news != $cur_post['forum_news'])
-	$query['SET'] .= ', forum_news = '.$pun_forum_news;
-		]]></hook>
-		<hook id="ed_pre_redirect"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-{
-	if ($cur_post['forum_news'])
-	{
-		if ($pun_forum_news)
-		{
-			$pun_forum_news_query = array(
-				'UPDATE'	=>	'pun_forum_news',
-				'SET'		=>	'message=\''.$forum_db->escape($message).'\', hide_smilies=\''.$hide_smilies.'\'',
-				'WHERE'		=>	'post_id = '.$id
-			);
-		}
-		else
-		{
-			$pun_forum_news_query = array(
-				'DELETE'	=>	'pun_forum_news',
-				'WHERE'		=>	'post_id = '.$id
-			);
-		}
-		$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-	}
-	else
-	{
-		if ($pun_forum_news)
-		{
-			$pun_forum_news_query = array(
-				'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
-				'INTO'		=>	'pun_forum_news',
-				'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape($message).'\', '.$hide_smilies.', '.$cur_post['posted'].', '.$cur_post['fid']
-			);
-			$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-		}
-	}
-}
-		]]></hook>
-		<hook id="ed_pre_checkbox_display"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
-{
-	if (isset($_POST['form_sent']))
-		$pun_forum_news_option = isset($_POST['pun_forum_news']) ? 1 : 0;
-	else
-		$pun_forum_news_option = $cur_post['forum_news'];
-	$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.($pun_forum_news_option ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
-}
-		]]></hook>
-		<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
-if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']): ?>
-	<fieldset class="mf-set set2">
-		<div class="mf-box checkbox">
-			<div class="mf-item"><span class="fld-input"><input type="checkbox" value="1" name="pun_forum_news" id="fld3"></span> <label for="fld3"><?php echo $lang_pun_forum_news['Post mark']; ?></label></div>
-		</div>
-	</fieldset>
-<?php
-endif;
-		]]></hook>
-		<hook id="re_rewrite_rules"><![CDATA[
-$forum_rewrite_rules['/^news(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
-$forum_rewrite_rules['/^news(\.php?|\/)?[\/_\-?]?p(age)?[\/_\-=]?([0-9]+)?(.html?|\/)?$/i'] = 'misc.php?action=news&p=$3';
-$forum_rewrite_rules['/^feed[\/_-]?(rss|atom)[\/_-]?news[\/_-]?(\.xml?|\/)?$/i'] = 'extern.php?action=news&type=$1';
-		]]></hook>
-		<hook id="co_modify_url_scheme"><![CDATA[
-if ($forum_config['o_sef'] == 'Default')
-{
-	$forum_url['pun_forum_news'] = 'misc.php?action=news';
-	$forum_url['pun_forum_news_page'] = 'p=$1';
-	$forum_url['pun_forum_news_rss'] = 'extern.php?action=news&amp;type=rss';
-}
-else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
-{
-	$forum_url['pun_forum_news'] = 'news.html';
-	$forum_url['pun_forum_news_page'] = 'p$1';
-	$forum_url['pun_forum_news_rss'] = 'feed-rss-news.xml';
-}
-else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
-{
-	$forum_url['pun_forum_news'] = 'news/';
-	$forum_url['pun_forum_news_page'] = 'page/$1/';
-	$forum_url['pun_forum_news_rss'] = 'feed/rss/news/';
-}
-		]]></hook>
-		<hook id="fn_generate_navlinks_end"><![CDATA[
-global $lang_pun_forum_news;
-
-$tmp_links = array();
-foreach ($links as $link_index => $link_content)
-{
-	$tmp_links[$link_index] = $link_content;
-	if ($link_index == 'index')
-		$tmp_links['pun_forum_news'] = '<li id="forumnews"'.((FORUM_PAGE == 'news') ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_forum_news']).'">'.$lang_pun_forum_news['Forum news'].'</a></li>';
-}
-$links = $tmp_links;
-
-		]]></hook>
-		<hook id="mi_new_action"><![CDATA[
-if ($action == 'news')
-{
-	$pun_forum_news_query = array(
-		'SELECT'	=>	'post_id',
-		'FROM'		=>	'pun_forum_news AS news',
-		'JOINS'		=>	array(
-			array(
-				'LEFT JOIN'	=> 'forum_perms AS fp',
-				'ON'		=> '(fp.forum_id = news.forum_id AND fp.group_id = '.$forum_user['g_id'].')'
-			)
-		),
-		'WHERE'		=>	'(fp.read_forum IS NULL OR fp.read_forum = 1)',
-		'ORDER BY'	=>	'news.posted DESC'
-	);
-	$pun_forum_news_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-
-	$no_news = FALSE;
-	if ($forum_db->num_rows($pun_forum_news_result) > 0)
-	{
-		$post_news_id = array();
-		while ($cur_news = $forum_db->fetch_assoc($pun_forum_news_result))
-			$post_news_id[] = $cur_news['post_id'];
-
-		$news_count = count($post_news_id);
-		$forum_page['num_pages'] = ceil($news_count / $forum_user['disp_posts']);
-		$forum_page['page'] = (!isset($_GET['p']) || !is_numeric($_GET['p']) || $_GET['p'] <= 1 || $_GET['p'] > $forum_page['num_pages']) ? 1 : $_GET['p'];
-		$forum_page['start_from'] = $forum_user['disp_posts'] * ($forum_page['page'] - 1);
-		$forum_page['finish_at'] = min(($forum_page['start_from'] + $forum_user['disp_posts']), ($news_count + 1));
-		$forum_page['items_info'] =  generate_items_info($lang_pun_forum_news['Forum news'], ($forum_page['start_from'] + 1), $news_count);
-
-		$post_news_id = array_slice($post_news_id, $forum_page['start_from'], $forum_page['finish_at']);
-		$pun_forum_news_query = array(
-			'SELECT'	=>	'news.*',
-			'FROM'		=>	'pun_forum_news AS news',
-			'WHERE'		=>	'post_id IN ('.implode(',', $post_news_id).')'
-		);
-		$query_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
-
-		$posts_info = array();
-		while ($cur_post = $forum_db->fetch_assoc($query_result))
-		{
-			$tmp_index = array_search($cur_post['post_id'], $post_news_id);
-			$posts_info[$tmp_index] = $cur_post;
-		}
-		ksort($posts_info);
-		unset($post_news_id);
-	}
-	else
-		$no_news = TRUE;
-
-	if ($no_news)
-		message($lang_pun_forum_news['No news']);
-
-	if ($forum_page['page'] < $forum_page['num_pages'])
-	{
-		$forum_page['nav']['last'] = '<link rel="last" href="'.forum_sublink($forum_url['pun_forum_news'], $forum_url['pun_forum_news_page'], $forum_page['num_pages']).'" title="'.$lang_common['Page'].' '.$forum_page['num_pages'].'" />';
-		$forum_page['nav']['next'] = '<link rel="next" href="'.forum_sublink($forum_url['pun_forum_news'], $forum_url['pun_forum_news_page'], ($forum_page['page'] + 1)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] + 1).'" />';
-	}
-	if ($forum_page['page'] > 1)
-	{
-		$forum_page['nav']['prev'] = '<link rel="prev" href="'.forum_sublink($forum_url['pun_forum_news'], $forum_url['pun_forum_news_page'], ($forum_page['page'] - 1)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] - 1).'" />';
-		$forum_page['nav']['first'] = '<link rel="first" href="'.forum_link($forum_url['pun_forum_news']).'" title="'.$lang_common['Page'].' 1" />';
-	}
-
-	// Generate paging and posting links
-	$forum_page['page_post']['paging'] = '<p class="paging"><span class="pages">'.$lang_common['Pages'].'</span> '.paginate($forum_page['num_pages'], $forum_page['page'], $forum_url['pun_forum_news'], $lang_common['Paging separator']).'</p>';
-
-	// Setup breadcrumbs
-	$forum_page['crumbs'] = array(
-		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
-		$lang_pun_forum_news['Forum news']
-	);
-	require FORUM_ROOT.'lang/'.$forum_user['language'].'/topic.php';
-	require FORUM_ROOT.'include/parser.php';
-
-	$user_data_cache = array();
-
-	define('FORUM_PAGE', 'news');
-	require FORUM_ROOT.'header.php';
-	// START SUBST - <!-- forum_main -->
-	ob_start();
-
-	?>
-	<div class="main-head">
-		<p class="options"><span class="feed first-item"><a class="feed" href="<?php echo forum_link($forum_url['pun_forum_news_rss']); ?>"><?php echo $lang_pun_forum_news['RSS news feed']; ?></a></span></p>
-		<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
-	</div>
-	<div class="main-content main-topic">
-	<?php
-
-	$forum_page['item_count'] = 0;
-	$author_data_cache = array();
-	foreach ($posts_info as $post_num => $post_info)
-	{
-		$forum_page['item_count']++;
-		$forum_page['author_ident'] = $forum_page['message'] = array();
-		
-
-		$forum_page['post_ident']['link'] = '<span class="post-link"><a class="permalink" rel="bookmark" title="'.$lang_topic['Permalink post'].'" href="'.forum_link($forum_url['post'], $post_info['post_id']).'">'.format_time($post_info['posted']).'</a></span>';
-
-		if (isset($author_data_cache[$post_info['poster_id']]))
-			$forum_page['post_ident']['author'] = $author_data_cache[$post_info['poster_id']]['name'];
-		else
-		{
-			if ($forum_user['g_view_users'] == '1')
-				$forum_page['post_ident']['author'] = '<span class="post-byline"><a title="'.sprintf($lang_topic['Go to profile'], forum_htmlencode($post_info['poster'])).'" href="'.forum_link($forum_url['user'], $post_info['poster_id']).'">'.forum_htmlencode($post_info['poster']).'</a></span>';
-			else		
-				$forum_page['post_ident']['author'] = '<span class="post-byline"><strong>'.forum_htmlencode($post_info['poster']).'</strong></span>';
-
-			$author_data_cache[$post_info['poster_id']]['name'] = $forum_page['post_ident']['author'];
-		}
-
-		if (isset($author_data_cache[$post_info['poster_id']]['avatar']))
-		{
-			if (!empty($author_data_cache[$post_info['poster_id']]['avatar']))
-				$forum_page['author_ident']['avatar'] = $author_data_cache[$post_info['poster_id']]['avatar'];
-		}
-		else
-		{
-			if ($post_info['poster_id'] > 1)
+			global $forum_user;
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
 			{
-				if ($forum_config['o_avatars'] == '1' && $forum_user['show_avatars'] != '0')
-				{
-					$forum_page['avatar_markup'] = generate_avatar_markup($post_info['poster_id']);
+				$query['INSERT'] .= ', forum_news';
+				$query['VALUES'] .= ', '.$post_info['forum_news'];
+			}
+		]]></hook>
 
-					if (!empty($forum_page['avatar_markup']))
+
+		<hook id="fn_add_topic_end"><![CDATA[
+			if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $post_info['forum_news'])
+			{
+				$pun_forum_news_query = array(
+					'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
+					'INTO'		=>	'pun_forum_news',
+					'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['forum_id']
+				);
+				$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+			}
+		]]></hook>
+
+
+		<hook id="fn_add_post_end"><![CDATA[
+			if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $post_info['forum_news'])
+			{
+				$pun_forum_news_query = array(
+					'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
+					'INTO'		=>	'pun_forum_news',
+					'VALUES'	=>	$new_pid.', \''.$forum_db->escape($post_info['poster']).'\', '.$post_info['poster_id'].', \''.$forum_db->escape($post_info['message']).'\', '.$post_info['hide_smilies'].', '.$post_info['posted'].', '.$post_info['forum_id']
+				);
+				$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+			}
+		]]></hook>
+
+
+		<hook id="ed_qr_get_post_info"><![CDATA[
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+				$query['SELECT'] .= ', p.forum_news';
+		]]></hook>
+
+
+		<hook id="ed_qr_update_post"><![CDATA[
+			if (($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']) && $pun_forum_news != $cur_post['forum_news'])
+				$query['SET'] .= ', forum_news = '.$pun_forum_news;
+		]]></hook>
+
+
+		<hook id="ed_pre_redirect"><![CDATA[
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+			{
+				if ($cur_post['forum_news'])
+				{
+					if ($pun_forum_news)
 					{
-						$forum_page['author_ident']['avatar'] = '<li class="useravatar">'.$forum_page['avatar_markup'].'</li>';
-						$author_data_cache[$post_info['poster_id']]['avatar'] = $forum_page['author_ident']['avatar'];
+						$pun_forum_news_query = array(
+							'UPDATE'	=>	'pun_forum_news',
+							'SET'		=>	'message=\''.$forum_db->escape($message).'\', hide_smilies=\''.$hide_smilies.'\'',
+							'WHERE'		=>	'post_id = '.$id
+						);
 					}
 					else
-						$author_data_cache[$post_info['poster_id']]['avatar'] = '';
+					{
+						$pun_forum_news_query = array(
+							'DELETE'	=>	'pun_forum_news',
+							'WHERE'		=>	'post_id = '.$id
+						);
+					}
+					$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+				}
+				else
+				{
+					if ($pun_forum_news)
+					{
+						$pun_forum_news_query = array(
+							'INSERT'	=>	'post_id, poster, poster_id, message, hide_smilies, posted, forum_id',
+							'INTO'		=>	'pun_forum_news',
+							'VALUES'	=>	$id.', \''.$forum_db->escape($cur_post['poster']).'\', '.$cur_post['poster_id'].', \''.$forum_db->escape($message).'\', '.$hide_smilies.', '.$cur_post['posted'].', '.$cur_post['fid']
+						);
+						$forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+					}
 				}
 			}
-		}
-
-		// Give the post some class
-		$forum_page['item_status'] = array(
-			'post',
-			($forum_page['item_count'] % 2 != 0) ? 'odd' : 'even'
-		);
-
-		if ($forum_page['item_count'] == 1)
-			$forum_page['item_status']['firstpost'] = 'firstpost';
-
-		if (($forum_page['start_from'] + $forum_page['item_count']) == $forum_page['finish_at'])
-			$forum_page['item_status']['lastpost'] = 'lastpost';
-
-		// Perform the main parsing of the message (BBCode, smilies, censor words etc)
-		$forum_page['message']['message'] = parse_message($post_info['message'], $post_info['hide_smilies']);
-
-		if ($forum_config['o_censoring'] == '1')
-			$forum_page['message']['message'] = censor_words($forum_page['message']['message']);
-
-?>
-		<div class="<?php echo implode(' ', $forum_page['item_status']) ?>">
-			<div id="p<?php echo $post_info['post_id'] ?>" class="posthead">
-				<h3 class="hn post-ident"><?php echo implode(' ', $forum_page['post_ident']) ?></h3>
-			</div>
-			<div class="postbody">
-				<div class="post-author">
-					<ul class="author-ident">
-						<?php echo implode("\n\t\t\t\t\t\t", $forum_page['author_ident'])."\n" ?>
-					</ul>
-				</div>
-				<div class="post-entry">
-					<div class="entry-content">
-						<?php echo implode("\n\t\t\t\t\t\t", $forum_page['message'])."\n" ?>
-					</div>
-				</div>
-			</div>
-		</div>
-<?php
-
-	}
-
-	?>
-	</div>
-	<div class="main-foot">
-		<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
-	</div>
-	
-	<?php
-
-	$tpl_temp = forum_trim(ob_get_contents());
-	$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
-	ob_end_clean();
-	// END SUBST - <!-- forum_main -->
-
-	require FORUM_ROOT.'footer.php';
-}
 		]]></hook>
+
+
+		<hook id="ed_pre_checkbox_display"><![CDATA[
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news'])
+			{
+				if (isset($_POST['form_sent']))
+					$pun_forum_news_option = isset($_POST['pun_forum_news']) ? 1 : 0;
+				else
+					$pun_forum_news_option = $cur_post['forum_news'];
+				$forum_page['checkboxes']['pun_forum_news'] = '<div class="mf-item"><span class="fld-input"><input type="checkbox" id="fld'.(++$forum_page['fld_count']).'" name="pun_forum_news" value="1"'.($pun_forum_news_option ? ' checked="checked"' : '').' /></span> <label for="fld'.$forum_page['fld_count'].'">'.$lang_pun_forum_news['Post mark'].'</label></div>';
+			}
+		]]></hook>
+
+
+		<hook id="vt_quickpost_pre_fieldset_end"><![CDATA[
+			if ($forum_user['group_id'] == FORUM_ADMIN || $forum_user['g_add_forum_news']): ?>
+				<fieldset class="mf-set set2">
+					<div class="mf-box checkbox">
+						<div class="mf-item"><span class="fld-input"><input type="checkbox" value="1" name="pun_forum_news" id="fld3"></span> <label for="fld3"><?php echo $lang_pun_forum_news['Post mark']; ?></label></div>
+					</div>
+				</fieldset>
+			<?php
+			endif;
+		]]></hook>
+
+
+		<hook id="re_rewrite_rules"><![CDATA[
+			$forum_rewrite_rules['/^news(\.php?|\/)?(.html?|\/)?$/i'] = 'misc.php?action=news';
+			$forum_rewrite_rules['/^news(\.php?|\/)?[\/_\-?]?p(age)?[\/_\-=]?([0-9]+)?(.html?|\/)?$/i'] = 'misc.php?action=news&p=$3';
+			$forum_rewrite_rules['/^feed[\/_-]?(rss|atom)[\/_-]?news[\/_-]?(\.xml?|\/)?$/i'] = 'extern.php?action=news&type=$1';
+		]]></hook>
+
+
+		<hook id="co_modify_url_scheme"><![CDATA[
+			if ($forum_config['o_sef'] == 'Default')
+			{
+				$forum_url['pun_forum_news'] = 'misc.php?action=news';
+				$forum_url['pun_forum_news_page'] = 'p=$1';
+				$forum_url['pun_forum_news_rss'] = 'extern.php?action=news&amp;type=rss';
+			}
+			else if ($forum_config['o_sef'] == 'File_based' || $forum_config['o_sef'] == 'File_based_(fancy)')
+			{
+				$forum_url['pun_forum_news'] = 'news.html';
+				$forum_url['pun_forum_news_page'] = 'p$1';
+				$forum_url['pun_forum_news_rss'] = 'feed-rss-news.xml';
+			}
+			else if ($forum_config['o_sef'] == 'Folder_based' || $forum_config['o_sef'] == 'Folder_based_(fancy)')
+			{
+				$forum_url['pun_forum_news'] = 'news/';
+				$forum_url['pun_forum_news_page'] = 'page/$1/';
+				$forum_url['pun_forum_news_rss'] = 'feed/rss/news/';
+			}
+		]]></hook>
+
+
+		<hook id="fn_generate_navlinks_end"><![CDATA[
+			global $lang_pun_forum_news;
+
+			$tmp_links = array();
+			foreach ($links as $link_index => $link_content)
+			{
+				$tmp_links[$link_index] = $link_content;
+				if ($link_index == 'index')
+					$tmp_links['pun_forum_news'] = '<li id="forumnews"'.((FORUM_PAGE == 'news') ? ' class="isactive"' : '').'><a href="'.forum_link($forum_url['pun_forum_news']).'">'.$lang_pun_forum_news['Forum news'].'</a></li>';
+			}
+			$links = $tmp_links;
+		]]></hook>
+
+
+		<hook id="mi_new_action"><![CDATA[
+			if ($action == 'news')
+			{
+				$pun_forum_news_query = array(
+					'SELECT'	=>	'post_id',
+					'FROM'		=>	'pun_forum_news AS news',
+					'JOINS'		=>	array(
+						array(
+							'LEFT JOIN'	=> 'forum_perms AS fp',
+							'ON'		=> '(fp.forum_id = news.forum_id AND fp.group_id = '.$forum_user['g_id'].')'
+						)
+					),
+					'WHERE'		=>	'(fp.read_forum IS NULL OR fp.read_forum = 1)',
+					'ORDER BY'	=>	'news.posted DESC'
+				);
+				$pun_forum_news_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+
+				$no_news = FALSE;
+				$post_news_id = array();
+
+				while ($cur_news = $forum_db->fetch_assoc($pun_forum_news_result))
+					$post_news_id[] = $cur_news['post_id'];
+
+				if (count($post_news_id) > 0)
+				{
+					$news_count = count($post_news_id);
+					$forum_page['num_pages'] = ceil($news_count / $forum_user['disp_posts']);
+					$forum_page['page'] = (!isset($_GET['p']) || !is_numeric($_GET['p']) || $_GET['p'] <= 1 || $_GET['p'] > $forum_page['num_pages']) ? 1 : $_GET['p'];
+					$forum_page['start_from'] = $forum_user['disp_posts'] * ($forum_page['page'] - 1);
+					$forum_page['finish_at'] = min(($forum_page['start_from'] + $forum_user['disp_posts']), ($news_count + 1));
+					$forum_page['items_info'] =  generate_items_info($lang_pun_forum_news['Forum news'], ($forum_page['start_from'] + 1), $news_count);
+
+					$post_news_id = array_slice($post_news_id, $forum_page['start_from'], $forum_page['finish_at']);
+					$pun_forum_news_query = array(
+						'SELECT'	=>	'news.*, u.avatar, u.avatar_width, u.avatar_height',
+						'FROM'		=>	'pun_forum_news AS news',
+						'JOINS'		=> array(
+							array(
+								'INNER JOIN'	=> 'users AS u',
+								'ON'			=> 'u.id=news.poster_id'
+							),
+						),
+						'WHERE'		=>	'post_id IN ('.implode(',', $post_news_id).')'
+					);
+					$query_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+
+					$posts_info = array();
+					while ($cur_post = $forum_db->fetch_assoc($query_result))
+					{
+						$tmp_index = array_search($cur_post['post_id'], $post_news_id);
+						$posts_info[$tmp_index] = $cur_post;
+					}
+					ksort($posts_info);
+					unset($post_news_id);
+				}
+				else
+					$no_news = TRUE;
+
+				if ($no_news)
+					message($lang_pun_forum_news['No news']);
+
+				if ($forum_page['page'] < $forum_page['num_pages'])
+				{
+					$forum_page['nav']['last'] = '<link rel="last" href="'.forum_sublink($forum_url['pun_forum_news'], $forum_url['pun_forum_news_page'], $forum_page['num_pages']).'" title="'.$lang_common['Page'].' '.$forum_page['num_pages'].'" />';
+					$forum_page['nav']['next'] = '<link rel="next" href="'.forum_sublink($forum_url['pun_forum_news'], $forum_url['pun_forum_news_page'], ($forum_page['page'] + 1)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] + 1).'" />';
+				}
+				if ($forum_page['page'] > 1)
+				{
+					$forum_page['nav']['prev'] = '<link rel="prev" href="'.forum_sublink($forum_url['pun_forum_news'], $forum_url['pun_forum_news_page'], ($forum_page['page'] - 1)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] - 1).'" />';
+					$forum_page['nav']['first'] = '<link rel="first" href="'.forum_link($forum_url['pun_forum_news']).'" title="'.$lang_common['Page'].' 1" />';
+				}
+
+				// Generate paging and posting links
+				$forum_page['page_post']['paging'] = '<p class="paging"><span class="pages">'.$lang_common['Pages'].'</span> '.paginate($forum_page['num_pages'], $forum_page['page'], $forum_url['pun_forum_news'], $lang_common['Paging separator']).'</p>';
+
+				// Setup breadcrumbs
+				$forum_page['crumbs'] = array(
+					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
+					$lang_pun_forum_news['Forum news']
+				);
+				require FORUM_ROOT.'lang/'.$forum_user['language'].'/topic.php';
+				require FORUM_ROOT.'include/parser.php';
+
+				$user_data_cache = array();
+
+				define('FORUM_PAGE', 'news');
+				require FORUM_ROOT.'header.php';
+				// START SUBST - <!-- forum_main -->
+				ob_start();
+
+				?>
+				<div class="main-head">
+					<p class="options"><span class="feed first-item"><a class="feed" href="<?php echo forum_link($forum_url['pun_forum_news_rss']); ?>"><?php echo $lang_pun_forum_news['RSS news feed']; ?></a></span></p>
+					<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
+				</div>
+				<div class="main-content main-topic">
+				<?php
+
+				$forum_page['item_count'] = 0;
+				$author_data_cache = array();
+				foreach ($posts_info as $post_num => $post_info)
+				{
+					$forum_page['item_count']++;
+					$forum_page['author_ident'] = $forum_page['message'] = array();
+
+
+					$forum_page['post_ident']['link'] = '<span class="post-link"><a class="permalink" rel="bookmark" title="'.$lang_topic['Permalink post'].'" href="'.forum_link($forum_url['post'], $post_info['post_id']).'">'.format_time($post_info['posted']).'</a></span>';
+
+					if (isset($author_data_cache[$post_info['poster_id']]))
+						$forum_page['post_ident']['author'] = $author_data_cache[$post_info['poster_id']]['name'];
+					else
+					{
+						if ($forum_user['g_view_users'] == '1')
+							$forum_page['post_ident']['author'] = '<span class="post-byline"><a title="'.sprintf($lang_topic['Go to profile'], forum_htmlencode($post_info['poster'])).'" href="'.forum_link($forum_url['user'], $post_info['poster_id']).'">'.forum_htmlencode($post_info['poster']).'</a></span>';
+						else
+							$forum_page['post_ident']['author'] = '<span class="post-byline"><strong>'.forum_htmlencode($post_info['poster']).'</strong></span>';
+
+						$author_data_cache[$post_info['poster_id']]['name'] = $forum_page['post_ident']['author'];
+					}
+
+					if (isset($author_data_cache[$post_info['poster_id']]['avatar']))
+					{
+						if (!empty($author_data_cache[$post_info['poster_id']]['avatar']))
+							$forum_page['author_ident']['avatar'] = $author_data_cache[$post_info['poster_id']]['avatar'];
+					}
+					else
+					{
+						if ($post_info['poster_id'] > 1)
+						{
+							if ($forum_config['o_avatars'] == '1' && $forum_user['show_avatars'] != '0')
+							{
+								$forum_page['avatar_markup'] = generate_avatar_markup($post_info['poster_id'], $post_info['avatar'], $post_info['avatar_width'], $post_info['avatar_height']);
+
+								if (!empty($forum_page['avatar_markup']))
+								{
+									$forum_page['author_ident']['avatar'] = '<li class="useravatar">'.$forum_page['avatar_markup'].'</li>';
+									$author_data_cache[$post_info['poster_id']]['avatar'] = $forum_page['author_ident']['avatar'];
+								}
+								else
+									$author_data_cache[$post_info['poster_id']]['avatar'] = '';
+							}
+						}
+					}
+
+					// Give the post some class
+					$forum_page['item_status'] = array(
+						'post',
+						($forum_page['item_count'] % 2 != 0) ? 'odd' : 'even'
+					);
+
+					if ($forum_page['item_count'] == 1)
+						$forum_page['item_status']['firstpost'] = 'firstpost';
+
+					if (($forum_page['start_from'] + $forum_page['item_count']) == $forum_page['finish_at'])
+						$forum_page['item_status']['lastpost'] = 'lastpost';
+
+					// Perform the main parsing of the message (BBCode, smilies, censor words etc)
+					$forum_page['message']['message'] = parse_message($post_info['message'], $post_info['hide_smilies']);
+
+					if ($forum_config['o_censoring'] == '1')
+						$forum_page['message']['message'] = censor_words($forum_page['message']['message']);
+
+			?>
+					<div class="<?php echo implode(' ', $forum_page['item_status']) ?>">
+						<div id="p<?php echo $post_info['post_id'] ?>" class="posthead">
+							<h3 class="hn post-ident"><?php echo implode(' ', $forum_page['post_ident']) ?></h3>
+						</div>
+						<div class="postbody">
+							<div class="post-author">
+								<ul class="author-ident">
+									<?php echo implode("\n\t\t\t\t\t\t", $forum_page['author_ident'])."\n" ?>
+								</ul>
+							</div>
+							<div class="post-entry">
+								<div class="entry-content">
+									<?php echo implode("\n\t\t\t\t\t\t", $forum_page['message'])."\n" ?>
+								</div>
+							</div>
+						</div>
+					</div>
+			<?php
+
+				}
+
+				?>
+				</div>
+				<div class="main-foot">
+					<h2 class="hn"><span><?php echo $forum_page['items_info'] ?></span></h2>
+				</div>
+
+				<?php
+
+				$tpl_temp = forum_trim(ob_get_contents());
+				$tpl_main = str_replace('<!-- forum_main -->', $tpl_temp, $tpl_main);
+				ob_end_clean();
+				// END SUBST - <!-- forum_main -->
+
+				require FORUM_ROOT.'footer.php';
+			}
+		]]></hook>
+
+
 		<hook id="ex_new_action"><![CDATA[
-if ($action == 'news')
-{
-	// Determine what type of feed to output
-	$type = isset($_GET['type']) && in_array($_GET['type'], array('html', 'rss', 'atom', 'xml')) ? $_GET['type'] : 'html';
+			if ($action == 'news')
+			{
+				// Determine what type of feed to output
+				$type = isset($_GET['type']) && in_array($_GET['type'], array('html', 'rss', 'atom', 'xml')) ? $_GET['type'] : 'html';
 
-	$show = isset($_GET['show']) ? intval($_GET['show']) : 15;
-	if ($show < 1 || $show > 50)
-		$show = 15;
+				$show = isset($_GET['show']) ? intval($_GET['show']) : 15;
+				if ($show < 1 || $show > 50)
+					$show = 15;
 
-	$pun_forum_news_query = array(
-		'SELECT'	=>	'post_id',
-		'FROM'		=>	'pun_forum_news AS news',
-		'JOINS'		=>	array(
-			array(
-				'LEFT JOIN'	=> 'forum_perms AS fp',
-				'ON'		=> '(fp.forum_id = news.forum_id AND fp.group_id = '.$forum_user['g_id'].')'
-			)
-		),
-		'WHERE'		=>	'(fp.read_forum IS NULL OR fp.read_forum = 1)',
-		'ORDER BY'	=>	'news.posted DESC'
-	);
-	$pun_forum_news_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+				$pun_forum_news_query = array(
+					'SELECT'	=>	'post_id',
+					'FROM'		=>	'pun_forum_news AS news',
+					'JOINS'		=>	array(
+						array(
+							'LEFT JOIN'	=> 'forum_perms AS fp',
+							'ON'		=> '(fp.forum_id = news.forum_id AND fp.group_id = '.$forum_user['g_id'].')'
+						)
+					),
+					'WHERE'		=>	'(fp.read_forum IS NULL OR fp.read_forum = 1)',
+					'ORDER BY'	=>	'news.posted DESC'
+				);
+				$pun_forum_news_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
 
-	$no_news = FALSE;
-	if ($forum_db->num_rows($pun_forum_news_result) > 0)
-	{
-		$post_news_id = array();
-		while ($cur_news = $forum_db->fetch_assoc($pun_forum_news_result))
-			$post_news_id[] = $cur_news['post_id'];
+				$no_news = FALSE;
+				$post_news_id = array();
+				while ($cur_news = $forum_db->fetch_assoc($pun_forum_news_result))
+					$post_news_id[] = $cur_news['post_id'];
 
-		$post_news_id = array_slice($post_news_id, 0, $show);
-		$pun_forum_news_query = array(
-			'SELECT'	=>	'news.*, t.subject',
-			'FROM'		=>	'pun_forum_news AS news',
-			'JOINS'		=> array(
-				array(
-					'INNER JOIN'	=> 'posts AS p',
-					'ON'			=> 'news.post_id = p.id'
-				),
-				array(
-					'INNER JOIN'	=> 'topics AS t',
-					'ON'			=> 'p.topic_id = t.id'
-				)
-			),
-			'WHERE'		=>	'post_id IN ('.implode(',', $post_news_id).')'
-		);
-		$query_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
+				if (count($post_news_id) > 0)
+				{
+					$post_news_id = array_slice($post_news_id, 0, $show);
+					$pun_forum_news_query = array(
+						'SELECT'	=>	'news.*, t.subject',
+						'FROM'		=>	'pun_forum_news AS news',
+						'JOINS'		=> array(
+							array(
+								'INNER JOIN'	=> 'posts AS p',
+								'ON'			=> 'news.post_id = p.id'
+							),
+							array(
+								'INNER JOIN'	=> 'topics AS t',
+								'ON'			=> 'p.topic_id = t.id'
+							)
+						),
+						'WHERE'		=>	'post_id IN ('.implode(',', $post_news_id).')'
+					);
+					$query_result = $forum_db->query_build($pun_forum_news_query) or error(__FILE__, __LINE__);
 
-		$posts_info = array();
-		while ($cur_post = $forum_db->fetch_assoc($query_result))
-		{
-			$tmp_index = array_search($cur_post['post_id'], $post_news_id);
-			$posts_info[$tmp_index] = $cur_post;
-		}
-		ksort($posts_info);
-		unset($post_news_id);
+					$posts_info = array();
+					while ($cur_post = $forum_db->fetch_assoc($query_result))
+					{
+						$tmp_index = array_search($cur_post['post_id'], $post_news_id);
+						$posts_info[$tmp_index] = $cur_post;
+					}
+					ksort($posts_info);
+					unset($post_news_id);
 
-		if (!defined('FORUM_PARSER_LOADED'))
-			require FORUM_ROOT.'include/parser.php';
+					if (!defined('FORUM_PARSER_LOADED'))
+						require FORUM_ROOT.'include/parser.php';
 
-		// Setup the feed
-		$feed = array(
-			'title' 		=>	$forum_config['o_board_title'].$lang_common['Title separator'].$lang_pun_forum_news['Forum news'],
-			'link'			=>	forum_link($forum_url['pun_forum_news']),
-			'description'	=>	$lang_pun_forum_news['Forum news'],
-			'items'			=>	array(),
-			'type'			=>	'news'
-		);
-		foreach ($posts_info as $post_num => $post_info)
-		{
-			if ($forum_config['o_censoring'] == '1')
-				$post_info['message'] = censor_words($post_info['message']);
+					// Setup the feed
+					$feed = array(
+						'title' 		=>	$forum_config['o_board_title'].$lang_common['Title separator'].$lang_pun_forum_news['Forum news'],
+						'link'			=>	forum_link($forum_url['pun_forum_news']),
+						'description'	=>	$lang_pun_forum_news['Forum news'],
+						'items'			=>	array(),
+						'type'			=>	'news'
+					);
+					foreach ($posts_info as $post_num => $post_info)
+					{
+						if ($forum_config['o_censoring'] == '1')
+							$post_info['message'] = censor_words($post_info['message']);
 
-			$post_info['message'] = parse_message($post_info['message'], $post_info['hide_smilies']);
+						$post_info['message'] = parse_message($post_info['message'], $post_info['hide_smilies']);
 
-			$item = array(
-				'id'			=>	$post_info['post_id'],
-				'title'			=>	$lang_common['RSS reply'].$post_info['subject'],
-				'link'			=>	forum_link($forum_url['post'], $post_info['post_id']),
-				'description'	=>	$post_info['message'],
-				'author'		=>	array(
-					'name'	=> $post_info['poster'],
-				),
-				'pubdate'		=>	$post_info['posted']
-			);
+						$item = array(
+							'id'			=>	$post_info['post_id'],
+							'title'			=>	$lang_common['RSS reply'].$post_info['subject'],
+							'link'			=>	forum_link($forum_url['post'], $post_info['post_id']),
+							'description'	=>	$post_info['message'],
+							'author'		=>	array(
+								'name'	=> $post_info['poster'],
+							),
+							'pubdate'		=>	$post_info['posted']
+						);
 
-			$feed['items'][] = $item;
-		}
+						$feed['items'][] = $item;
+					}
 
-		$output_func = 'output_'.$type;
-		$output_func($feed);
-	}
-	else
-		exit($lang_common['Bad request']);
-	
-	exit;
-}
+					$output_func = 'output_'.$type;
+					$output_func($feed);
+				}
+				else
+					exit($lang_common['Bad request']);
+
+				exit;
+			}
 		]]></hook>
 	</hooks>
 </extension>
