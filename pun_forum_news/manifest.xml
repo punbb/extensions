@@ -17,8 +17,8 @@
 	<version>1.1</version>
 	<description>Allow users to mark topics or posts as "news". News is shown on a special page.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC1</maxtestedon>
+	<minversion>1.4rc1</minversion>
+	<maxtestedon>1.4rc1</maxtestedon>
 
 	<install><![CDATA[
 		if (!$forum_db->table_exists('pun_forum_news'))

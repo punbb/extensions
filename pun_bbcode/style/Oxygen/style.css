@@ -1,7 +1,7 @@
 /* Styles for pun_bbcode extension */
 
 #pun_bbcode_bar {
-	margin: .35em 0 -.1em 1em;
+	margin: .45em 0 -.1em 1em;
 	position: relative;
 }
 
@@ -14,7 +14,7 @@
 	background: -ms-linear-gradient(top, #fff, #F3F3F3);
 	background: linear-gradient(top, #fff, #F3F3F3);
 	border-radius: 1px;
-	border-color: #ddd;
+	border-color: #E3E3E3;
 	padding: .45em .5em;
 	margin-right: 1px;
 	margin-bottom: -1.5px;

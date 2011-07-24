@@ -16,7 +16,7 @@
 <extension engine="1.0">
 	<id>pun_bbcode</id>
 	<title>BBCode buttons</title>
-	<version>1.4</version>
+	<version>1.4.9</version>
 	<description>Pretty buttons for easy BBCode formatting.</description>
 	<author>PunBB Development Team</author>
 
@@ -47,22 +47,24 @@
 
 	<hooks>
 		<hook id="hd_head"><![CDATA[
-			if ($forum_user['pun_bbcode_enabled'] && ((FORUM_PAGE == 'viewtopic' && $forum_config['o_quickpost']) || in_array(FORUM_PAGE, array('post', 'postedit', 'pun_pm-write'))))
+			if ($forum_user['pun_bbcode_enabled'] && ((FORUM_PAGE == 'viewtopic' && $forum_config['o_quickpost']) || in_array(FORUM_PAGE, array('post', 'postedit', 'pun_pm-write', 'pun_pm-inbox', 'pun_pm-compose'))))
 			{
 				if (!defined('FORUM_PARSER_LOADED'))
 					require FORUM_ROOT.'include/parser.php';
 
 				// Load CSS
 				if ($forum_user['style'] != 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
-					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url'));
+					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url', 'weight' => '90', 'media' => 'screen'));
 				else
-					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url'));
+					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url', 'weight' => '90', 'media' => 'screen'));
 
 				// CSS for disabled JS hide bar
 				$forum_loader->add_css('#pun_bbcode_bar { display: none; }', array('type' => 'inline', 'noscript' => true));
 
 				// Load JS
-				$forum_loader->add_js($ext_info['url'].'/scripts.js');
+				$forum_loader->add_js($ext_info['url'].'/js/pun_bbcode.min.js', array('async' => true));
+
+				($hook = get_hook('pun_bbcode_styles_loaded')) ? eval($hook) : null;
 			}
 		]]></hook>
 
