@@ -14,6 +14,7 @@ $lang_pun_poll = array(
 	'Poll question'					=>	'Poll question',
 	'Voting answer'					=>	'Poll option',
 	'Able revote'					=>	'Allow users to change their opinions.',
+
 //page Administration -> Settings -> Features
 	'Name plugin'					=>	'Settings for polls',
 	'Maximum answers'				=>	'Maximum answers in poll (2-100).',
@@ -24,6 +25,7 @@ $lang_pun_poll = array(
 	'Disable revoting info'			=>	'Enable revoting',
 	'Poll add'						=>	'Allow users to use polls in their topics.',
 	'Permission'					=>	'Voting permission',
+
 // general
 	'Users count'					=>	'Votes: ',
 	'Preview poll'					=>	'Preview of your edited poll.',
@@ -37,8 +39,8 @@ $lang_pun_poll = array(
 	'Button note'					=>	'Update poll',
 	'Show poll res'					=>	'Showing poll results',
 	'All ch vote'					=>	'Allow to change voting',
-	'Max cnt options'				=>	'Count of options can\'t be more than %s.',
-	'Min cnt options'				=>	'Count of options can\'t be less than 2.',
+	'Max cnt options'				=>	'Count of answers can\'t be more than %s.',
+	'Min cnt options'				=>	'Count of answers can\'t be less than 2.',
 	'Days limit'					=>	'Count of poll days can\'t be more than 90 and less than 1.',
 	'Votes count'					=>	'Count of votes can\'t be more than 500 and less than 10.',
 	'Header note'					=>	'Voting',
@@ -50,10 +52,11 @@ $lang_pun_poll = array(
 	'User vote error'				=>	'You have already voted.',
 	'End of vote'					=>	'You can\'t vote here as the poll is already ended.',
 	'Reset res'						=>	'Reset voting results',
-	'Reset res notice'				=>	'Check this if you want to reset voting results.',
+	'Reset res notice'				=>	'Reset voting results.',
 	'Remove v'						=>	'Remove voting',
-	'Remove v notice'				=>	'Check this if you want to remove voting.',
+	'Remove v notice'				=>	'Remove voting.',
 	'Empty question'				=>	'You should enter a question of poll.',
+	'Empty answers'					=>	'You should enter a answers of poll.',
 	'Merge error'					=>	'You can\'t merge these topics, because 2 or more topics include voting. Remove the voting before merging.',
 	'Edit voting'					=>	'If you want to edit question or answers of voting send e-mail to administrator of Forum <a href="mailto:%s">%s</a>.',
 	'Empty option count'			=>	'You should enter count of poll options.',
@@ -63,6 +66,10 @@ $lang_pun_poll = array(
 	'Maximum votes note'			=>	'Maximum count of votes in poll',
 	'Days voting note'				=>	'Count of days for voting',
 
-	'Poll redirect'					=>	'Poll added. Redirect...',
-	'Days, votes count'				=>	'Count of days and count of votes can\'t ...'
+	'Poll redirect'					=>	'Poll added.',
+	'Days, votes count'				=>	'Count of days and count of votes can\'t ...',
+
+	'Hide poll'						=> 'Hide poll block',
+	'Show poll'						=> 'Show poll block',
+	'Add poll option'				=> 'Add poll option',
 );
