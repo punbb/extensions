@@ -18,8 +18,8 @@
 	<description>The extension will ask some questions to prevent bot registration and posting.</description>
 	<author>PunBB Development Team</author>
 
-	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC1</maxtestedon>
+	<minversion>1.4rc1</minversion>
+	<maxtestedon>1.4rc1</maxtestedon>
 
 	<install><![CDATA[
 		// Table with questions.
