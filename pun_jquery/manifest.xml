@@ -7,16 +7,14 @@
 	<title>jQuery</title>
 	<description>A PunBB extension that provide jQuery lib (version 1.6.2)</description>
 	<author>dimka.linux@gmail.com</author>
-	<version>1.0</version>
+	<version>1.1</version>
 
-
-	<!-- -->
-	<minversion>1.4b2</minversion>
-	<maxtestedon>1.4b2</maxtestedon>
+	<minversion>1.4RC1</minversion>
+	<maxtestedon>1.4RC1</maxtestedon>
 
 
 	<install><![CDATA[
-		forum_config_add('o_pun_jquery_include_method', 0);
+		forum_config_add('o_pun_jquery_include_method', '0');
 	]]></install>
 
 	<uninstall><![CDATA[
@@ -121,7 +119,7 @@
 					break;
 			}
 
-			$forum_loader->add_js($ext_pun_jquery_url, array('async' => false, 'weight' => 75));
+			$forum_loader->add_js($ext_pun_jquery_url, array('type' => 'url', 'async' => false, 'weight' => 75));
 		]]></hook>
 
 	</hooks>

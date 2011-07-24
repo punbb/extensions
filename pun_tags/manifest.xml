@@ -14,12 +14,12 @@
 <extension engine="1.0">
 	<id>pun_tags</id>
 	<title>Pun tags</title>
-	<version>1.6</version>
+	<version>1.7</version>
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 
-	<minversion>1.4rc1</minversion>
-	<maxtestedon>1.4rc1</maxtestedon>
+	<minversion>1.4RC1</minversion>
+	<maxtestedon>1.4RC1</maxtestedon>
 
 	<install><![CDATA[
 		// Create table topic_tags if its fresh install
@@ -325,10 +325,10 @@
 		<hook id="hd_head"><![CDATA[
 			if (in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts', 'admin-management-manage_tags')))
 			{
-				if (file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
-					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url'));
+				if ($forum_user['style'] != 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
+					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url', 'media' => 'screen'));
 				else
-					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url'));
+					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url', 'media' => 'screen'));
 			}
 		]]></hook>
 

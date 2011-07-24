@@ -14,11 +14,12 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>2.2</version>
+	<version>2.3</version>
 	<description>Allows users to send and receive private messages.</description>
 	<author>PunBB Development Team</author>
-	<minversion>1.4rc1</minversion>
-	<maxtestedon>1.4rc1</maxtestedon>
+
+	<minversion>1.4RC1</minversion>
+	<maxtestedon>1.4RC1</maxtestedon>
 
 	<note type="uninstall" timing="pre">WARNING! All users messages will be removed during the uninstall process. It is strongly recommended you to disable "Private Messages" extension instead or to upgrade it without uninstalling.</note>
 
