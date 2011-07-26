@@ -21,10 +21,8 @@ PUNBB.pun_bbcode = (function () {
 
 		//
 		init: function () {
-			var bar = document.getElementById('pun_bbcode_bar');
-			if (bar) {
-				PUNBB.common.removeClass(bar, 'visual-hidden');
-			}
+
+			return true;
 		},
 
 		//

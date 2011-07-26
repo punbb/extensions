@@ -116,7 +116,7 @@ class Pun_bbcode {
 
 		ob_start();
 ?>
-		<div class="sf-set visual-hidden" id="pun_bbcode_bar">
+		<div class="sf-set" id="pun_bbcode_bar">
 			<div id="pun_bbcode_wrapper"<?php echo $forum_user['pun_bbcode_use_buttons'] && $forum_config['p_message_bbcode'] ? ' class="graphical"' : '' ?>>
 <?php
 		if ($forum_config['p_message_bbcode'])

@@ -16,7 +16,7 @@
 <extension engine="1.0">
 	<id>pun_bbcode</id>
 	<title>BBCode buttons</title>
-	<version>1.4.9</version>
+	<version>1.4.11</version>
 	<description>Pretty buttons for easy BBCode formatting.</description>
 	<author>PunBB Development Team</author>
 
@@ -53,10 +53,10 @@
 					require FORUM_ROOT.'include/parser.php';
 
 				// Load CSS
-				if ($forum_user['style'] != 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
-					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url', 'weight' => '90', 'media' => 'screen'));
+				if ($forum_user['style'] != 'Oxygen' && file_exists($ext_info['path'].'/css/'.$forum_user['style'].'/pun_bbcode.min.css'))
+					$forum_loader->add_css($ext_info['url'].'/css/'.$forum_user['style'].'/pun_bbcode.min.css', array('type' => 'url', 'weight' => '90', 'media' => 'screen'));
 				else
-					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url', 'weight' => '90', 'media' => 'screen'));
+					$forum_loader->add_css($ext_info['url'].'/css/Oxygen/pun_bbcode.min.css', array('type' => 'url', 'weight' => '90', 'media' => 'screen'));
 
 				// CSS for disabled JS hide bar
 				$forum_loader->add_css('#pun_bbcode_bar { display: none; }', array('type' => 'inline', 'noscript' => true));
