@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_poll</id>
 	<title>Pun poll</title>
-	<version>2.0</version>
+	<version>2.0.1</version>
 	<description>Adds polls feature for topics.</description>
 	<author>PunBB Development team</author>
 
@@ -134,10 +134,10 @@
 
 			include $ext_info['path'].'/functions.php';
 
-			if ($forum_user['style'] !== 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
-				$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url', 'media' => 'screen'));
+			if ($forum_user['style'] !== 'Oxygen' && file_exists($ext_info['path'].'/css/'.$forum_user['style'].'/pun_poll.min.css'))
+				$forum_loader->add_css($ext_info['url'].'/css/'.$forum_user['style'].'/pun_poll.min.css', array('type' => 'url', 'media' => 'screen'));
 			else
-				$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url', 'media' => 'screen'));
+				$forum_loader->add_css($ext_info['url'].'/css/Oxygen/pun_poll.min.css', array('type' => 'url', 'media' => 'screen'));
 
 			// No script CSS
 			$forum_loader->add_css('#pun_poll_switcher_block, #pun_poll_add_options_link { display: none; } #pun_poll_form_block, #pun_poll_update_block { display: block !important; }', array('type' => 'inline', 'noscript' => true));
@@ -456,13 +456,13 @@
 
 		<!-- Load CSS -->
 		<hook id="vt_start"><![CDATA[
-			if ($forum_user['style'] !== 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
-				$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url', 'media' => 'screen'));
+			if ($forum_user['style'] !== 'Oxygen' && file_exists($ext_info['path'].'/css/'.$forum_user['style'].'/pun_poll.min.css'))
+				$forum_loader->add_css($ext_info['url'].'/css/'.$forum_user['style'].'/pun_poll.min.css', array('type' => 'url', 'media' => 'screen'));
 			else
-				$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url', 'media' => 'screen'));
+				$forum_loader->add_css($ext_info['url'].'/css/Oxygen/pun_poll.min.css', array('type' => 'url', 'media' => 'screen'));
 
 			// JS
-			$forum_loader->add_js($ext_info['url'].'/js/pun_poll.js', array('type' => 'url', 'async' => true));
+			$forum_loader->add_js($ext_info['url'].'/js/pun_poll.min.js', array('type' => 'url', 'async' => true));
 		]]></hook>
 
 
