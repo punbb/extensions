@@ -1322,7 +1322,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 	global $forum_config, $forum_url, $lang_common, $lang_pun_pm, $forum_user, $pun_pm_errors, $ext_info, $forum_head, $forum_loader;
 
 	// need JS
-	$forum_loader->add_js($ext_info['url'].'/shortcut.js', array('type' => 'url'));
+	$forum_loader->add_js($ext_info['url'].'/js/pun_pm.shortcut.min.js', array('type' => 'url', 'async' => true));
 
 	$username = forum_htmlencode($username);
 	$subject = forum_htmlencode($subject);
