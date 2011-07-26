@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Webtasks example" default="init">
+
+	<description>Build PunBB Fancy Extensions</description>
+	<import file="webtasks.xml"/>
+	<property name="webtasks.dir" value="${basedir}" />
+
+
+	<!-- SOURCE DIRS -->
+	<property name="src-root" value="${basedir}/../../" />
+
+	<target name="init" depends="webtasks.init, pun_bbcode">
+		<echo>Build done.</echo>
+	</target>
+
+
+
+	<!-- FANCY PRETTIFY -->
+	<target name="pun_bbcode">
+		<compress-js-lib tofile="${src-root}/pun_bbcode/js/pun_bbcode.min.js" force="true">
+			<filelist dir="${src-root}/pun_bbcode/js/">
+				<file name="pun_bbcode.js" />
+			</filelist>
+		</compress-js-lib>
+
+		<compress-css-lib tofile="${src-root}/pun_bbcode/css/Oxygen/pun_bbcode.min.css" force="true">
+			<filelist dir="${src-root}/pun_bbcode/css/Oxygen/">
+				<file name="pun_bbcode.css" />
+			</filelist>
+		</compress-css-lib>
+	</target>
+</project>
