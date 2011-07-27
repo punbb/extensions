@@ -9,13 +9,13 @@
 	<!-- SOURCE DIRS -->
 	<property name="src-root" value="${basedir}/../../" />
 
-	<target name="init" depends="webtasks.init, pun_bbcode">
+	<target name="init" depends="webtasks.init, pun_bbcode, pun_poll, pun_pm">
 		<echo>Build done.</echo>
 	</target>
 
 
 
-	<!-- FANCY PRETTIFY -->
+	<!-- PUN BBCODE -->
 	<target name="pun_bbcode">
 		<compress-js-lib tofile="${src-root}/pun_bbcode/js/pun_bbcode.min.js" force="true">
 			<filelist dir="${src-root}/pun_bbcode/js/">
@@ -26,6 +26,38 @@
 		<compress-css-lib tofile="${src-root}/pun_bbcode/css/Oxygen/pun_bbcode.min.css" force="true">
 			<filelist dir="${src-root}/pun_bbcode/css/Oxygen/">
 				<file name="pun_bbcode.css" />
+			</filelist>
+		</compress-css-lib>
+	</target>
+
+
+	<!-- PUN POLL -->
+	<target name="pun_poll">
+		<compress-js-lib tofile="${src-root}/pun_poll/js/pun_poll.min.js" force="true">
+			<filelist dir="${src-root}/pun_poll/js/">
+				<file name="pun_poll.js" />
+			</filelist>
+		</compress-js-lib>
+
+		<compress-css-lib tofile="${src-root}/pun_poll/css/Oxygen/pun_poll.min.css" force="true">
+			<filelist dir="${src-root}/pun_poll/css/Oxygen/">
+				<file name="pun_poll.css" />
+			</filelist>
+		</compress-css-lib>
+	</target>
+
+
+	<!-- PUN PM -->
+	<target name="pun_pm">
+		<compress-js-lib tofile="${src-root}/pun_pm/js/pun_pm.shortcut.min.js" force="true">
+			<filelist dir="${src-root}/pun_pm/js/">
+				<file name="pun_pm.shortcut.js" />
+			</filelist>
+		</compress-js-lib>
+
+		<compress-css-lib tofile="${src-root}/pun_pm/css/Oxygen/pun_pm.min.css" force="true">
+			<filelist dir="${src-root}/pun_pm/css/Oxygen/">
+				<file name="pun_pm.css" />
 			</filelist>
 		</compress-css-lib>
 	</target>
