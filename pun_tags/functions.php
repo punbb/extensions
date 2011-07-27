@@ -35,24 +35,25 @@ function pun_tags_generate_cache()
 
 	$pun_tags = array();
 	$pun_tags['cached'] = time();
-	if ($forum_db->num_rows($result) > 0)
+	$pun_tags['index'] = $pun_tags['topics'] = $pun_tags['forums'] = array();
+
+	// Process all topics
+	while ($cur_tag = $forum_db->fetch_assoc($result))
 	{
-		$pun_tags['index'] = $pun_tags['topics'] = $pun_tags['forums'] = array();
-		//Process all topics
-		while ($cur_tag = $forum_db->fetch_assoc($result))
-		{
-			if (!isset($pun_tags['index'][$cur_tag['tag_id']]))
-				$pun_tags['index'][$cur_tag['tag_id']] = $cur_tag['tag'];
-			if (!isset($pun_tags['topics'][$cur_tag['topic_id']]))
-				$pun_tags['topics'][$cur_tag['topic_id']] = array();
-			$pun_tags['topics'][$cur_tag['topic_id']][] = intval($cur_tag['tag_id']);
-			if (!isset($pun_tags['forums'][$cur_tag['forum_id']]))
-				$pun_tags['forums'][$cur_tag['forum_id']] = array();
-			if (!isset($pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']]))
-				$pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']] = 1;
-			else
-				$pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']]++;
-		}
+		if (!isset($pun_tags['index'][$cur_tag['tag_id']]))
+			$pun_tags['index'][$cur_tag['tag_id']] = $cur_tag['tag'];
+
+		if (!isset($pun_tags['topics'][$cur_tag['topic_id']]))
+			$pun_tags['topics'][$cur_tag['topic_id']] = array();
+
+		$pun_tags['topics'][$cur_tag['topic_id']][] = intval($cur_tag['tag_id']);
+		if (!isset($pun_tags['forums'][$cur_tag['forum_id']]))
+			$pun_tags['forums'][$cur_tag['forum_id']] = array();
+
+		if (!isset($pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']]))
+			$pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']] = 1;
+		else
+			$pun_tags['forums'][$cur_tag['forum_id']][$cur_tag['tag_id']]++;
 	}
 
 	// Output pun tags as PHP code
@@ -63,7 +64,7 @@ function pun_tags_generate_cache()
 	fclose($fh);
 }
 
-// Generate groups permissions cache 
+// Generate groups permissions cache
 function pun_tags_generate_forum_perms_cache()
 {
 	global $forum_db;
@@ -74,11 +75,10 @@ function pun_tags_generate_forum_perms_cache()
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	$forums = array();
-	if ($forum_db->num_rows($result) > 0)
-	{
-		while ($cur_forum = $forum_db->fetch_row($result))
-			$forums[] = $cur_forum[0];
-	}
+
+	while ($cur_forum = $forum_db->fetch_row($result))
+		$forums[] = $cur_forum[0];
+
 	if (!empty($forums))
 	{
 		$pun_tags_groups_perms = array();
@@ -98,13 +98,16 @@ function pun_tags_generate_forum_perms_cache()
 			'WHERE'		=>	'read_forum = 0'
 		);
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
-		if ($forum_db->num_rows($result) > 0)
+		while ($cur_perm = $forum_db->fetch_assoc($result))
+			unset($pun_tags_groups_perms[$cur_perm['group_id']][array_search($cur_perm['forum_id'], $forums)]);
+
+		if (!empty($pun_tags_groups_perms))
 		{
-			while ($cur_perm = $forum_db->fetch_assoc($result))
-				unset($pun_tags_groups_perms[$cur_perm['group_id']][array_search($cur_perm['forum_id'], $forums)]);
 			foreach ($pun_tags_groups_perms as $group => $perms)
+			{
 				if ($group != 'cached')
 					$pun_tags_groups_perms[$group] = array_values($perms);
+			}
 		}
 	}
 
@@ -207,7 +210,7 @@ function pun_tags_add_new($tag, $topic_id)
 		'VALUES'	=> $topic_id.', '.$new_tagid
 	);
 	$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
-	
+
 	return $new_tagid;
 }
 

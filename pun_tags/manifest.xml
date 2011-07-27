@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_tags</id>
 	<title>Pun tags</title>
-	<version>1.7</version>
+	<version>1.7.1</version>
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 
