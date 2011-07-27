@@ -5,6 +5,10 @@
 	position: relative;
 }
 
+.oldie #pun_bbcode_bar {
+	margin: .45em 0 -.45em 1em;
+}
+
 #pun_bbcode_bar input[type="button"] {
 	background: #F3F3F3;
 	background: -moz-linear-gradient(top, #fff, #F3F3F3);
