@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_poll</id>
 	<title>Pun poll</title>
-	<version>2.0.2</version>
+	<version>2.0.3</version>
 	<description>Adds polls feature for topics.</description>
 	<author>PunBB Development team</author>
 
@@ -749,7 +749,7 @@
 
 
 		<!-- -->
-		<hook id="vt_row_pre_display"><![CDATA[
+		<hook id="vt_row_pre_display" priority="4"><![CDATA[
 			if ((isset($vote_results) || isset($vote_form)) && ($cur_post['id'] == $cur_topic['first_post_id'])) {
 				$pun_poll_block = '';
 				if (!empty($vote_form)) {
