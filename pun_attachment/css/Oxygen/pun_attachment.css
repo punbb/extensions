@@ -1,0 +1,40 @@
+/**
+ * CSS rules for Oxygen style
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_attachment
+ */
+div.attachments
+{
+	border-style:solid;
+	border-width:1px;
+	padding:2px 6px 3px 6px;
+}
+.attachments div
+{
+	padding:3px;
+}
+.attachments strong
+{
+	visibility:hidden;
+	display:none;
+}
+p.show-image, #brd-attachment-preview span.show-image, #brd-attachment-preview span.show-image img
+{
+	width:100%;
+}
+p.show-image img
+{
+	max-width:100%;
+}/**
+ * CSS rules for Oxygen style
+ *
+ * @copyright Copyright (C) 2008 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_attachment
+ */
+div.attachments
+{
+	background-color:#EDF1F5;
+}
