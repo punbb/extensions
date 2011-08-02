@@ -7,10 +7,10 @@
 	<title>jQuery</title>
 	<description>A PunBB extension that provide jQuery lib (version 1.6.2)</description>
 	<author>dimka.linux@gmail.com</author>
-	<version>1.1</version>
+	<version>1.1.1</version>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC1</maxtestedon>
+	<maxtestedon>1.4RC2</maxtestedon>
 
 
 	<install><![CDATA[

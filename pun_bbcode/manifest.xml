@@ -16,12 +16,12 @@
 <extension engine="1.0">
 	<id>pun_bbcode</id>
 	<title>BBCode buttons</title>
-	<version>1.4.12</version>
+	<version>1.4.13</version>
 	<description>Pretty buttons for easy BBCode formatting.</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC1</maxtestedon>
+	<maxtestedon>1.4RC2</maxtestedon>
 
 	<install><![CDATA[
 		if (defined('EXT_CUR_VERSION') && EXT_CUR_VERSION == '1.1')
