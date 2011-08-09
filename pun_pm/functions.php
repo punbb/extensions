@@ -987,10 +987,10 @@ function pun_pm_box($forum_page)
 {
 	global $lang_pun_pm, $forum_url, $forum_user, $ext_info, $lang_common, $forum_loader;
 
-	if (file_exists($ext_info['path'].'/styles/'.$forum_user['style'].'/icons/'))
-		$icons_path = $ext_info['url'].'/styles/'.$forum_user['style'].'/icons';
+	if (file_exists($ext_info['path'].'/css/'.$forum_user['style'].'/icons/'))
+		$icons_path = $ext_info['url'].'/css/'.$forum_user['style'].'/icons';
 	else
-		$icons_path = $ext_info['url'].'/styles/Oxygen/icons';
+		$icons_path = $ext_info['url'].'/css/Oxygen/icons';
 
 	$forum_page['group_count'] = $forum_page['fld_count'] = 0;
 	$forum_page['form_action'] = forum_link($forum_url['pun_pm_write']);
