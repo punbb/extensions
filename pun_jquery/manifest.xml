@@ -6,8 +6,8 @@
 	<id>pun_jquery</id>
 	<title>jQuery</title>
 	<description>A PunBB extension that provide jQuery lib (version 1.6.2)</description>
-	<author>dimka.linux@gmail.com</author>
-	<version>1.1.1</version>
+	<author>PunBB Development Team</author>
+	<version>1.1.2</version>
 
 	<minversion>1.4RC1</minversion>
 	<maxtestedon>1.4RC2</maxtestedon>
