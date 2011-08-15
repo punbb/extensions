@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>2.3.4</version>
+	<version>2.3.5</version>
 	<description>Allows users to send and receive private messages.</description>
 	<author>PunBB Development Team</author>
 
@@ -553,7 +553,7 @@ $forum_page['group_count'] = $forum_page['item_count'] = 0;
 
 		<!-- -->
 		<hook id="co_modify_url_scheme"><![CDATA[
-			if (file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
+			if ($forum_config['o_sef'] != 'Default' && file_exists($ext_info['path'].'/url/'.$forum_config['o_sef'].'.php'))
 				require $ext_info['path'].'/url/'.$forum_config['o_sef'].'.php';
 			else
 				require $ext_info['path'].'/url/Default.php';
