@@ -1,7 +1,8 @@
 .pun_poll_item {
     padding: 1em .75em .75em;
     margin: .75em 1em;
-    border: solid 1px #eee;
+    border: solid 1px #eee !important;
+    border-radius: .2em;
     background: #fff;
 }
 
@@ -12,6 +13,7 @@
 .pun_poll_header {
     padding: 0 0 0 19.4em;
     position: relative;
+    color: #CB4B16;
 }
 
 .votted .pun_poll_header {

@@ -1,14 +1,9 @@
 /*jslint browser: true, maxerr: 50, indent: 4 */
 /*global PUNBB: true */
 
-if (typeof PUNBB === 'undefined' || !PUNBB) {
-	var PUNBB = {};
-}
-
-
 // INSTALL
 PUNBB.pun_poll = (function () {
-	'use strict';
+	"use strict";
 
 	//
 	function visible(el) {
@@ -21,9 +16,9 @@ PUNBB.pun_poll = (function () {
 
 	//
 	function switcher_link_onclick_handler() {
-		var poll_block = get('pun_poll_form_block'),
-			switcher_link = get('pun_poll_switcher_link'),
-			el_status = get('pun_poll_block_status');
+		var poll_block = get("pun_poll_form_block"),
+			switcher_link = get("pun_poll_switcher_link"),
+			el_status = get("pun_poll_block_status");
 
 		//
 		if (!poll_block || !switcher_link || !el_status) {
@@ -31,13 +26,13 @@ PUNBB.pun_poll = (function () {
 		}
 
 		if (!visible(poll_block)) {
-			poll_block.style.display = 'block';
-			switcher_link.innerHTML = switcher_link.getAttribute('data-lang-hide');
-			el_status.value = '1';
+			poll_block.style.display = "block";
+			switcher_link.innerHTML = switcher_link.getAttribute("data-lang-hide");
+			el_status.value = "1";
 		} else {
-			poll_block.style.display = 'none';
-			switcher_link.innerHTML = switcher_link.getAttribute('data-lang-show');
-			el_status.value = '0';
+			poll_block.style.display = "none";
+			switcher_link.innerHTML = switcher_link.getAttribute("data-lang-show");
+			el_status.value = "0";
 		}
 
 		return false;
@@ -45,8 +40,8 @@ PUNBB.pun_poll = (function () {
 
 	//
 	function el_add_options_onclick_handler() {
-		var el_template = get('pun_poll_add_option_template'),
-			new_poll_options_el = '',
+		var el_template = get("pun_poll_add_option_template"),
+			new_poll_options_el = "",
 			i,
 			cl,
 			max_fld_count = 0,
@@ -59,12 +54,12 @@ PUNBB.pun_poll = (function () {
 			return true;
 		}
 
-		new_poll_options_el = document.createElement('div');
-		PUNBB.common.addClass(new_poll_options_el, 'sf-set');
+		new_poll_options_el = document.createElement("div");
+		PUNBB.common.addClass(new_poll_options_el, "sf-set");
 		new_poll_options_el.innerHTML = el_template.innerHTML;
 
 		// Find all Poll options block
-		div_list = document.getElementsByTagName('div');
+		div_list = document.getElementsByTagName("div");
 
 		for (i = 0, cl = div_list.length; i < cl; i += 1) {
 			var el = div_list[i];
@@ -138,13 +133,13 @@ PUNBB.pun_poll = (function () {
 
 		// Find vote button inside poll
 		vote_btn = PUNBB.common.arrayOfMatched(function (el) {
-			return (el.type === 'submit' && el.name && el.name === 'vote');
-		}, poll_item.getElementsByTagName('input'))[0];
+			return (el.type === "submit" && el.name && el.name === "vote");
+		}, poll_item.getElementsByTagName("input"))[0];
 
 		// Find radio butons inside poll
 		radio_btn = PUNBB.common.arrayOfMatched(function (el) {
-			return (el.type === 'radio' && el.name && el.name === 'answer');
-		}, poll_item.getElementsByTagName('input'));
+			return (el.type === "radio" && el.name && el.name === "answer");
+		}, poll_item.getElementsByTagName("input"));
 
 		// Attach validator to radio buttons change
 		if (vote_btn && radio_btn.length > 0) {
@@ -162,17 +157,17 @@ PUNBB.pun_poll = (function () {
 
 		//
 		init: function () {
-			if (PUNBB.env.page === 'post' || PUNBB.env.page === 'postedit') {
-				var switcher_link = get('pun_poll_switcher_link'),
-					el_status = get('pun_poll_block_status'),
-					el_add_options = get('pun_poll_add_options_link');
+			if (PUNBB.env.page === "post" || PUNBB.env.page === "postedit") {
+				var switcher_link = get("pun_poll_switcher_link"),
+					el_status = get("pun_poll_block_status"),
+					el_add_options = get("pun_poll_add_options_link");
 
 				if (switcher_link) {
 					switcher_link.onclick = switcher_link_onclick_handler;
 				}
 
 				if (el_status) {
-					el_status.value = visible(get('pun_poll_form_block')) ? '1' : '0';
+					el_status.value = visible(get("pun_poll_form_block")) ? "1" : "0";
 				}
 
 				if (el_add_options) {
@@ -180,7 +175,7 @@ PUNBB.pun_poll = (function () {
 				}
 			}
 
-			if (PUNBB.env.page === 'viewtopic') {
+			if (PUNBB.env.page === "viewtopic") {
 				vote_submit_button_handler_init();
 			}
 		}
