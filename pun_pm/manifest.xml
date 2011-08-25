@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>2.3.5</version>
+	<version>2.3.6</version>
 	<description>Allows users to send and receive private messages.</description>
 	<author>PunBB Development Team</author>
 
@@ -315,7 +315,7 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 			include $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 	}
 
-	if(!defined('PUN_PM_FUNCTIONS_LOADED'))
+	if (!defined('PUN_PM_FUNCTIONS_LOADED'))
 		require $ext_info['path'].'/functions.php';
 
 	$pun_pm_page = isset($_GET['pmpage']) ? $_GET['pmpage'] : '';
@@ -330,7 +330,7 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 	$forum_page['main_menu'] = array(
 		'inbox'		=> '<li class="first-item'.($pun_pm_page == 'inbox' ? ' active' : '').'"><a href="'.forum_link($forum_url['pun_pm_inbox']).'"><span>'.$lang_pun_pm['Inbox'].'</span></a></li>',
 		'outbox'	=> '<li'.(($pun_pm_page == 'outbox') ? ' class="active"' : '').'><a href="'.forum_link($forum_url['pun_pm_outbox']).'"><span>'.$lang_pun_pm['Outbox'].'</span></a></li>',
-		'write'		=> '<li'.(($pun_pm_page == 'write') ? ' class="active"' : '').'><a href="'.forum_link($forum_url['pun_pm_write']).'"><span>'.$lang_pun_pm['Compose message'].'</span></a></li>',
+		'write'		=> '<li'.(($pun_pm_page == 'write' || $pun_pm_page == 'compose') ? ' class="active"' : '').'><a href="'.forum_link($forum_url['pun_pm_write']).'"><span>'.$lang_pun_pm['Compose message'].'</span></a></li>',
 	);
 
 	// Setup breadcrumbs
@@ -338,11 +338,12 @@ if ($section == 'pun_pm' && !$forum_user['is_guest'])
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($lang_pun_pm['Private messages'], forum_link($forum_url['pun_pm']))
 	);
+
 	if ($pun_pm_page == 'inbox')
 		$forum_page['crumbs'][] = array($lang_pun_pm['Inbox'], forum_link($forum_url['pun_pm_inbox']));
 	else if ($pun_pm_page == 'outbox')
 		$forum_page['crumbs'][] = array($lang_pun_pm['Outbox'], forum_link($forum_url['pun_pm_outbox']));
-	else if ($pun_pm_page == 'write')
+	else if ($pun_pm_page == 'write' || $pun_pm_page == 'compose')
 		$forum_page['crumbs'][] = array($lang_pun_pm['Compose message'], forum_link($forum_url['pun_pm_write']));
 
 	($hook = get_hook('pun_pm_pre_page_output')) ? eval($hook) : null;
