@@ -395,7 +395,7 @@
 
 		<!-- -->
 		<hook id="fn_delete_topic_qr_delete_topic"><![CDATA[
-			include $ext_info['path'].'/functions.php';
+			include_once $ext_info['path'].'/functions.php';
 
 			Pun_poll::remove_poll($topic_id);
 		]]></hook>
