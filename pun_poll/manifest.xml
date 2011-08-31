@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_poll</id>
 	<title>Pun poll</title>
-	<version>2.1</version>
+	<version>2.2</version>
 	<description>Adds polls feature for topics.</description>
 	<author>PunBB Development team</author>
 
