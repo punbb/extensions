@@ -184,7 +184,7 @@ function pun_pm_unread_messages()
 		pun_pm_write_cache($forum_user['id'], $new_messages, $pun_pm_my_inbox_full);
 	}
 
-	$return = $new_messages ? sprintf($lang_pun_pm['New link active'], $new_messages) : (!$pun_pm_my_inbox_full ? $lang_pun_pm['New link'] : $lang_pun_pm['New link full']);
+	$return = $new_messages ? '<strong>'.$lang_pun_pm['New link'].'</strong>' : (!$pun_pm_my_inbox_full ? $lang_pun_pm['New link'] : $lang_pun_pm['New link full']);
 
 	($hook = get_hook('pun_pm_fn_unread_messages_end')) ? eval($hook) : null;
 
