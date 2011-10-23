@@ -56,4 +56,4 @@ function cache_pun_coloured_usergroups()
 	}
 }
 
-?>
+define('CACHE_PUN_COLOURED_USERGROUPS_LOADED', 1);

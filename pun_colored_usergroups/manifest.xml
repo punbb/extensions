@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_colored_usergroups</id>
 	<title>Colored usergroups</title>
-	<version>1.2.2</version>
+	<version>1.2.3</version>
 	<description>This extension allows setting specific colors for user groups.</description>
 	<author>PunBB Development Team</author>
 
@@ -121,7 +121,9 @@
 		<hook id="in_start, agr_start, vt_start, ul_start, pf_start"><![CDATA[
 			if (!file_exists(FORUM_CACHE_DIR.'cache_pun_coloured_usergroups.php'))
 			{
-				require $ext_info['path'].'/main.php';
+				if (!defined('CACHE_PUN_COLOURED_USERGROUPS_LOADED')) {
+					require $ext_info['path'].'/main.php';
+				}
 				cache_pun_coloured_usergroups();
 			}
 		]]></hook>
@@ -155,7 +157,9 @@
 
 
 		<hook id="agr_add_edit_pre_redirect"><![CDATA[
-			require $ext_info['path'].'/main.php';
+			if (!defined('CACHE_PUN_COLOURED_USERGROUPS_LOADED')) {
+				require $ext_info['path'].'/main.php';
+			}
 			cache_pun_coloured_usergroups();
 		]]></hook>
 	</hooks>
