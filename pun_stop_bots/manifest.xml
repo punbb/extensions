@@ -14,12 +14,12 @@
 <extension engine="1.0">
 	<id>pun_stop_bots</id>
 	<title>Stop spam from bots</title>
-	<version>0.3.2</version>
+	<version>0.3.3</version>
 	<description>The extension will ask some questions to prevent bot registration and posting.</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC2</maxtestedon>
+	<maxtestedon>1.4</maxtestedon>
 
 	<install><![CDATA[
 		// Table with questions.

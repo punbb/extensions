@@ -27,12 +27,12 @@
 <extension engine="1.0">
 	<id>pun_admin_clear_cache</id>
 	<title>Admin Clear Cache</title>
-	<version>1.1.4</version>
+	<version>1.1.5</version>
 	<description>The link in the page footer to clear forum cache.</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC2</maxtestedon>
+	<maxtestedon>1.4</maxtestedon>
 
 
 	<hooks>

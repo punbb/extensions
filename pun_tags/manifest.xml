@@ -14,12 +14,12 @@
 <extension engine="1.0">
 	<id>pun_tags</id>
 	<title>Pun tags</title>
-	<version>1.7.2</version>
+	<version>1.7.3</version>
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4RC2</maxtestedon>
+	<maxtestedon>1.4</maxtestedon>
 
 	<install><![CDATA[
 		// Create table topic_tags if its fresh install
