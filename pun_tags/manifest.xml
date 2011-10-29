@@ -14,11 +14,11 @@
 <extension engine="1.0">
 	<id>pun_tags</id>
 	<title>Pun tags</title>
-	<version>1.5.1</version>
+	<version>1.5.2</version>
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.3</minversion>
-	<maxtestedon>1.3.4</maxtestedon>
+	<maxtestedon>1.3.6</maxtestedon>
 
 	<install><![CDATA[
 		// Create table topic_tags if its fresh install
@@ -33,7 +33,7 @@
 					'topic_id'			=> array(
 						'datatype'		=> 'INT(10) UNSIGNED',
 						'allow_null'	=> false
-						
+
 					),
 					'tag_id'		=> array(
 						'datatype'		=> 'INT(10) UNSIGNED',
@@ -132,7 +132,7 @@
 	</uninstall>
 
 	<hooks>
-		
+
 		<hook id="agr_add_edit_group_flood_fieldset_end"><![CDATA[
 
 			?>
@@ -151,14 +151,14 @@
 			<?php
 
 		]]></hook>
-		
+
 		<hook id="agr_edit_end_qr_update_group"><![CDATA[
 
 			$pun_tags_allow = isset($_POST['pun_tags_allow']) ? intval($_POST['pun_tags_allow']) : '0';
 			$query['SET'] .= ', g_pun_tags_allow='.$pun_tags_allow;
 
 		]]></hook>
-		
+
 		<hook id="hd_main_elements"><![CDATA[
 			//Output of search results
 			if ($forum_config['o_pun_tags_show'] == 1 && in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts')))
@@ -245,6 +245,7 @@
 		]]></hook>
 		<hook id="re_rewrite_rules"><![CDATA[
 			$forum_rewrite_rules['/^tag[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'search.php?action=tag&tag_id=$1';
+			$forum_rewrite_rules['/^tag[\/_-]?([0-9]+)[\/_-]p(age)?[\/_-]?([0-9]+)(\.html?|\/)?$/i'] = 'search.php?action=tag&tag_id=$1&p=$3';
 		]]></hook>
 		<hook id="se_results_pre_header_load"><![CDATA[
 			if ($action == 'tag')
@@ -470,7 +471,7 @@
 						foreach ($pun_tags['topics'][$cur_post['tid']] as $old_tagid)
 							$old_tags[$old_tagid] = $pun_tags['index'][$old_tagid];
 					}
-	
+
 					//Tags for removing
 					$remove_tags = array_diff($old_tags, $new_tags);
 					if (!empty($remove_tags))
@@ -546,7 +547,7 @@
 				$res_tags = array();
 				if (isset($pun_tags['topics'][$tid]))
 				{
-	
+
 					foreach ($pun_tags['topics'][$tid] as $tag_id)
 						foreach ($pun_tags['index'] as $tag)
 							if ($tag['tag_id'] == $tag_id)
@@ -690,13 +691,13 @@
 			pun_tags_generate_forum_perms_cache();
 		]]></hook>
 		<hook id="ca_fn_generate_admin_menu_new_sublink"><![CDATA[
-			
+
 			if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 				require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 			else
 				require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 			require $ext_info['path'].'/pun_tags_url.php';
-			
+
 			if ((FORUM_PAGE_SECTION == 'management') && ($forum_user['g_id'] == FORUM_ADMIN))
 				$forum_page['admin_submenu']['pun_tags_management'] = '<li class="'.((FORUM_PAGE == 'admin-management-manage_tags') ? 'active' : 'normal').((empty($forum_page['admin_menu'])) ? ' first-item' : '').'"><a href="'.forum_link($pun_tags_url['Section pun_tags']).'">'.$lang_pun_tags['Section tags'].'</a></li>';
 		]]></hook>
@@ -717,13 +718,13 @@
 					while ($cur_topic = $forum_db->fetch_assoc($pun_tags_result))
 						$topic_info[$cur_topic['id']] = $cur_topic['subject'];
 				}
-			
+
 				if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php'))
 					require $ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info['id'].'.php';
 				else
 					require $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 				require $ext_info['path'].'/pun_tags_url.php';
-			
+
 				if (isset($_POST['change_tags']) && !empty($_POST['line_tags']) && !empty($pun_tags['topics']))
 				{
 					foreach ($_POST['line_tags'] as $topic_id => $tag_line)
@@ -731,7 +732,7 @@
 						if (intval($topic_id) < 1)
 							break;
 						$cur_tags_new = pun_tags_parse_string(utf8_trim($tag_line));
-			
+
 						//All tags was removed?
 						if (empty($cur_tags_new))
 						{
@@ -742,7 +743,7 @@
 							$forum_db->query_build($pun_tags_query) or error(__FILE__, __LINE__);
 							continue;
 						}
-			
+
 						//Collect old tags
 						$cur_tags_old = array();
 						if (!empty($pun_tags['topics'][$topic_id]))
@@ -797,7 +798,7 @@
 								}
 								else
 									pun_tags_add_new($edited_tag, $topic_id);
-			
+
 								$remove_tags_id[] = $tag_old_id;
 								$processed_tags[] = $tag_old_id;
 							}
@@ -827,16 +828,16 @@
 					}
 					pun_tags_remove_orphans();
 					pun_tags_generate_cache();
-			
+
 					redirect(forum_link($pun_tags_url['Section pun_tags']), $lang_pun_tags['Redirect with changes'].' '.$lang_admin_common['Redirect']);
 				}
 				$forum_page['form_action'] = forum_link($pun_tags_url['Section tags']);
 				$forum_page['item_count'] = 1;
-			
+
 				$forum_page['table_header'] = array();
 				$forum_page['table_header']['name'] = '<th class="tc1" scope=col">'.$lang_pun_tags['Name topic'].'</th>';
 				$forum_page['table_header']['tags'] = '<th class="tc2" scope=col">'.$lang_pun_tags['Tags of topic'].'</th>';
-			
+
 				// Setup breadcrumbs
 				$forum_page['crumbs'] = array(
 					array($forum_config['o_board_title'], forum_link($forum_url['index'])),
@@ -844,13 +845,13 @@
 					array($lang_admin_common['Management'], forum_link($forum_url['admin_reports'])),
 					array($lang_pun_tags['Section tags'], forum_link($pun_tags_url['Section tags']))
 				);
-			
+
 				define('FORUM_PAGE_SECTION', 'management');
 				define('FORUM_PAGE', 'admin-management-manage_tags');
 				require FORUM_ROOT.'header.php';
-			
+
 				ob_start();
-			
+
 				if (!empty($topic_info))
 				{
 					// Load the userlist.php language file
@@ -858,7 +859,7 @@
 						require FORUM_ROOT.'lang/'.$forum_user['language'].'/userlist.php';
 					else
 						require FORUM_ROOT.'lang/English/userlist.php';
-			
+
 					?>
 					<div class="main-subhead">
 						<h2 class="hn">
@@ -878,23 +879,23 @@
 									</thead>
 									<tbody>
 									<?php
-			
+
 										foreach ($topic_info as $topic_id => $topic_subject)
 										{
 											$tags_arr = $pun_tags['topics'][$topic_id];
 											$cur_tags_arr = array();
 											foreach ($tags_arr as $tag_id)
 												$cur_tags_arr[] = $pun_tags['index'][$tag_id];
-			
+
 									?>
 										<tr class="<?php echo ($forum_page['item_count'] % 2 != 0) ? 'odd' : 'even' ?><?php echo ($forum_page['item_count'] == 1) ? ' row1' : '' ?>">
 											<td class="tc0" scope=col"><a class="permalink" rel="bookmark" href="<?php echo forum_link($forum_url['topic'], $topic_id) ?>"><?php echo forum_htmlencode($topic_subject) ?></a></td>
 											<td class="tc1" scope=col"><input id="fld'<?php echo $forum_page['item_count']; ?>'" type="text" value="<?php echo forum_htmlencode(implode(', ', $cur_tags_arr)) ?>" size="100%" name="line_tags[<?php echo $topic_id; ?>]"/></td>
 										</tr>
 									<?php
-			
+
 										}
-			
+
 									?>
 									</tbody>
 								</table>
@@ -905,11 +906,11 @@
 						</form>
 					</div>
 				<?php
-			
+
 				}
 				else
 				{
-			
+
 					?>
 						<div class="main-subhead">
 							<h2 class="hn">
@@ -921,19 +922,17 @@
 								<h3 class="hn"><span><strong><?php echo $lang_pun_tags['No tags']; ?></strong></span></h3>
 							</div>
 						</div>
-			
+
 					<?php
-			
+
 				}
-			
+
 				$tpl_pun_tags = trim(ob_get_contents());
 				$tpl_main = str_replace('<!-- forum_main -->', $tpl_pun_tags, $tpl_main);
 				ob_end_clean();
-			
+
 				require FORUM_ROOT.'footer.php';
 			}
-
 		]]></hook>
 	</hooks>
-
 </extension>

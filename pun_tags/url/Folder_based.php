@@ -7,6 +7,6 @@
  * @package pun_tags
  */
 
-$forum_url['search_tag'] = 'tag/$1';
+$forum_url['search_tag'] = 'tag/$1/';
 
 ?>
