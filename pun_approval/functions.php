@@ -1578,7 +1578,7 @@ function approve_post()
 
 			$query_app = array(
 					'UPDATE'	=> 'post_approval_topics',
-					'SET'		=> 'subject=\''.$new_subject.'\', first_post_id=0, last_post_id=0',
+					'SET'		=> 'subject=\''.$forum_db->escape($new_subject).'\', first_post_id=0, last_post_id=0',
 					'WHERE'		=> 'id='.$aptid
 			);
 
@@ -1586,7 +1586,7 @@ function approve_post()
 
 			$query_app = array(
 					'UPDATE'	=> 'topics',
-					'SET'		=> 'subject=\''.$new_subject.'\'',
+					'SET'		=> 'subject=\''.$forum_db->escape($new_subject).'\'',
 					'WHERE'		=> 'id='.$aptid
 			);
 
@@ -1789,6 +1789,3 @@ function approve_post()
 
 	redirect(forum_link($post_app_url['Section'], $aptid), $lang_app_post['approve succesfull']);
 }
-
-
-
