@@ -11,9 +11,12 @@
 }
 
 .pun_poll_header {
-    padding: 0 0 0 19.4em;
+    font-size: 1.1em;
+    padding: 0 0 0 17.6em;
+    margin-bottom: 1em;
     position: relative;
-    color: #CB4B16;
+    color: #D93315;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 .votted .pun_poll_header {
@@ -48,13 +51,20 @@
 }
 
 .pun_poll_item dd div {
-    background: #DADACD;
-    height: 5px;
+    background: #F0F0F0;
+    border: solid 1px #E3E3E3;
+    height: 7px;
     margin-top: .1em;
+    border-radius: 2px;
 }
 
-.pun_poll_item div.winner {
-    background-color: #FBB31D;
+.pun_poll_item .winner {
+    background-color: #F8D67E;
+    border-color: #FBC01D;
+}
+
+.pun_poll_item .poll-empty {
+    visibility: hidden;
 }
 
 .pun_poll_total {
