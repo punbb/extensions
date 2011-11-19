@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_colored_usergroups</id>
 	<title>Colored usergroups</title>
-	<version>1.2.3</version>
+	<version>1.2.4</version>
 	<description>This extension allows setting specific colors for user groups.</description>
 	<author>PunBB Development Team</author>
 
@@ -112,7 +112,7 @@
 			{
 				if ($forum_user_online['user_id'] > 1)
 				{
-					$users[] = ($forum_user['g_view_users'] == '1') ? '<span class="group_color_'.$forum_user_online['group_id'].'"> <a href="'.forum_link($forum_url['user'], $forum_user_online['user_id']).'">'.forum_htmlencode($forum_user_online['ident']).'</a></span>' : forum_htmlencode($forum_user_online['ident']);
+					$users[] = ($forum_user['g_view_users'] == '1') ? '<span class="group_color_'.$forum_user_online['group_id'].'"><a href="'.forum_link($forum_url['user'], $forum_user_online['user_id']).'">'.forum_htmlencode($forum_user_online['ident']).'</a></span>' : forum_htmlencode($forum_user_online['ident']);
 				};
 			};
 		]]></hook>
@@ -147,7 +147,7 @@
 
 
 		<hook id="ul_results_row_pre_data_output"><![CDATA[
-			$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'"><span class="group_color_'.$user_data['g_id'].'"><a href="'.forum_link($forum_url['user'], $user_data['id']).'">'.forum_htmlencode($user_data['username']).'</span></a></td>';
+			$forum_page['table_row']['username'] = '<td class="tc'.count($forum_page['table_row']).'"><span class="group_color_'.$user_data['g_id'].'"><a href="'.forum_link($forum_url['user'], $user_data['id']).'">'.forum_htmlencode($user_data['username']).'</a></span></td>';
 		]]></hook>
 
 
