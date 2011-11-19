@@ -27,6 +27,7 @@
     display: inline;
     margin-right: .25em;
     line-height: 2.7em;
+    white-space: nowrap;
 }
 
 #brd-pun_tags li a,
