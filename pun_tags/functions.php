@@ -126,7 +126,7 @@ function pun_tags_remove_orphans()
 
 	// Get orphaned tags
 	$query = array(
-		'SELECT'	=> 't.*, COUNT(tt.tag_id) AS cnt',
+		'SELECT'	=> 't.id, COUNT(tt.tag_id) AS cnt',
 		'FROM'		=> 'tags AS t',
 		'JOINS'		=> array(
 			array(
@@ -134,16 +134,22 @@ function pun_tags_remove_orphans()
 				'ON'			=> 't.id = tt.tag_id GROUP BY t.id'
 			)
 		),
-		'HAVING'	=> 'cnt = 0'
+		'HAVING'	=> 'COUNT(tt.tag_id) = 0'
 	);
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	// Remove orphaned tags
+	$ids = array();
 	while ($row = $forum_db->fetch_assoc($result))
+	{
+		$ids[] = $row['id'];
+	}
+
+	if (!empty($ids))
 	{
 		$query_tags = array(
 			'DELETE'	=> 'tags',
-			'WHERE'		=> 'id='.$row['id']
+			'WHERE'		=> 'id IN ('.implode(',', $ids).')'
 		);
 		$forum_db->query_build($query_tags) or error(__FILE__, __LINE__);
 	}
@@ -153,7 +159,7 @@ function pun_tags_remove_orphans()
 function pun_tags_get_link($size, $tag_id, $weight, $tag)
 {
 	global $forum_url;
-	return '<a style="font-size:'.$size.'%;" href = "'.forum_link($forum_url['search_tag'], $tag_id).'"  title="'.$weight.(($weight == 1) ? (' topic') : (' topics')).'">'.$tag.'</a>';
+	return '<li><a href = "'.forum_link($forum_url['search_tag'], $tag_id).'"  title="'.$weight.(($weight == 1) ? (' topic') : (' topics')).'">'.$tag.'</a></li>';
 }
 
 // Get array of tags from input string

@@ -14,12 +14,12 @@
 <extension engine="1.0">
 	<id>pun_tags</id>
 	<title>Pun tags</title>
-	<version>1.7.4</version>
+	<version>1.8</version>
 	<description>Topics are taggable now.</description>
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4</maxtestedon>
+	<maxtestedon>1.4.1</maxtestedon>
 
 	<install><![CDATA[
 		// Create table topic_tags if its fresh install
@@ -178,7 +178,7 @@
 					case 'searchtopics':
 					case 'searchposts':
 						//This string will be replaced after getting search results
-						$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags" class="gen-content"></div>';
+						$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags"></div>';
 						break;
 				}
 
@@ -196,8 +196,10 @@
 					$output_results = array_tags_slice($output_results);
 					$results = array();
 					foreach ($output_results as $tag_id => $tag_info)
+					{
 						$results[] = pun_tags_get_link(round(($tag_info['weight'] - $min_pop) * $step + $minfontsize), $tag_id, $tag_info['weight'], $tag_info['tag']);
-					$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags" class="gen-content"><strong>'.$lang_pun_tags['Title'].'</strong>'.implode($forum_config['o_pun_tags_separator'], $results).'</div>';
+					}
+					$main_elements['<!-- forum_crumbs_end -->'] .= '<div id="brd-pun_tags"><ul>'.implode($forum_config['o_pun_tags_separator'], $results).'</ul></div>';
 					unset($minfontsize, $maxfontsize, $step, $results, $min_pop, $max_pop);
 				}
 				unset($output_results, $tags_weights);
@@ -326,10 +328,10 @@
 		<hook id="hd_head"><![CDATA[
 			if (in_array(FORUM_PAGE, array('index', 'viewforum', 'viewtopic', 'searchtopics', 'searchposts', 'admin-management-manage_tags')))
 			{
-				if ($forum_user['style'] != 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
-					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url', 'media' => 'screen'));
+				if ($forum_user['style'] != 'Oxygen' && file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/pun_tags.css'))
+					$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/pun_tags.css', array('type' => 'url', 'media' => 'screen'));
 				else
-					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url', 'media' => 'screen'));
+					$forum_loader->add_css($ext_info['url'].'/style/Oxygen/pun_tags.min.css', array('type' => 'url', 'media' => 'screen'));
 			}
 		]]></hook>
 
@@ -685,9 +687,9 @@
 			if ($forum_config['o_pun_tags_show'] == 1)
 			{
 				if (!empty($ouput_results))
-					$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '<div id="brd-pun_tags" class="gen-content"><strong>'.$lang_pun_tags['Title'].'</strong>'.implode($forum_config['o_pun_tags_separator'], $ouput_results).'</div>', $tpl_main);
+					$tpl_main = str_replace('<div id="brd-pun_tags"></div>', '<div id="brd-pun_tags"><ul>'.implode($forum_config['o_pun_tags_separator'], $ouput_results).'</ul></div>', $tpl_main);
 				else
-					$tpl_main = str_replace('<div id="brd-pun_tags" class="gen-content"></div>', '', $tpl_main);
+					$tpl_main = str_replace('<div id="brd-pun_tags"></div>', '', $tpl_main);
 			}
 		]]></hook>
 

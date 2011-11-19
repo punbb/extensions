@@ -1,0 +1,51 @@
+/**
+ * CSS-Styles for pun_tags extension
+ *
+ * @copyright Copyright (C) 2011 PunBB
+ * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ * @package pun_tags
+ */
+#brd-pun_tags {
+    margin-bottom: 1em;
+    padding-left: 0;
+	overflow: auto;
+	display: block;
+	margin-top: 1em;
+	text-align: left;
+}
+
+#pun_tags_table input[type="text"] {
+	width: 100%;
+}
+
+#brd-pun_tags ul {
+    list-style: none outside none;
+    padding-left: 0;
+}
+
+#brd-pun_tags li {
+    display: inline;
+    margin-right: .25em;
+    line-height: 2.7em;
+}
+
+#brd-pun_tags li a,
+#brd-pun_tags li a:active,
+#brd-pun_tags li a:focus,
+#brd-pun_tags li a:visited {
+    font-size: .95em;
+    background: #f4f4f4;
+    border-radius: 4px;
+    color: #888888;
+    padding: 0.5em 0.8em;
+    -moz-transition: all 300ms;
+    -webkit-transition: all 300ms;
+    transition: all 300ms;
+    text-decoration: none;
+}
+
+#brd-pun_tags li a:hover {
+    background: #F56F4E;
+    color: #fff;
+    text-decoration: none;
+}
