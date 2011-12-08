@@ -1246,7 +1246,43 @@ function pun_pm_message($message, $type)
 <?php
 
 	if (isset($message['id']) && $type == 'inbox')
-		echo pun_pm_send_form($message['sender'], pun_pm_next_reply($message['subject']), $forum_config['p_message_bbcode'] == '1' ? '[quote='.$message['sender'].']'.$message['body'].'[/quote]' : '' , false, true);
+	{
+		// Sender maybe NULL if user deleted
+		if (isset($message['sender']) && (utf8_strlen($message['sender']) > 0))
+		{
+			// Make quote
+			if ($forum_config['p_message_bbcode'] == '1')
+			{
+				// If username contains a square bracket, we add "" or '' around it (so we know when it starts and ends)
+				if (strpos($message['sender'], '[') !== false || strpos($message['sender'], ']') !== false)
+				{
+					if (strpos($message['sender'], '\'') !== false)
+						$message['sender'] = '"'.$message['sender'].'"';
+					else
+						$message['sender'] = '\''.$message['sender'].'\'';
+				}
+				else
+				{
+					// Get the characters at the start and end of $q_poster
+					$ends = utf8_substr($message['sender'], 0, 1).utf8_substr($message['sender'], -1, 1);
+
+					// Deal with quoting "Username" or 'Username' (becomes '"Username"' or "'Username'")
+					if ($ends == '\'\'')
+						$message['sender'] = '"'.$message['sender'].'"';
+					else if ($ends == '""')
+						$message['sender'] = '\''.$message['sender'].'\'';
+				}
+
+				$quoted_message = '[quote='.$message['sender'].']'.$message['body'].'[/quote]'."\n";
+			}
+			else
+			{
+				$quoted_message = '> '.$message['sender'].' '.$lang_common['wrote'].':'."\n\n".'> '.$message['body']."\n";
+			}
+
+			echo pun_pm_send_form($message['sender'], pun_pm_next_reply($message['subject']), $quoted_message, false, true);
+		}
+	}
 
 	$result = ob_get_contents();
 	ob_end_clean();
