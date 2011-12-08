@@ -1218,7 +1218,7 @@ function pun_pm_message($message, $type)
 					</tbody>
 				</table>
 			</div>
-			<div class="pun_pm_msg"><div class="post-entry"><div class="entry-content ct-box"><?php echo parse_message($message['body'], false) ?></div></div></div>
+			<div class="pun_pm_msg"><div class="post-entry"><div class="entry-content pun-pm-ct-box"><?php echo parse_message($message['body'], false) ?></div></div></div>
 <?php
 	if (isset($message['id']))
 	{
