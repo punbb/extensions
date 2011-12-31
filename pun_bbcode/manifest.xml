@@ -7,7 +7,7 @@
  *
  * Based on Easy BBCode extension by Rickard Andersson.
  *
- * @copyright (C) 2008-2011 PunBB
+ * @copyright (C) 2008-2012 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_bbcode
  */
@@ -16,7 +16,7 @@
 <extension engine="1.0">
 	<id>pun_bbcode</id>
 	<title>BBCode buttons</title>
-	<version>1.4.17</version>
+	<version>1.4.18</version>
 	<description>Pretty buttons for easy BBCode formatting.</description>
 	<author>PunBB Development Team</author>
 
@@ -62,7 +62,7 @@
 				$forum_loader->add_css('#pun_bbcode_bar { display: none; }', array('type' => 'inline', 'noscript' => true));
 
 				// Load JS
-				$forum_loader->add_js('PUNBB.pun_bbcode=(function(){return{init:function(){return true;},insert_text:function(d,h){var g,f,e=(document.all)?document.all.req_message:((document.getElementById("afocus")!==null)?(document.getElementById("afocus").req_message):(document.getElementsByName("req_message")[0]));if(!e){return false;}if(document.selection&&document.selection.createRange){e.focus();g=document.selection.createRange();g.text=d+g.text+h;e.focus();}else{if(e.selectionStart||e.selectionStart===0){var c=e.selectionStart,b=e.selectionEnd,a=e.scrollTop;e.value=e.value.substring(0,c)+d+e.value.substring(c,b)+h+e.value.substring(b,e.value.length);if(d.charAt(d.length-2)==="="){e.selectionStart=(c+d.length-1);}else{e.selectionStart=b+d.length+h.length;}e.selectionEnd=e.selectionStart;e.scrollTop=a;e.focus();}else{e.value+=d+h;e.focus();}}}};}());PUNBB.common.addDOMReadyEvent(PUNBB.pun_bbcode.init);', array('type' => 'inline'));
+				$forum_loader->add_js('PUNBB.pun_bbcode=(function(){return{init:function(){return true;},insert_text:function(d,h){var g,f,e=(document.all)?document.all.req_message:((document.getElementById("afocus")!==null)?(document.getElementById("afocus").req_message):(document.getElementsByName("req_message")[0]));if(!e){return false;}if(document.selection&&document.selection.createRange){e.focus();g=document.selection.createRange();g.text=d+g.text+h;e.focus();}else{if(e.selectionStart||e.selectionStart===0){var c=e.selectionStart,b=e.selectionEnd,a=e.scrollTop;e.value=e.value.substring(0,c)+d+e.value.substring(c,b)+h+e.value.substring(b,e.value.length);if(d.charAt(d.length-2)==="="){e.selectionStart=(c+d.length-1);}else{if(c===b){e.selectionStart=b+d.length;}else{e.selectionStart=b+d.length+h.length;}}e.selectionEnd=e.selectionStart;e.scrollTop=a;e.focus();}else{e.value+=d+h;e.focus();}}}};}());PUNBB.common.addDOMReadyEvent(PUNBB.pun_bbcode.init);', array('type' => 'inline'));
 
 				($hook = get_hook('pun_bbcode_styles_loaded')) ? eval($hook) : null;
 			}

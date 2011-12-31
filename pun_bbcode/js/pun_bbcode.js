@@ -44,6 +44,8 @@ PUNBB.pun_bbcode = (function () {
 				// For tag with attr set cursor after '='
 				if (open.charAt(open.length - 2) === '=') {
 					msgfield.selectionStart = (startPos + open.length - 1)
+				} else if (startPos === endPos) {
+					msgfield.selectionStart = endPos + open.length;
 				} else {
 					msgfield.selectionStart = endPos + open.length + close.length;
 				}
