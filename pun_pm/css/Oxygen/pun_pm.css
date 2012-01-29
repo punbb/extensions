@@ -33,6 +33,11 @@
 	width: 14em;
 }
 
+.pun_pm_list .td1 {
+	border-left-style: none;
+	border-left-width: 0;
+}
+
 .pun_pm_list td.td3 {
 	border-style: solid none none solid;
 }

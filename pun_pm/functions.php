@@ -1233,7 +1233,7 @@ function pun_pm_message($message, $type)
 
 		if ($type != 'outbox' || $message['status'] != 'sent')
 		{
-?>				<span class="submit"><input type="submit" name="pm_delete_<?php echo $type ?>" value="<?php echo $lang_pun_pm['Delete message'] ?>" onclick="return confirm('<?php echo $lang_pun_pm['Delete confirmation 1'] ?>');" /></span>
+?>				<span class="submit primary caution"><input type="submit" name="pm_delete_<?php echo $type ?>" value="<?php echo $lang_pun_pm['Delete message'] ?>" onclick="return confirm('<?php echo $lang_pun_pm['Delete confirmation 1'] ?>');" /></span>
 <?php
 		}
 ?>
@@ -1435,7 +1435,7 @@ function pun_pm_send_form($username = '', $subject = '', $body = '', $message_id
 	if ($message_id !== false)
 	{
 ?>
-				<div style="float: right;"><input type="submit" name="pm_delete" value="<?php echo $lang_pun_pm['Delete draft'] ?>" onclick="return confirm('<?php echo $lang_pun_pm['Confirm delete draft'] ?>');" /></div>
+				<div style="float: right;" class="primary caution"><input type="submit" name="pm_delete" value="<?php echo $lang_pun_pm['Delete draft'] ?>" onclick="return confirm('<?php echo $lang_pun_pm['Confirm delete draft'] ?>');" /></div>
 <?php
 	}
 	($hook = get_hook('pun_pm_fn_send_form_pre_buttons_output')) ? eval($hook) : null;
