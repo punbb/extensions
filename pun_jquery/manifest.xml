@@ -31,6 +31,7 @@
 			define('PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN', 2);
 			define('PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN', 3);
 
+			define('PUN_JQUERY_ENABLED', 0);
 			define('PUN_JQUERY_VERSION', '1.6.4');
 		]]></hook>
 
@@ -99,27 +100,30 @@
 
 		<!-- load js from url -->
 		<hook id="ft_js_include" priority="4"><![CDATA[
-			switch ($forum_config['o_pun_jquery_include_method'])
+			if(PUN_JQUERY_ENABLED > 0)
 			{
-				case PUN_JQUERY_INCLUDE_METHOD_GOOGLE_CDN:
-					$ext_pun_jquery_url = '//ajax.googleapis.com/ajax/libs/jquery/'.PUN_JQUERY_VERSION.'/jquery.min.js';
-					break;
-
-				case PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN:
-					$ext_pun_jquery_url = '//ajax.aspnetcdn.com/ajax/jQuery/jquery-'.PUN_JQUERY_VERSION.'.min.js';
-					break;
-
-				case PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN:
-					$ext_pun_jquery_url = '//code.jquery.com/jquery-'.PUN_JQUERY_VERSION.'.min.js';
-					break;
-
-				case PUN_JQUERY_INCLUDE_METHOD_LOCAL:
-				default:
-					$ext_pun_jquery_url = $ext_info['url'].'/js/jquery-'.PUN_JQUERY_VERSION.'.min.js';
-					break;
+				switch ($forum_config['o_pun_jquery_include_method'])
+				{
+					case PUN_JQUERY_INCLUDE_METHOD_GOOGLE_CDN:
+						$ext_pun_jquery_url = '//ajax.googleapis.com/ajax/libs/jquery/'.PUN_JQUERY_VERSION.'/jquery.min.js';
+						break;
+	
+					case PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN:
+						$ext_pun_jquery_url = '//ajax.aspnetcdn.com/ajax/jQuery/jquery-'.PUN_JQUERY_VERSION.'.min.js';
+						break;
+	
+					case PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN:
+						$ext_pun_jquery_url = '//code.jquery.com/jquery-'.PUN_JQUERY_VERSION.'.min.js';
+						break;
+	
+					case PUN_JQUERY_INCLUDE_METHOD_LOCAL:
+					default:
+						$ext_pun_jquery_url = $ext_info['url'].'/js/jquery-'.PUN_JQUERY_VERSION.'.min.js';
+						break;
+				}
+	
+				$forum_loader->add_js($ext_pun_jquery_url, array('type' => 'url', 'async' => false, 'weight' => 75));
 			}
-
-			$forum_loader->add_js($ext_pun_jquery_url, array('type' => 'url', 'async' => false, 'weight' => 75));
 		]]></hook>
 
 	</hooks>
