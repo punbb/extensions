@@ -41,5 +41,3 @@ function pun_admin_clear_cache()
 
 	return $count;
 }
-
-?>
