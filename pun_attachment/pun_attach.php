@@ -23,7 +23,7 @@ foreach ($names as $icon_name)
 		$pun_attach_errors['missing_files'][] = '<li class="warn"><span>'.$forum_config['attach_icon_folder'].$icon_name.'</span></li>';
 	else
 	{
-		list($width, $height,,) = getimagesize($forum_config['attach_icon_folder'].$icon_name);
+		list($width, $height,,) = getimagesize($ext_info['path'].'/img/'.$icon_name);
 
 		if (($width > 20) || ($height > 20))
 			$pun_attach_errors['big_images'][] = '<li class="warn"><span>'.$forum_config['attach_icon_folder'].$icon_name.'</span></li>';
@@ -150,7 +150,7 @@ ob_start();
 						<div class="sf-box text">
 							<span class="fld-input">
 								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ext_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ext_'.$i]) ? forum_htmlencode($_POST['attach_ext_'.$i]) : forum_htmlencode($icons[$i])) ?>" />
-								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ico_<?php echo $i ?>" size="10" maxlength="10" value="<?php echo (isset($_POST['attach_ico_'.$i]) ? forum_htmlencode($_POST['attach_ico_'.$i]) : forum_htmlencode($names[$i])) ?>" />
+								<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="attach_ico_<?php echo $i ?>" size="25" maxlength="50" value="<?php echo (isset($_POST['attach_ico_'.$i]) ? forum_htmlencode($_POST['attach_ico_'.$i]) : forum_htmlencode($names[$i])) ?>" />
 								<?php if (!in_array($forum_config['attach_icon_folder'].$names[$i], $big_images) && !in_array($forum_config['attach_icon_folder'].$names[$i], $missing_files)): ?>
 								<span class="fld-input"><img src="<?php echo $forum_config['attach_icon_folder'].$names[$i]; ?>" alt="<?php echo forum_htmlencode($names[$i]); ?>" /></span>
 								<?php endif; ?>
@@ -166,7 +166,7 @@ ob_start();
 				<div class="sf-box text">
 					<span class="fld-input">
 						<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_icon" size="10" maxlength="10" />
-						<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_file" size="10" maxlength="10" />
+						<input type="text" id="fld<?php echo ++$forum_page['fld_count'] ?>" name="add_field_file" size="25" maxlength="50" />
 					</span>
 				</div>
 			</fieldset>
