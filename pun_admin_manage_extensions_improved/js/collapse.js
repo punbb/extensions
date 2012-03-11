@@ -14,17 +14,47 @@ FORUM.toggle_ext = function() {
         return a;
     };
     
+    function updateCookie(collapsed){
+    	if (collapsed.length > 0) {
+    		createCookie('collapsed',collapsed.unique().join(":"),365);
+    	} else {
+    		eraseCookie('collapsed');
+    	}
+    }
+    
+    function createCookie(name,value,days) {
+    	if (days) {
+    		var date = new Date();
+    		date.setTime(date.getTime()+(days*24*60*60*1000));
+    		var expires = "; expires="+date.toGMTString();
+    	}
+    	else var expires = "";
+    	document.cookie = name+"="+value+expires+"; path=/";
+    }
+
+    function readCookie(name) {
+    	var nameEQ = name + "=";
+    	var ca = document.cookie.split(';');
+    	for(var i=0;i < ca.length;i++) {
+    		var c = ca[i];
+    		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+    		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    	}
+    	return null;
+    }
+
+    function eraseCookie(name) {
+    	createCookie(name,"",-1);
+    }    
+    
 	return {
 		init : function() {
 			
-			var collapsed = $.cookie("collapsed");
+			var collapsed = readCookie("collapsed");
 			if (!collapsed || collapsed == undefined || collapsed.length < 1) {
 				collapsed = new Array();
 			} else {
 				collapsed = collapsed.split(":");
-				collapsed = $.map(collapsed, function(val, i) {
-					return parseInt(val, 10);
-				});
 			}
 
 			$(".collapsable")
@@ -40,32 +70,25 @@ FORUM.toggle_ext = function() {
 							$(this).show(function() {
 								$("."+cid).animate({
 									height : "show"
-								}, 300, "swing");
+								}, 200, "swing", function(){
+									$.each(collapsed, function(i, val){
+										if (val==cid){
+											collapsed.splice(i,1);
+										}
+									});
+									updateCookie(collapsed);
+								});
 								$(this).removeClass("collapsed");
-							});
-							$.each(collapsed, function(i, val){
-								if (val=cid){
-									collapsed.splice(i,1);
-								}
 							});
 						} else {
 							$("."+cid).animate({
 								height : "hide"
-							}, 300, "swing",function(){
-										$(this).prev().addClass("collapsed");
+							}, 200, "swing",function(){
+								$(this).prev().addClass("collapsed");
+								collapsed.push(cid);
+								updateCookie(collapsed);
 							});
-							collapsed.push(cid);
 						}	
-						
-						if (collapsed.length > 0) {
-							cookie = collapsed.unique().join(":");
-						} else {
-							cookie = null;
-						}
-						$.cookie("collapsed", cookie, {
-							expires : 99999,
-							path : "/"
-						});
 			});
 		}
 	};
