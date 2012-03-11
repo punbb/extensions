@@ -2,7 +2,7 @@
 
 /***********************************************************************
 
-	Copyright (C) 2008  PunBB
+	Copyright (C) 2008-2012  PunBB
 
 	PunBB is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published

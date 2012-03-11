@@ -3,7 +3,7 @@
 /**
  * Functions for pun_attachment extension.
  *
- * @copyright (C) 2008-2011 PunBB, partially based on Attachment Mod by Frank Hagstrom
+ * @copyright (C) 2008-2012 PunBB, partially based on Attachment Mod by Frank Hagstrom
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_attachment
  */

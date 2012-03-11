@@ -5,7 +5,7 @@
 /**
  * Pun Move Posts extension main file
  *
- * @copyright Copyright (C) 2009-2011 PunBB, partially based on code copyright (C) 2009 FluxBB.org
+ * @copyright Copyright (C) 2009-2012 PunBB, partially based on code copyright (C) 2009 FluxBB.org
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_move_posts
  */
@@ -19,7 +19,7 @@
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4</maxtestedon>
+	<maxtestedon>1.4.2</maxtestedon>
 
 	<hooks>
 		<hook id="mr_post_actions_pre_mod_options"><![CDATA[

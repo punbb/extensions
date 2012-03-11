@@ -3,7 +3,7 @@
 /**
  * Pun Move Posts extension language file
  *
- * @copyright Copyright (C) 2009-2011 PunBB, partially based on code copyright (C) 2009 FluxBB.org
+ * @copyright Copyright (C) 2009-2012 PunBB, partially based on code copyright (C) 2009 FluxBB.org
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_move_posts
  */
