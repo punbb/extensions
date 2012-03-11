@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_admin_manage_extensions_improved</id>
 	<title>Pun Admin Manage Extensions Improved</title>
-	<version>1.5.1</version>
+	<version>1.5.2</version>
 	<description>This extension allows to choose several extensions to enable/disable/uninstall them</description>
 	<author>PunBB Development Team</author>
 
@@ -154,8 +154,13 @@ if (isset($_GET['reinstall']))
 
 	
 	// Run uninstall code
-	if (!isset($_GET['only_hoks']))
+	if (!isset($_GET['only_hoks'])){
+		$last_ext_info = $ext_info;
+		// Prevent errors when include files in the uninstall section
+		$ext_info = array('path' => FORUM_ROOT.'extensions/'.$id);
 		eval($old_ext_data['uninstall']);
+		$ext_info = $last_ext_info;
+	}
 
 	// Now delete the extension and its hooks from the db
 	$query = array(
@@ -181,8 +186,13 @@ if (isset($_GET['reinstall']))
 	regenerate_glob_vars();
 
 	// Run the author supplied install code
-	if (isset($ext_data['extension']['install']) && trim($ext_data['extension']['install']) != '' && !isset($_GET['only_hoks']))
+	if (isset($ext_data['extension']['install']) && trim($ext_data['extension']['install']) != '' && !isset($_GET['only_hoks'])) {
+		$last_ext_info = $ext_info;
+		// Prevent errors when include files in the install section
+		$ext_info = array('path' => FORUM_ROOT.'extensions/'.$id);
 		eval($ext_data['extension']['install']);
+		$ext_info = $last_ext_info;
+	}
 
 	// Make sure we have an array of dependencies
 	if (!isset($ext_data['extension']['dependencies']))
