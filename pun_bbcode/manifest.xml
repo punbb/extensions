@@ -21,7 +21,7 @@
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4</maxtestedon>
+	<maxtestedon>1.4.2</maxtestedon>
 
 	<install><![CDATA[
 		if (defined('EXT_CUR_VERSION') && EXT_CUR_VERSION == '1.1')

@@ -19,7 +19,7 @@
 	<author>PunBB Development Team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4</maxtestedon>
+	<maxtestedon>1.4.2</maxtestedon>
 
 
 	<install><![CDATA[
