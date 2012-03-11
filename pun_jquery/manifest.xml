@@ -5,12 +5,12 @@
 <extension engine="1.0">
 	<id>pun_jquery</id>
 	<title>jQuery</title>
-	<description>A PunBB extension that provide jQuery lib (version 1.6.4)</description>
+	<description>A PunBB extension that provide jQuery lib (version 1.7.1)</description>
 	<author>PunBB Development Team</author>
-	<version>1.1.3</version>
+	<version>1.1.5</version>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4</maxtestedon>
+	<maxtestedon>1.4.2</maxtestedon>
 
 
 	<install><![CDATA[
@@ -31,7 +31,7 @@
 			define('PUN_JQUERY_INCLUDE_METHOD_MICROSOFT_CDN', 2);
 			define('PUN_JQUERY_INCLUDE_METHOD_JQUERY_CDN', 3);
 
-			define('PUN_JQUERY_VERSION', '1.6.4');
+			define('PUN_JQUERY_VERSION', '1.7.1');
 		]]></hook>
 
 
