@@ -13,9 +13,9 @@ if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/'.$ext_info
 else
 	require_once $ext_info['path'].'/lang/English/'.$ext_info['id'].'.php';
 
-if (file_exists($ext_info['url'].'/style/'.$forum_user['style'].'/style.css'))
+if (file_exists($ext_info['path'].'/style/'.$forum_user['style'].'/style.css'))
 	$forum_loader->add_css($ext_info['url'].'/style/'.$forum_user['style'].'/style.css', array('type' => 'url'));
-else
+else 
 	$forum_loader->add_css($ext_info['url'].'/style/Oxygen/style.css', array('type' => 'url'));
 
 $forum_loader->add_js($ext_info['url'].'/js/collapse.js');
@@ -297,7 +297,7 @@ else
 				{
 
 					$forum_page['ext_item'][] = '
-					<tr class="'. ( $num_exts% 2 ? 'odd' : 'even' ) .'">
+					<tr class="'. ( $num_exts% 2 ? 'odd' : 'even' ) .(isset($inst_exts[$entry]['version']) ? ' upgrade' : '') .'">
 						'."\n\t\t\t".'
 						<td class="tc0">
 							<h3>

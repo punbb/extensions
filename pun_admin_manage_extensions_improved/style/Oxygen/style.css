@@ -1,14 +1,15 @@
-#ext-available-list .tc1, 
-#ext-available-list .tc3, 
-#ext-installed-list .tc2,
+#ext-available-list .tc1 {
+	width: 6em;
+}
+
+#ext-installed-list .tc2{
+	width: 7em;
+} 
 #ext-installed-list .tc3{
-	width: 4em;
+	width: 6em;
 }
 #ext-installed-list .tc1 {
-	width: 7em;
-}
-#ext-available-list .tc2  {
-	width: 10em;
+	width: 8em;
 }
 #ext-available-list h3 span.head, #ext-installed-list h3 span.head{
 	font-weight:bold;
@@ -23,6 +24,12 @@
 #ext-available-list .tc0 div, #ext-installed-list .tc0 div{
 	padding-top:8px;
 }
+
+tr.upgrade td , tr.upgrade td {
+	background-color: #FEFFE6;
+}
+
+
 #ext-available-list tr.even td, #ext-installed-list tr.even td {
 	background-color: #FFF;
 }
@@ -32,6 +39,14 @@
 #ext-installed-list tr.odd.disabled td, #ext-installed-list tr.even.disabled td{
 	background-color:#FFFFE1;
 }
+
+#ext-installed-list tr td {
+	padding-top:4px;
+}
+
+
+
+
 #ext-available-list {
 	border-bottom: 1px solid #DDE4EB;
 }
