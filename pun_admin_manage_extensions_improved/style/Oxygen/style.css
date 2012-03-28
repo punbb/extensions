@@ -1,12 +1,16 @@
+.main-content th {
+padding: .5em 1.3em;
+}
 #ext-available-list .tc1 {
 	width: 6em;
 }
-
 #ext-installed-list .tc2{
 	width: 7em;
+	text-align: center;
 } 
-#ext-installed-list .tc3{
+#ext-installed-list .tc3, #ext-available-list  .tc3{
 	width: 6em;
+	text-align: center;
 }
 #ext-installed-list .tc1 {
 	width: 8em;
@@ -24,12 +28,9 @@
 #ext-available-list .tc0 div, #ext-installed-list .tc0 div{
 	padding-top:8px;
 }
-
 tr.upgrade td , tr.upgrade td {
 	background-color: #FEFFE6;
 }
-
-
 #ext-available-list tr.even td, #ext-installed-list tr.even td {
 	background-color: #FFF;
 }
@@ -39,14 +40,9 @@ tr.upgrade td , tr.upgrade td {
 #ext-installed-list tr.odd.disabled td, #ext-installed-list tr.even.disabled td{
 	background-color:#FFFFE1;
 }
-
 #ext-installed-list tr td {
 	padding-top:4px;
 }
-
-
-
-
 #ext-available-list {
 	border-bottom: 1px solid #DDE4EB;
 }
