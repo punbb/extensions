@@ -5,7 +5,7 @@
 /**
  * Allows users to create voting
  *
- * @copyright Copyright (C) 2008-2011 PunBB
+ * @copyright Copyright (C) 2008-2012 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_poll
  */
@@ -19,7 +19,7 @@
 	<author>PunBB Development team</author>
 
 	<minversion>1.4RC1</minversion>
-	<maxtestedon>1.4</maxtestedon>
+	<maxtestedon>1.4.2</maxtestedon>
 
 	<install><![CDATA[
 		if (!$forum_db->table_exists('questions'))
