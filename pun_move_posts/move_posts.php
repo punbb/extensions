@@ -20,6 +20,8 @@ $query = array(
 	'WHERE'		=> 't.id='.$tid.' AND t.moved_to IS NULL'
 );
 
+($hook = get_hook('move_post_qr_get_topic_info')) ? eval($hook) : null;
+
 $result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 $cur_topic = $forum_db->fetch_assoc($result);
 
@@ -51,7 +53,9 @@ if (isset($_POST['move_posts']))
 		'WHERE'		=> '(fp.read_forum IS NULL OR fp.read_forum=1) AND f.redirect_url IS NULL AND f.num_topics!=0',
 		'ORDER BY'	=> 'c.disp_position, c.id, f.disp_position'
 	);
-
+	
+	($hook = get_hook('move_post_qr_get_forums_can_move_to')) ? eval($hook) : null;
+	
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$forum_list = array();
@@ -157,6 +161,8 @@ if (isset($_POST['move_posts_s']))
 		'ORDER BY'	=> 't.last_post DESC'
 	);
 
+	($hook = get_hook('move_post_qr_get_topics_can_move_to')) ? eval($hook) : null;
+	
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$forum_list = array();
@@ -267,6 +273,8 @@ if (isset($_POST['move_posts_to']))
 	if (isset($_POST['change_time']))
 		$query['SET'] .= ', posted='.time();
 
+	($hook = get_hook('move_post_qr_update_post')) ? eval($hook) : null;
+	
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	$query = array(
@@ -275,6 +283,9 @@ if (isset($_POST['move_posts_to']))
 		'WHERE'		=> 'id IN('.implode(',', $posts).')',
 		'ORDER BY'	=> 'posted'
 	);
+	
+	($hook = get_hook('move_post_qr_get_posts_info')) ? eval($hook) : null;
+	
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	while ($cur_sel_forum = $forum_db->fetch_assoc($result))
@@ -292,6 +303,9 @@ if (isset($_POST['move_posts_to']))
 			'INTO'		=> 'posts',
 			'VALUES'	=> implode(',', $values)
 		);
+		
+		($hook = get_hook('move_post_qr_insert_post')) ? eval($hook) : null;
+		
 		$forum_db->query_build($query);// or error(__FILE__, __LINE__);
 	}
 
@@ -299,6 +313,9 @@ if (isset($_POST['move_posts_to']))
 		'DELETE'	=> 'posts',
 		'WHERE'		=> 'id IN('.implode(',', $posts).')'
 	);
+	
+	($hook = get_hook('move_post_qr_delete_posts')) ? eval($hook) : null;
+	
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 
 	sync_topic($tid);
@@ -307,5 +324,3 @@ if (isset($_POST['move_posts_to']))
 
 	redirect(forum_link($forum_url['topic'], array($tid, sef_friendly($cur_topic['subject']))), 'Move posts');
 }
-
-?>
