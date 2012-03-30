@@ -288,16 +288,17 @@ if (isset($_POST['move_posts_to']))
 	
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-	while ($cur_sel_forum = $forum_db->fetch_assoc($result))
+	while ($cur_post = $forum_db->fetch_assoc($result))
 	{
 		$values = array();
 
-		foreach ($cur_sel_forum as $k =>  $v)
+		foreach ($cur_post as $k => $v)
 		{
 			if (!(empty($v)||$k=='id'))
 				$values[$k]='\''.$forum_db->escape($v).'\'';
 		}
 
+		echo var_dump($values);
 		$query = array(
 			'INSERT'	=> implode(',', array_keys($values)),
 			'INTO'		=> 'posts',
@@ -307,6 +308,10 @@ if (isset($_POST['move_posts_to']))
 		($hook = get_hook('move_post_qr_insert_post')) ? eval($hook) : null;
 		
 		$forum_db->query_build($query);// or error(__FILE__, __LINE__);
+
+		$new_post_id = $forum_db->insert_id();
+		
+		($hook = get_hook('move_post_loop_insert_end')) ? eval($hook) : null;
 	}
 
 	$query = array(
@@ -321,6 +326,8 @@ if (isset($_POST['move_posts_to']))
 	sync_topic($tid);
 	sync_topic($move_to_topic);
 	sync_forum($fid);
+
+	($hook = get_hook('move_post_end_pre_redirect')) ? eval($hook) : null;
 
 	redirect(forum_link($forum_url['topic'], array($tid, sef_friendly($cur_topic['subject']))), 'Move posts');
 }
