@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_attachment</id>
 	<title>Attachment</title>
-	<version>1.1.18</version>
+	<version>1.1.19</version>
 	<description>Allows users to attach files to posts.</description>
 	<author>PunBB Development Team</author>
 
@@ -827,7 +827,7 @@ if ($section == 'pun_attach')
 					if (isset($match[0]))
 					{
 						$query = array(
-							'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
+							'SELECT'	=>	'a.id, a.post_id, a.topic_id, a.owner_id, a.filename, a.file_ext, a.file_mime_type, a.size, a.file_path, a.secure_str',
 							'FROM'		=>	'attach_files AS a',
 							'JOINS'		=>	array(
 								array(
@@ -848,7 +848,7 @@ if ($section == 'pun_attach')
 						if (isset($match[0]))
 						{
 							$query = array(
-								'SELECT'	=>	'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
+								'SELECT'	=>	'a.id, a.post_id, a.topic_id, a.owner_id, a.filename, a.file_ext, a.file_mime_type, a.size, a.file_path, a.secure_str',
 								'FROM'		=>	'attach_files AS a',
 								'JOINS'		=>	array(
 									array(
@@ -874,7 +874,7 @@ if ($section == 'pun_attach')
 						message($lang_common['Bad request']);
 				} else {
 					$query = array(
-						'SELECT'	=> 'a.id, post_id, topic_id, owner_id, filename, file_ext, file_mime_type, size, file_path, secure_str',
+						'SELECT'	=> 'a.id, a.post_id, a.topic_id, a.owner_id, a.filename, a.file_ext, a.file_mime_type, a.size, a.file_path, a.secure_str',
 						'FROM'		=> 'attach_files AS a',
 						'JOINS'		=> array(
 							array(
