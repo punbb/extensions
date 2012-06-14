@@ -33,7 +33,7 @@ $inst_exts = array();
 $query = array(
 	'SELECT'	=> 'e.*',
 	'FROM'		=> 'extensions AS e',
-	'ORDER BY'	=> 'e.title'
+	'ORDER BY'	=> 'e.disabled, e.title'
 );
 
 ($hook = get_hook('aex_qr_get_all_extensions')) ? eval($hook) : null;
