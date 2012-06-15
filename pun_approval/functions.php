@@ -1047,8 +1047,11 @@ function show_unapproved_posts()
 
 function show_confirmation_window()
 {
-	global $forum_db, $forum_user, $forum_url, $lang_common, $lang_app_post, $forum_config, $lang_forum, $lang_topic,
+	global $forum_db, $forum_user, $forum_url, $lang_common, $forum_config, $lang_forum, $lang_topic,
 		   $base_url, $forum_page, $cur_forum, $ext_info, $smilies, $attach_url, $lang_attach, $post_app_url;
+		   
+// Load the delete.php language file
+require FORUM_ROOT.'lang/'.$forum_user['language'].'/delete.php';
 
 	$deleted_post = isset($_GET['del']) ? intval($_GET['del']) : 0;
 // Fetch some info about the post, the topic and the forum
@@ -1105,19 +1108,19 @@ function show_confirmation_window()
 	$forum_page['frm_info'] = array(
 		'<li><span>'.'Forum'.':<strong> '.forum_htmlencode($cur_post['forum_name']).'</strong></span></li>',
 		'<li><span>'.'Topic'.':<strong> '.forum_htmlencode($cur_post['subject']).'</strong></span></li>',
-		'<li><span>'.sprintf((($cur_post['is_topic']) ? $lang_app_post['Delete topic info'] : $lang_app_post['Delete post info']), forum_htmlencode($cur_post['poster']), format_time($cur_post['posted'])).'</span></li>'
+		'<li><span>'.sprintf((($cur_post['is_topic']) ? $lang_delete['Delete topic info'] : $lang_delete['Delete post info']), forum_htmlencode($cur_post['poster']), format_time($cur_post['posted'])).'</span></li>'
 	);
 
 // Generate the post heading
 	$forum_page['post_ident'] = array();
-	$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['is_topic']) ? $lang_app_post['Topic byline'] : $lang_app_post['Reply byline']), '<strong>'.forum_htmlencode($cur_post['poster']).'</strong>').'</span>';
+	$forum_page['post_ident']['byline'] = '<span class="post-byline">'.sprintf((($cur_post['is_topic']) ? $lang_delete['Topic byline'] : $lang_delete['Reply byline']), '<strong>'.forum_htmlencode($cur_post['poster']).'</strong>').'</span>';
 	$forum_page['post_ident']['link'] = '<span class="post-link"><a class="permalink" href="'.forum_link($forum_url['post'], $cur_post['tid']).'">'.format_time($cur_post['posted']).'</a></span>';
 
 // Generate the post title
-	if ($cur_post['is_topic'])
-		$forum_page['item_subject'] = sprintf('Topic title', 'Subject');
-	else
-		$forum_page['item_subject'] = sprintf('Reply title', 'subject');
+if ($cur_post['is_topic'])
+	$forum_page['item_subject'] = sprintf($lang_delete['Topic title'], $cur_post['subject']);
+else
+	$forum_page['item_subject'] = sprintf($lang_delete['Reply title'], $cur_post['subject']);
 
 	$forum_page['item_subject'] = forum_htmlencode('item_subject');
 
@@ -1126,7 +1129,7 @@ function show_confirmation_window()
 		array($forum_config['o_board_title'], forum_link($forum_url['index'])),
 		array($cur_post['forum_name'], forum_link($forum_url['forum'], array($cur_post['fid'], sef_friendly($cur_post['forum_name'])))),
 		array($cur_post['subject'], forum_link($forum_url['topic'], array($cur_post['tid'], sef_friendly($cur_post['subject'])))),
-		(($cur_post['is_topic']) ? 'Delete topic' : 'Delete post')
+		(($cur_post['is_topic']) ? $lang_delete['Delete topic'] : $lang_delete['Delete post'])
 	);
 	?>
 <div class="main-content main-frm">
@@ -1165,7 +1168,7 @@ function show_confirmation_window()
 
 		<div class="frm-buttons">
             <span class="submit"><input type="submit" name="delete"
-										value="<?php echo ($cur_post['is_topic']) ? $lang_app_post['Delete topic'] : $lang_app_post['Delete post'] ?>"/></span>
+										value="<?php echo ($cur_post['is_topic']) ? $lang_delete['Delete topic'] : $lang_delete['Delete post'] ?>"/></span>
             <span class="cancel"><input type="submit" name="cancel"
 										value="<?php echo $lang_common['Cancel'] ?>"/></span>
 		</div>
@@ -1478,10 +1481,10 @@ function approve_user()
 
 	if ($forum_config['o_regs_verify'] == '1') {
 		// Load the "welcome" template
-		if (file_exists($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/welcome.tpl'))
-			$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/'.$forum_user['language'].'/mail_templates/welcome.tpl'));
+		if (file_exists(FORUM_ROOT.'/lang/'.$forum_user['language'].'/mail_templates/welcome.tpl'))
+			$mail_tpl = forum_trim(file_get_contents(FORUM_ROOT.'/lang/'.$forum_user['language'].'/mail_templates/welcome.tpl'));
 		else
-			$mail_tpl = forum_trim(file_get_contents($ext_info['path'].'/lang/English/mail_templates/welcome.tpl'));
+			$mail_tpl = forum_trim(file_get_contents(FORUM_ROOT.'/lang/English/mail_templates/welcome.tpl'));
 
 		// The first row contains the subject
 		$first_crlf = strpos($mail_tpl, "\n");

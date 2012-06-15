@@ -28,7 +28,7 @@
 <extension engine="1.0">
 	<id>pun_approval</id>
 	<title>Post and registration approval</title>
-	<version>1.5.0</version>
+	<version>1.5.1</version>
 	<description>Allows to control all new posts and registrations and approve them</description>
 	<author>PunBB Development Team</author>
 	<minversion>1.4.0</minversion>
@@ -717,10 +717,10 @@
 					$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 					list($last_post_id) = $forum_db->fetch_row($result);
 
-					redirect(forum_link($forum_url['post'], $last_post_id), 'Your post will be approved (moderated)');
+					redirect(forum_link($forum_url['post'], $last_post_id), $lang_app_post['post app moderated']);
 				}
 				else if ($fid)
-					redirect(forum_link($forum_url['forum'], $fid), 'Your topic will be approved (moderated)');
+					redirect(forum_link($forum_url['forum'], $fid), $lang_app_post['topic app moderated']);
 			}
 		]]></hook>
 
