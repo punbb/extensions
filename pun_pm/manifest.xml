@@ -14,7 +14,7 @@
 <extension engine="1.0">
 	<id>pun_pm</id>
 	<title>Private Messaging</title>
-	<version>2.4.1</version>
+	<version>2.4.2</version>
 	<description>Allows users to send and receive private messages.</description>
 	<author>PunBB Development Team</author>
 
@@ -497,7 +497,7 @@ $forum_page['group_count'] = $forum_page['item_count'] = 0;
 
 			// Links 'Send PM' near posts
 			if (!$forum_user['is_guest'] && $cur_post['poster_id'] > 1 && $forum_user['id'] != $cur_post['poster_id'])
-				$forum_page['post_contacts']['PM'] = '<a class="contact" title="'.$lang_pun_pm['Send PM'].'" href="'.forum_link($forum_url['pun_pm_post_link'], $cur_post['poster_id']).'">'.$lang_pun_pm['PM'].'</a>';
+				$forum_page['post_contacts']['PM'] = '<span class="contact"><a title="'.$lang_pun_pm['Send PM'].'" href="'.forum_link($forum_url['pun_pm_post_link'], $cur_post['poster_id']).'">'.$lang_pun_pm['PM'].'</a></span>';
 
 			($hook = get_hook('pun_pm_after_post_contacts_add')) ? eval($hook) : null;
 		]]></hook>
