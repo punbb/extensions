@@ -29,12 +29,12 @@
 			// Rename old DB fields
 			$forum_db->query('ALTER TABLE '.$forum_db->prefix.'users
 				CHANGE use_bbcode_bar pun_bbcode_enabled TINYINT(1) DEFAULT 1,
-				CHANGE bbcode_style pun_bbcode_use_buttons TINYINT(1) DEFAULT 0') or error(__FILE__, __LINE__);
+				CHANGE bbcode_style pun_bbcode_use_buttons TINYINT(1) DEFAULT 1') or error(__FILE__, __LINE__);
 		}
 		else
 		{
 			$forum_db->add_field('users', 'pun_bbcode_enabled', 'TINYINT(1)', false, 1);
-			$forum_db->add_field('users', 'pun_bbcode_use_buttons', 'TINYINT(1)', false, 0);
+			$forum_db->add_field('users', 'pun_bbcode_use_buttons', 'TINYINT(1)', false, 1);
 		}
 	]]></install>
 

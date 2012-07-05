@@ -3,7 +3,7 @@
 /**
  * PunBB Repository extension language file
  *
- * @copyright Copyright (C) 2008 - 2011 PunBB
+ * @copyright Copyright (C) 2008 - 2012 PunBB
  * @license http://www.gnu.org/licenses/gpl.html GPL version 2 or higher
  * @package pun_repository
  */
