@@ -114,4 +114,5 @@ $lang_app_post = array(
 //errors
 	'Error app topic'			=> 'Error in the table "post_approval_topics". There are no topics. Please reinstall extension.',
 	'Post errors'				=> 'Warnings:',
+	'No db result from posts'	=> 'No db result from posts',
 );

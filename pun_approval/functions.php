@@ -676,12 +676,12 @@ function show_unapproved_posts()
 
 		// Navigation links for header and page numbering for title/meta description
 		if ($forum_page['page'] < $forum_page['num_pages']) {
-			$forum_page['nav']['last'] = '<link rel="last" href="'.forum_sublink($forum_url['moderate_topic'], $forum_url['page'], $forum_page['num_pages'], array($fid, $tid)).'" title="'.$lang_common['Page'].' '.$forum_page['num_pages'].'" />';
-			$forum_page['nav']['next'] = '<link rel="next" href="'.forum_sublink($forum_url['moderate_topic'], $forum_url['page'], ($forum_page['page'] + 1), array($fid, $tid)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] + 1).'" />';
+			$forum_page['nav']['last'] = '<link rel="last" href="'.forum_sublink($forum_url['moderate_topic'], $forum_url['page'], $forum_page['num_pages']).'" title="'.$lang_common['Page'].' '.$forum_page['num_pages'].'" />';
+			$forum_page['nav']['next'] = '<link rel="next" href="'.forum_sublink($forum_url['moderate_topic'], $forum_url['page'], ($forum_page['page'] + 1)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] + 1).'" />';
 		}
 		if ($forum_page['page'] > 1) {
-			$forum_page['nav']['prev'] = '<link rel="prev" href="'.forum_sublink($forum_url['moderate_topic'], $forum_url['page'], ($forum_page['page'] - 1), array($fid, $tid)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] - 1).'" />';
-			$forum_page['nav']['first'] = '<link rel="first" href="'.forum_link($forum_url['moderate_topic'], array($fid, $tid)).'" title="'.$lang_common['Page'].' 1" />';
+			$forum_page['nav']['prev'] = '<link rel="prev" href="'.forum_sublink($forum_url['moderate_topic'], $forum_url['page'], ($forum_page['page'] - 1)).'" title="'.$lang_common['Page'].' '.($forum_page['page'] - 1).'" />';
+			$forum_page['nav']['first'] = '<link rel="first" href="'.forum_link($forum_url['moderate_topic']).'" title="'.$lang_common['Page'].' 1" />';
 		}
 
 		$forum_page['items_info'] = ($num_posts) ? generate_items_info($lang_misc['Posts'], ($forum_page['start_from']), (($all_post) ? $num_posts : intval($cur_topic['num_replies']))) : $lang_misc['Posts'];
@@ -1458,7 +1458,6 @@ function approve_user()
 	$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 	$row = $forum_db->fetch_assoc($result);
 
-
 	$activate_key = 'NULL';
 	if ($forum_config['o_regs_verify'] == '1') {
 		$activate_key = random_key(8, true);
@@ -1521,7 +1520,6 @@ function approve_user()
 		'WHERE'		=> 'id='.$uid
 	);
 
-
 	$forum_db->query_build($query) or error(__FILE__, __LINE__);
 }
 
@@ -1533,6 +1531,7 @@ function approve_post()
 	$topics = isset($_GET['topics']) ? intval($_GET['topics']) : 0;
 	if ($pid < 1)
 		message($lang_common['Bad request']);
+
 	$query_app = array(
 		'SELECT'	=> 'p.id,t.id as tid',
 		'FROM'		=> 'post_approval_posts AS p',
@@ -1545,14 +1544,13 @@ function approve_post()
 		'WHERE'		=> 'p.id='.$pid
 	);
 
-	$result = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
-	$row = $forum_db->fetch_assoc($result);
-	$aptid = $row['tid'];
+	$result_app = $forum_db->query_build($query_app) or error(__FILE__, __LINE__);
 
 	$app_row = array();
-	while ($cur_row = $forum_db->fetch_assoc($result)) {
-		$app_row[] = $cur_row;
+	while ($cur_row = $forum_db->fetch_assoc($result_app)) {
+		$app_row = $cur_row;
 	}
+	$aptid = $app_row['tid'];
 
 	if (!empty($app_row)) //if this post is a first post of some topic
 	{
@@ -1653,14 +1651,14 @@ function approve_post()
 
 		$result = $forum_db->query_build($query) or error(__FILE__, __LINE__);
 
-		$app_row = array();
-		while ($cur_row = $forum_db->fetch_assoc($result)) {
-			$app_row[] = $cur_row;
+		$post_row = array();
+		while ($cur_post = $forum_db->fetch_assoc($result)) {
+			$post_row[] = $cur_post;
 		}
-		if (!empty($app_row))
-			$errors[] = $lang_app_post['No db result from posts'];
+		if (!empty($post_row))
+			message($lang_app_post['No db result from posts']);
 
-		foreach ($app_row as $cur_row) {
+		foreach ($post_row as $cur_row) {
 			$row = $cur_row;
 		}
 
