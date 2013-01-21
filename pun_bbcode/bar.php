@@ -173,6 +173,7 @@ class Pun_bbcode {
 					if ($forum_user['pun_bbcode_use_buttons'] && $button['image']) {
 						$button_class .= ' image';
 						$title = $button['title'];
+						$button['title'] = '';
 					}
 
 					// Element ID attr can not content space — thats why we replace space in NAME with underscore
