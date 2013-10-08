@@ -298,7 +298,6 @@ if (isset($_POST['move_posts_to']))
 				$values[$k]='\''.$forum_db->escape($v).'\'';
 		}
 
-		echo var_dump($values);
 		$query = array(
 			'INSERT'	=> implode(',', array_keys($values)),
 			'INTO'		=> 'posts',
